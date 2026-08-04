@@ -1,6 +1,6 @@
 # EEC Trade Registry — Permissions and Data Exposure
 
-Status: Documentation foundation with narrow public, staff catalogue, and dealer registry grants implemented
+Status: Governing permission model under ADR 0005
 Security model: Deny by default, least privilege, scoped authority, and PostgreSQL row-level security
 
 ## 1. Principles
@@ -376,7 +376,7 @@ Possible controls:
 - Automatic compliance or audit review
 - High-priority outbox alert
 
-The final dual-control matrix is unresolved policy.
+There is no universal dual-control rule. Any active actor with the required permission and scope may complete an action. The final matrix may still require a distinct approver for specifically configured high-risk actions; those requirements must be explicit rather than inferred from role titles.
 
 ## 10. RLS and secure-function requirements
 
@@ -477,13 +477,13 @@ Break-glass access does not permit secret disclosure, audit deletion, or untrack
 
 ## 16. Unresolved policy decisions
 
-- Final staff roles, permission bundles, approval limits, and regional factor authority profiles
+- Final staff role bundles, approval limits, regional factor authority profiles, and any action-specific dual-control rules
 - Whether staff multi-factor authentication is mandatory for all staff or only elevated actions
-- Dealer identity proof, enrollment, credential recovery, representative approval, and access-link reuse policy
+- Dealer identity proof beyond password authentication, enrollment, credential recovery, representative approval, and access-link reuse policy
 - Which staff roles may see private contact data, internal standing, compliance evidence, and audit snapshots
-- Exact public fields and whether name-based search is allowed
+- Any changes to the approved public verification field allowlists or exact-reference-only lookup behavior
 - Exact stock and quota disclosure to dealers and the public
-- Dual-control thresholds and incompatible-role combinations
+- Action-specific dual-control thresholds and incompatible-role combinations, if introduced
 - Whether administrators can grant themselves domain roles and what review is required
 - Session durations, step-up intervals, revocation behavior, and inactive-account policy
 - Data retention and deletion rights for contacts, authentication metadata, applications, evidence, and audit logs
