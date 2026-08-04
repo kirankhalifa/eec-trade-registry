@@ -1,6 +1,6 @@
 # EEC Trade Registry — Workflows and State Transitions
 
-Status: Documentation foundation with public catalogue, staff draft management, and public verification implemented
+Status: Documentation foundation with public catalogue, staff draft management, public verification, and dealer registry access implemented
 Purpose: Define user journeys, authoritative transitions, failure behavior, and audit expectations without prescribing an application implementation.
 
 ## 1. Workflow rules
@@ -122,6 +122,8 @@ Provide low-friction access scoped to the correct dealer organization and repres
 2. Dealer representative enrolls with a lightweight Supabase Auth credential or approved identity provider.
 3. Successful authentication creates a session.
 4. Each request resolves active representative grants and allowed scopes.
+
+Implementation note: the initial credential path uses Supabase Auth email/password sessions and recognizes only the policy-neutral `portal.read` scope. The private overview is read-only, requires a current representative grant and a currently authority-conferring dealer authorization, and returns only organizations linked to the authenticated dealer actor. Enrollment and credential recovery are not public portal operations.
 
 ### Secure-link path
 

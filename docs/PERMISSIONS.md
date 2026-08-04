@@ -1,6 +1,6 @@
 # EEC Trade Registry — Permissions and Data Exposure
 
-Status: Documentation foundation with narrow public catalogue and verification grants implemented
+Status: Documentation foundation with narrow public, staff catalogue, and dealer registry grants implemented
 Security model: Deny by default, least privilege, scoped authority, and PostgreSQL row-level security
 
 ## 1. Principles
@@ -408,6 +408,8 @@ The final dual-control matrix is unresolved policy.
 - Revocable sessions and grants
 - Sensitive actions may require stronger identity than catalogue viewing
 - Private URLs are not posted in public Discord channels or exported Sheets
+
+The implemented credential path grants authenticated dealer actors execute access only to `get_dealer_portal_overview()`. The function resolves current `party_representatives` rows with `portal.read`, requires a current authority-conferring dealer authorization, and returns only the represented organization's dealer and license summary. Direct party, representation, dealer, license, endorsement, and condition table reads remain denied.
 
 ### Integrations
 
