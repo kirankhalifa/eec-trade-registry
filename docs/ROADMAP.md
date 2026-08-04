@@ -3,6 +3,8 @@
 Status: Implementation in progress
 Delivery strategy: Small, reviewable vertical slices with policy gates and database-first invariants
 
+The cross-domain operating baseline was approved on 2026-08-04 in ADR 0005. Slice-level lists below now distinguish resolved baseline policy from narrower decisions that still block production depth.
+
 ## 1. Roadmap principles
 
 - Build one complete workflow at a time rather than all backend layers followed by all frontends.
@@ -28,8 +30,7 @@ Delivery strategy: Small, reviewable vertical slices with policy gates and datab
 
 - Initial public catalogue fields and availability language
 - Initial item categories and configurable control-profile behavior
-- Currency and money-display rules
-- Institutional time zone and locale
+- Locale and reporting cutoff details beyond the approved `SEP`/Septims currency and `America/New_York` time zone
 - Staff authentication approach for the first internal surface
 - Public reference and item-code formats
 - Legacy workbook ownership, import permission, and data-quality process
@@ -102,7 +103,7 @@ Authorized staff can maintain the master catalogue, prices, publication, and con
 - Complete audit entries with previous and new state
 - Migration and function tests, including concurrent/effective-date cases
 
-### Decisions required
+### Remaining decisions
 
 - Catalogue manager approval authority
 - Price rule precedence for public pricing
@@ -136,12 +137,12 @@ Staff can authorize dealers and issue real licenses with modular endorsements; t
 
 ### Decisions required
 
-- Initial license classes and holder eligibility
-- Initial endorsements and prerequisites
+- Exact holder eligibility for the approved initial classes
+- Exact prerequisites for the approved modular endorsements
 - Dealer and regional factor definitions
 - Effective dates, duration, renewal, grace, and provisional authority
-- Public disclosure fields and lookup behavior
-- Licensing staff authority and dual-control actions
+- Any future expansion beyond the approved public allowlist and exact-reference lookup
+- Action-specific licensing approval limits or dual-control rules, if any
 
 ### Exit criteria
 
@@ -170,13 +171,13 @@ An authenticated dealer can see applicable terms, submit a requisition, and trac
 - Policy-safe dealer status explanations
 - Notification outbox records without external Discord delivery yet
 
-### Decisions required
+### Remaining decisions
 
-- Wholesale price schedules and precedence
+- Price schedule audience and precedence; price values may remain unset and editable
 - Dealer order authority and representative verification
 - Approval thresholds by control level, value, quantity, and region
 - Quota subject, window, timing, reset, carryover, and exception rules
-- Partial approval, substitution, cancellation, and awaiting-stock behavior
+- Substitution and split-shipment details beyond approved partial, cancellation, and awaiting-stock behavior
 - Payment, deposit, credit, and debt checks included in v1
 
 ### Exit criteria
@@ -204,11 +205,11 @@ Staff can receive, reserve, fulfill, transfer, and reconcile stock with a comple
 - Inventory work queues and low-stock projections
 - Concurrency and idempotency tests
 
-### Decisions required
+### Remaining decisions
 
-- Reservation creation point and duration
-- Negative stock and exceptional adjustment authority
-- Physical count procedure, blind counts, and variance thresholds
+- Exact stock-ready trigger and reservation extension limit beyond the approved 48-hour initial term
+- Quantitative exceptional-adjustment and variance thresholds; negative stock is prohibited
+- Physical count assignment and recount procedure beyond approved blind entry and variance review
 - Stock states and owner/custodian account conventions
 - Uncollected-order and partial-fulfillment policy
 - Whether quota holds and stock reservations are always coupled
@@ -237,10 +238,10 @@ The organization can control custody across warehouses, factors, and dealers; se
 - Missing, damaged, seized, retired, destroyed, and recovered lifecycle events at approved depth
 - Dealer and staff custody views
 
-### Decisions required
+### Remaining decisions
 
-- Wholesale title-transfer point
-- Consignment ownership, settlement, reporting, shrinkage, return, and loss policy
+- Proof details for the approved wholesale title-transfer point
+- Consignment settlement, reporting, shrinkage, return, and loss policy beyond retained EEC ownership until accepted sale or settlement
 - Transfer acceptance and discrepancy procedure
 - Unique-asset approval authority, circulation rules, and inspection cadence
 - Serialized-asset public disclosure
@@ -270,10 +271,10 @@ Approved public data reaches Google Sheets and users receive timely Discord look
 - Staff monitoring and safe replay controls
 - Generated license/order documents if prioritized and policy-approved
 
-### Decisions required
+### Remaining decisions
 
-- Sheet destinations, columns, refresh cadence, public ownership, and stale-data language
-- Discord server/channel mapping, command visibility, identity binding, and retention
+- Sheet destinations, columns, public ownership, and stale-data language beyond the approved 15-minute cadence
+- Discord server/channel mapping, identity binding, and retention beyond the approved read-only commands and private staff alerts
 - Which events are public, dealer-private, staff-only, or silent
 - Generated document authority, signature/seal, template ownership, and retention
 

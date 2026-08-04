@@ -6,7 +6,7 @@ This file applies to the entire repository. Read it before planning or changing 
 
 Build a configurable trade, licensing, wholesale distribution, inventory, and compliance platform. Preserve institutional auditability without hard-coding setting-specific terminology when configuration will work.
 
-The product owner authorized implementation on 2026-08-04. The active scope is the policy-neutral credential-based dealer portal foundation in `docs/ROADMAP.md`: dealer actor profiles, effective-dated representative grants, organization isolation, and a private read-only registry overview resolved by Supabase. Secure-link exchange, enrollment administration, license lifecycle commands, private pricing, orders, reservations, inventory, integrations, and compliance remain out of scope until their policy gates are resolved.
+The product owner authorized implementation on 2026-08-04 and approved the operating baseline in `docs/adr/0005-approved-operating-policy-baseline.md`. The active scope now includes configurable staff licensing, dealer order intake, awaiting-stock handling, ledger-based inventory, reservations, transfers, consignment foundations, and read-only projection integrations. Remaining decisions listed in ADR 0005 are still gates; do not infer license duration, quotas, financial terms, compliance procedure, external destination identifiers, or production operations policy.
 
 ## 2. Required reading
 

@@ -1,6 +1,6 @@
 # EEC Trade Registry — Product Specification
 
-Status: Documentation foundation with catalogue, staff draft management, public verification, and dealer registry access implementation in progress
+Status: Implementation in progress under the approved operating baseline in ADR 0005
 Audience: Product owner, operations leads, designers, engineers, and reviewers  
 Authority: This document describes intended product behavior. Supabase PostgreSQL remains the sole authoritative data source at runtime.
 
@@ -333,22 +333,37 @@ These are working assumptions for design, not final institutional policy:
 9. Existing spreadsheet data will be imported only after validation, normalization, and explicit field mapping.
 10. Historical corrections use reversals or superseding records rather than destructive edits.
 
+## 12.1 Approved operating baseline
+
+The product owner approved the following initial deployment policy on 2026-08-04. ADR 0005 is the durable decision record.
+
+- East Empire Company is the configured public institution name. Timestamps are stored in UTC and displayed in `America/New_York`; the zero-decimal `SEP` currency is displayed as Septims.
+- The initial license catalogue uses three configurable classes—general trade, commercial dealer, and institutional trade—and modular configurable endorsements.
+- Authorization follows active permissions and scope. There is no universal second-approver requirement.
+- Dealer authentication begins with individual password credentials through Supabase Auth.
+- Prices are editable but may be unset. An unset price is pending/unavailable, not zero.
+- Ordinary, restricted, and unique are the initial configurable control behaviors; restricted and unique paths require stronger review in line with ADR 0005.
+- Partial approval and fulfillment are supported. Orders may be submitted without stock and may wait for stock.
+- Stock cannot be posted below zero. Reservations default to 48 hours once created and may be extended by an authorized actor with a reason.
+- Wholesale title transfers at confirmed collection or receipt. Consigned stock remains EEC-owned until an accepted sale or settlement event.
+- Public verification remains exact-reference-only with the existing field allowlists.
+- Public Sheets target a 15-minute one-way refresh. Discord begins with public catalogue/dealer/license lookups and private staff alerts; neither integration mutates business state.
+
 ## 13. Unresolved policy decisions
 
 The product owner must resolve these before the affected feature is implemented:
 
 ### Licensing and identity
 
-- Which license classes exist, who may hold each class, and what they authorize
-- Which endorsements exist and whether they are inheritable, mutually exclusive, or jurisdiction-specific
+- Exact holder eligibility, class-specific authority, and whether additional classes are required
+- Exact endorsement prerequisites, inheritance, exclusivity, and jurisdiction-specific behavior beyond the approved modular baseline
 - Required identity assurance for public applicants, dealers, representatives, and factors
 - License duration, renewal windows, grace periods, provisional authority, and expiration behavior
-- Whether public verification is reference-only or supports name and organization search
-- Which license, dealer, endorsement, condition, and status details are public
+- Whether any future public search should extend beyond the approved exact-reference-only behavior
+- Any future changes to the approved public verification field allowlists
 
 ### Goods and allocation
 
-- The configured control profiles and approval requirements for each
 - Which goods require a license, endorsement, quota, special approval, or serialized tracking
 - Whether exact stock, coarse availability, or no availability is public
 - Quota subject, measurement period, reset boundary, carryover, reservation treatment, and exception authority
@@ -357,25 +372,25 @@ The product owner must resolve these before the affected feature is implemented:
 
 ### Commercial rules
 
-- Which price schedules exist and whether prices are fixed, recommended, or negotiable
-- Currency, minor-unit rules, fees, taxes, deposits, credit limits, and rounding
-- Wholesale title-transfer point and consignment ownership, settlement, reporting, loss, and return terms
+- Price schedule audience/precedence and whether configured prices are fixed, recommended, or negotiable
+- Fees, taxes, deposits, credit limits, and exceptional rounding behavior beyond the approved zero-decimal currency
+- Consignment settlement, reporting, commission, loss, and return terms beyond the approved ownership rule
 - Whether final-customer reporting is required for any dealer sale
-- Cancellation, refund, uncollected-order, reservation-extension, and partial-fulfillment rules
+- Refunds, uncollected-order consequences, and reservation-extension limits beyond the approved partial/cancellation baseline
 
 ### Authority and compliance
 
-- Staff roles, regional factor powers, approval limits, and segregation-of-duties requirements
-- Which actions require a reason, second approval, or emergency override
+- Final staff role bundles, regional factor powers, approval limits, and any action-specific segregation-of-duties requirements
+- Which actions require an emergency override or action-specific second approval
 - Inspection authority, violation taxonomy, evidence standard, sanctions, automatic effects, and appeal process
 - Retention and public-disclosure rules for expired, revoked, appealed, or corrected records
 - Emergency suspension, seizure, reconciliation adjustment, and negative-stock policy
 
 ### Operations and integrations
 
-- Institutional time zone, calendar presentation, locale, and reporting cutoff rules
-- Public Sheet contents, refresh frequency, destinations, and ownership
-- Discord server, channels, command visibility, identity binding, notification templates, and retention
+- Locale, calendar presentation, and reporting cutoff rules beyond the approved time zone
+- Public Sheet contents, destinations, ownership, and stale-data wording beyond the approved cadence
+- Discord server, channels, identity binding, notification templates, and retention beyond the approved initial commands/alerts
 - Document formats, seals, signatures, numbering schemes, and which generated documents have official effect
 - Availability, recovery, audit-retention, privacy, and incident-response targets
 
