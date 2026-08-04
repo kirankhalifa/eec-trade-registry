@@ -1,6 +1,6 @@
 # EEC Trade Registry — Conceptual Data Model
 
-Status: Documentation foundation; not a migration specification  
+Status: Governing conceptual model; implementation proceeds under ADR 0005
 Database: Supabase PostgreSQL  
 Authority: Supabase is the only authoritative source of business data.
 
@@ -190,6 +190,8 @@ Key fields:
 - `minor_unit_scale`
 - `rounding_mode`
 - `status`
+
+Initial configured record: code `SEP`, display name `Septims`, zero fractional minor units. This is deployment data, not a currency branch in application logic.
 
 ### `number_sequences`
 
@@ -849,7 +851,7 @@ The implemented public functions are `public_license_verification(text)` and `pu
 The database and secure business functions must enforce at least these invariants:
 
 1. A submitted order line retains its price, eligibility, and control-rule provenance.
-2. A reservation cannot exceed authoritatively available stock at commit time.
+2. A reservation cannot exceed authoritatively available stock at commit time. Order submission may precede stock availability and does not itself create a reservation.
 3. The same idempotency key cannot post the same business operation twice.
 4. Posted inventory entries are immutable and corrections reference the original transaction.
 5. A serialized asset has at most one active reservation and one current accepted custodian.
@@ -942,10 +944,10 @@ Suggested flow:
 - Whether stock ledger quantities are signed single-account entries or explicit debit/credit pairs at the API boundary
 - Unit-of-measure conversion requirements and whether fractional quantities are allowed
 - Exact owner and custodian parties for received, in-transit, sold, destroyed, seized, and unknown stock accounts
-- Whether quotas are reserved on submission, approval, or stock reservation
+- Whether quotas are reserved on submission, approval, or stock reservation; order submission itself is permitted without stock
 - Whether circulation ceilings are another quota policy or a separate aggregate constraint
-- Price rule precedence and allowed calculation forms
-- Partial order, reservation, transfer, consignment, and settlement granularity
+- Price rule precedence and allowed calculation forms; price records may be absent and must never default to zero
+- Reservation extension limits and detailed transfer, consignment, and settlement granularity beyond approved partial order handling
 - Which license conditions require normalized enforcement fields
 - Whether factor assignments are always staff identities or may represent contracted external parties
 - Public-reference formats and whether identifiers encode jurisdiction or class

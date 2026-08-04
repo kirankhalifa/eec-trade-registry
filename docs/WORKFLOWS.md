@@ -1,6 +1,6 @@
 # EEC Trade Registry — Workflows and State Transitions
 
-Status: Documentation foundation with public catalogue, staff draft management, public verification, and dealer registry access implemented
+Status: Governing workflows with the operating baseline in ADR 0005 approved
 Purpose: Define user journeys, authoritative transitions, failure behavior, and audit expectations without prescribing an application implementation.
 
 ## 1. Workflow rules
@@ -283,7 +283,7 @@ Final machine state names will be fixed before migrations. User-facing wording r
 5. The function records price and rule snapshots, determines each line's review path, creates quota holds if policy requires, writes history/audit, and commits.
 6. Notifications are queued after commit.
 
-Submission does not create physical inventory movement. It creates reservations only if the approved policy explicitly reserves at submission and availability is atomically checked.
+Submission does not create physical inventory movement or a stock reservation. Orders may be submitted when stock is unavailable; the authoritative workflow records an explicit awaiting-stock outcome instead of rejecting the commercial request or posting negative stock.
 
 ### Staff review flow
 
@@ -291,7 +291,7 @@ Submission does not create physical inventory movement. It creates reservations 
 2. Authorized staff may approve a quantity, approve with conditions, request information, place in awaiting-stock, deny, or escalate.
 3. An override is a distinct object and never hidden inside an edited field.
 4. Approval revalidates the current state and rule requirements.
-5. Where policy requires stock reservation on approval, approval and reservation commit atomically.
+5. Approval may leave the line awaiting stock. A later authorized inventory operation creates a reservation atomically after stock is available.
 
 ### Cancellation and denial
 
@@ -314,7 +314,7 @@ Submission does not create physical inventory movement. It creates reservations 
 
 ### Extend reservation
 
-Requires an authorized actor, reason, permitted state, and maximum-duration policy. Extension updates the reservation's expiration with an audit record; repeated extensions may require escalation.
+Requires an authorized actor, reason, and permitted state. The initial term is 48 hours. Extension updates the reservation's expiration with an audit record; maximum cumulative duration remains a configurable policy gate.
 
 ### Consume reservation
 
@@ -381,11 +381,11 @@ Negative adjustments, large variances, or unique-asset discrepancies may require
 2. Staff confirms actual quantities/assets, payment or finance prerequisite if applicable, and condition.
 3. Dealer or staff records acceptance where required.
 4. Fulfillment transaction consumes reservations, posts ledger or asset custody movements, consumes quota, advances line/order status, creates documents, audit entries, and notifications.
-5. Partial collection leaves explicit remaining state and adjusted reservations according to policy.
+5. Partial collection leaves explicit remaining state and adjusted reservations. Wholesale title passes only for the quantity confirmed collected or received.
 
 ### Uncollected order
 
-At reservation expiry, the system releases stock and quota holds. Whether the order returns to awaiting-stock, is cancelled, incurs a fee, or affects standing is unresolved policy.
+At reservation expiry, the system releases stock and quota holds. The unfulfilled quantity remains explicit and may return to awaiting stock; fees, standing effects, or automatic cancellation remain unresolved policy.
 
 ## 12. Transfer between custodians or locations
 
@@ -426,7 +426,7 @@ Cancellation after dispatch is not permitted; use return or dispute handling.
 1. Staff selects an active consignment agreement and eligible dealer.
 2. Items, quantities/assets, settlement terms, and reporting date are validated.
 3. Required stock is reserved and approved.
-4. Dispatch transfers custody to the consignee or in-transit account while retaining configured ownership.
+4. Dispatch transfers custody to the consignee or in-transit account while retaining East Empire Company ownership.
 5. Consignment position is derived from ledger and asset events.
 
 ### Dealer report
@@ -595,21 +595,21 @@ Rotate the secret, revoke affected sessions or principal, inspect audit/delivery
 ## 21. Unresolved workflow decisions
 
 - Final state names and which header states are derived from line states
-- Whether ordinary orders reserve at submission, approval, or warehouse processing
+- Exact warehouse-processing point at which an approved or awaiting-stock order becomes reserved
 - Whether quotas are held at submission and when they become consumed
 - Automatic approval thresholds and when staff review is mandatory
-- Required second approvals and whether requester/approver separation is mandatory
-- Reservation durations, extension limits, uncollected-order consequences, and waiting-list behavior
-- Partial approval, partial reservation, substitution, back-order, and split-shipment policy
+- Action-specific second approvals, if any; there is no universal two-person requirement
+- Reservation extension limits, uncollected-order consequences, and waiting-list priority
+- Substitution and split-shipment rules beyond approved partial approval, fulfillment, and back-order handling
 - Payment, deposit, credit, and settlement gates in the order workflow
-- Dealer receipt proof and when wholesale title transfers
-- Consignment reporting frequency, acceptance, settlement, shrinkage, and loss rules
+- Dealer receipt proof beyond confirmation by an authorized actor
+- Consignment reporting frequency, acceptance, settlement amounts, shrinkage, and loss rules beyond retained EEC ownership
 - License expiration scheduling, grace periods, pending-renewal authority, and effects on existing orders
 - Whether an appeal stays an enforcement action
 - Emergency overrides and after-the-fact review requirements
-- Public verification result categories and disclosure text
-- Discord commands allowed to cause state changes, if any
-- Sheet refresh cadence and failure escalation
+- Future changes to the approved public verification result categories and disclosure text
+- Whether any future Discord command may cause a state change; the initial commands are read-only
+- Sheet failure escalation beyond the approved 15-minute target cadence
 
 No workflow-dependent implementation should guess these decisions. A decision record and updated transition tests are required first.
 
