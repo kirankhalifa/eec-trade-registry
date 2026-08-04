@@ -1133,8 +1133,8 @@ begin
   where order_record.id = p_order_id
     and exists (
       select 1
-      from private.current_dealer_representations('order.cancel') as current_grant
-      where current_grant.principal_party_id = order_record.ordering_party_id
+      from private.current_dealer_representations('order.cancel') as accessible_grant
+      where accessible_grant.principal_party_id = order_record.ordering_party_id
     );
   if not found then
     raise exception using errcode = 'P0002', message = 'order_not_found';
