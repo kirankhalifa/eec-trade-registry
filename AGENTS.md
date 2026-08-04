@@ -8,6 +8,8 @@ Build a configurable trade, licensing, wholesale distribution, inventory, and co
 
 The product owner authorized implementation on 2026-08-04 and approved the operating baseline in `docs/adr/0005-approved-operating-policy-baseline.md`. The active scope now includes configurable staff licensing, dealer order intake, awaiting-stock handling, ledger-based inventory, reservations, transfers, consignment foundations, and read-only projection integrations. Remaining decisions listed in ADR 0005 are still gates; do not infer license duration, quotas, financial terms, compliance procedure, external destination identifiers, or production operations policy.
 
+The implemented order-intake boundary is recorded in `docs/adr/0007-dealer-order-intake.md`. It records commercial demand only: no submission or review command may imply a stock reservation, inventory movement, title transfer, quota entry, or settled price when those records do not exist.
+
 ## 2. Required reading
 
 Before implementation work, read the documents relevant to the task:

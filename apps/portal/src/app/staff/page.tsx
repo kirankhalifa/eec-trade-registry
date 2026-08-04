@@ -70,6 +70,9 @@ export default async function StaffCataloguePage({
           </p>
         </div>
         <div className="staff-button-row">
+          <Link className="button button-secondary" href="/staff/orders">
+            Order desk
+          </Link>
           <Link className="button button-secondary" href="/staff/licensing">
             Licensing office
           </Link>

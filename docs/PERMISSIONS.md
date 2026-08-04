@@ -91,12 +91,13 @@ Scope names are provisional; they should become stable machine identifiers befor
 
 ### Orders and allocation
 
-- `order.own.create`
-- `order.own.read`
+- Dealer grant scopes: `order.create`, `order.read`, `order.cancel`
+- `order.private.read`
 - `order.review`
 - `order.approve.ordinary`
 - `order.approve.restricted`
 - `order.approve.unique`
+- `order.price.edit`
 - `order.cancel`
 - `reservation.manage`
 - `quota.read`
@@ -175,6 +176,8 @@ The implemented initial role receives `license.private.read`, `license.issue`, `
 ### Order officer
 
 Can review and approve orders within an assigned control level and value/quantity limit, manage routine reservations, and cancel eligible unfulfilled lines.
+
+The implemented initial role receives `order.private.read`, `order.review`, `order.approve.ordinary`, `order.approve.restricted`, `order.approve.unique`, `order.price.edit`, and `order.cancel`. Each approval command resolves the exact control permission from stored line snapshots. Assignment limits and reservation authority are not yet implemented.
 
 ### Warehouse operator
 
@@ -411,9 +414,11 @@ There is no universal dual-control rule. Any active actor with the required perm
 - Sensitive actions may require stronger identity than catalogue viewing
 - Private URLs are not posted in public Discord channels or exported Sheets
 
-The implemented credential path grants authenticated dealer actors execute access only to `get_dealer_portal_overview()`. The function resolves current `party_representatives` rows with `portal.read`, requires a current authority-conferring dealer authorization, and returns only the represented organization's dealer and license summary. Direct party, representation, dealer, license, endorsement, and condition table reads remain denied.
+The implemented credential path grants authenticated dealer actors reachability to `get_dealer_portal_overview()` plus order reference/list/detail and submission/cancellation functions. Each function resolves the required `portal.read`, `order.read`, `order.create`, or `order.cancel` representative scope and a current authority-conferring dealer authorization. Order projections are organization-scoped and another dealer receives the same not-found behavior for an inaccessible order identifier. Direct party, representation, dealer, license, endorsement, condition, order, event, audit, and outbox table reads remain denied.
 
 The implemented licensing path grants authenticated callers reachability only to secured licensing projections and commands. Each function independently resolves an active staff actor, assignment, and exact permission. Direct license, history, audit, reference-sequence, and outbox table access remains denied.
+
+The implemented staff order path follows the same reachability model. Queue/detail calls require `order.private.read`; review, control-level approval, price editing, and cancellation resolve separate current permissions inside security-definer commands. Direct order tables remain denied even to authenticated staff.
 
 ### Integrations
 

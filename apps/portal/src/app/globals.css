@@ -950,6 +950,127 @@ button:focus-visible {
   line-height: 1.6;
 }
 
+.order-list,
+.order-detail-lines {
+  display: grid;
+  gap: 18px;
+  margin-top: 28px;
+}
+
+.order-card,
+.order-line-card {
+  padding: 26px;
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+
+.order-card > header,
+.order-line-card > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+
+.order-card h2,
+.order-line-card h2 {
+  margin: 10px 0 5px;
+  font-size: 1.8rem;
+}
+
+.order-card header p,
+.order-line-card header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.order-status {
+  display: inline-block;
+  padding: 5px 8px;
+  border: 1px solid currentColor;
+  color: #735b17;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.order-status-approved,
+.order-status-partially_approved,
+.order-status-ready,
+.order-status-fulfilled {
+  color: #246238;
+}
+
+.order-status-cancelled,
+.order-status-denied {
+  color: #8a2925;
+}
+
+.order-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 0 0 22px;
+}
+
+.order-facts div {
+  padding-left: 12px;
+  border-left: 2px solid var(--paper-deep);
+}
+
+.order-facts dt {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.order-facts dd {
+  margin: 6px 0 0;
+  font-size: 0.86rem;
+}
+
+.order-line-entry-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.order-line-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.order-line-actions {
+  display: grid;
+  gap: 18px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.order-line-actions > form {
+  padding: 20px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.order-policy-banner {
+  margin: 24px 0 0;
+  padding: 18px 22px;
+  border-left: 3px solid var(--gold);
+  background: var(--paper-deep);
+  color: var(--muted);
+  line-height: 1.6;
+}
+
 .verification-hero,
 .verification-page-header {
   padding: 76px 0 48px;
@@ -1577,7 +1698,8 @@ button:focus-visible {
   .dealer-license-row,
   .staff-license-endorsement,
   .staff-inline-action,
-  .staff-license-action-form {
+  .staff-license-action-form,
+  .order-line-entry {
     grid-template-columns: 1fr;
   }
 
@@ -1652,8 +1774,14 @@ button:focus-visible {
   .staff-form-grid,
   .staff-readonly-grid,
   .staff-item-facts,
-  .staff-checkbox-grid {
+  .staff-checkbox-grid,
+  .order-facts {
     grid-template-columns: 1fr;
+  }
+
+  .order-card > header,
+  .order-line-card > header {
+    flex-direction: column;
   }
 
   .verification-choices {

@@ -536,6 +536,8 @@ Remaining quota is derived. Repeated requests must not create duplicate entries.
 
 ## 8. Orders and reservations
 
+Implementation status: the first order-intake increment implements dealer requisition headers and lines, nullable price snapshots, control snapshots, append-only header/line events, version-checked staff review and price commands, dealer/staff cancellation, represented-party audit context, and durable outbox events. Submission deliberately creates no reservation, quota entry, inventory movement, custody event, or title transfer. Dealer-specific price schedules, eligibility rules, order drafts, assignments, overrides, reservations, and fulfillment remain future work.
+
 ### `orders`
 
 Commercial requisition header.
@@ -543,12 +545,12 @@ Commercial requisition header.
 Key fields:
 
 - `id`, `public_reference`
-- `ordering_party_id`, optional `dealer_authorization_id`
+- `ordering_party_id`, `dealer_authorization_id`
 - `license_id` nullable
 - `jurisdiction_id`
 - `fulfillment_mode` such as wholesale, consignment, institutional issue, or other configured mode
 - `status`
-- `currency_id`
+- configured `currency_code` snapshot
 - `submitted_at`, `requested_by_actor_id`
 - `assigned_to_actor_id`
 - `requested_fulfillment_at`
@@ -569,9 +571,9 @@ Key fields:
 
 Submitted line snapshots preserve the decision context but do not replace current validation for later consequential transitions.
 
-### `order_status_events`
+### `order_status_events` and `order_line_events`
 
-Append-only header and line transition history, with actor, reason, previous/new state, and correlation ID.
+Append-only header and line transition history, with actor, represented party where applicable, reason, previous/new state, and request ID. The current line row is a versioned operational projection; accepted submission, review, price, and cancellation events remain immutable evidence.
 
 ### `approvals`
 
