@@ -100,6 +100,8 @@ Key fields:
 
 An actor is not necessarily a legal or commercial party. A representative may authenticate as an actor while acting for an organization party.
 
+Implementation note: actor profiles currently support the stable machine types `staff` and `dealer`. User-facing role and organization titles remain configuration records.
+
 ### `staff_roles`
 
 Configurable role definitions with stable permission bundles or references to permission scopes.
@@ -137,6 +139,8 @@ Key fields:
 - `status`, `verified_at`, `verified_by`
 
 At least one representative identity is required. The authorization function must validate both dates and scope.
+
+Implementation note: the credential-based dealer portal implements actor-linked representative grants, configurable representative roles, JSON scope with `portal.read`, effective dates, revocation, verification time, overlap protection, audit triggers, and a secured organization-scoped overview. Representative-party and private-link exchange paths remain future work.
 
 ### `portal_access_grants`
 

@@ -2,7 +2,7 @@
 
 A configurable trade, licensing, wholesale distribution, inventory, and compliance platform. Supabase PostgreSQL is the sole authoritative data source; the web portal and future integrations are projections of its records.
 
-The active implementation includes the unauthenticated public catalogue, policy-neutral staff catalogue management, and exact-reference public dealer and license verification. Dealer sessions, license application and issuance workflows, ordering, warehouse inventory, Discord, and Google Sheets remain documented but unimplemented.
+The active implementation includes the unauthenticated public catalogue, policy-neutral staff catalogue management, exact-reference public dealer and license verification, and a credential-based read-only dealer portal with effective-dated representation. Secure-link exchange, license application and issuance workflows, ordering, warehouse inventory, Discord, and Google Sheets remain documented but unimplemented.
 
 ## Repository layout
 
@@ -84,3 +84,46 @@ After `npm run db:reset`, the public verification pages are available at:
 - `http://127.0.0.1:3000/verify/license` with fictional reference `LIC-DEMO-4Q2M`
 
 These are demonstration records, not approved institutional terminology or policy. Public lookups use exact references and return the same `not_verifiable` contract for unknown, malformed, private, and unpublished records. Production launch still requires edge rate limiting and abuse monitoring.
+
+## Local dealer access
+
+The dealer portal is available at `http://127.0.0.1:3000/dealer/login`. Authentication alone grants no organization access.
+
+For local development only:
+
+1. Create an email/password user in local Supabase Studio and copy its user UUID.
+2. In the local SQL editor, link that identity to the fictional seeded dealer:
+
+```sql
+with created_actor as (
+  insert into public.actor_profiles (
+    auth_user_id,
+    display_name,
+    actor_type
+  )
+  values (
+    '<AUTH_USER_UUID>',
+    'Local Dealer Representative',
+    'dealer'
+  )
+  returning id
+)
+insert into public.party_representatives (
+  principal_party_id,
+  actor_id,
+  role_definition_id,
+  authority_scope,
+  verified_at
+)
+select
+  '92000000-0000-0000-0000-000000000001',
+  created_actor.id,
+  role.id,
+  '{"portal.read": true}'::jsonb,
+  now()
+from created_actor
+join public.representative_role_definitions as role
+  on role.code = 'portal-representative';
+```
+
+The credential path is intentionally read-only. Production enrollment, recovery, revocation operations, magic links, and secure private-link exchange require approved administrative workflows.

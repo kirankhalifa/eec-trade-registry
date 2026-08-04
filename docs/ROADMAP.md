@@ -118,7 +118,7 @@ Authorized staff can maintain the master catalogue, prices, publication, and con
 
 ## 5. Slice 3 — Parties, dealers, and licensing
 
-Implementation status: The public-verification increment provides configurable jurisdictions, party and dealer types, public-disclosure controls, dealer and license status definitions, license classes, modular endorsements, public conditions, exact-reference privacy-safe functions, and dealer/license pages. Staff administration, representation, applications, issuance, renewal, suspension, reinstatement, revocation, surrender, factor assignments, and production abuse controls remain gated by the decisions below.
+Implementation status: The public-verification increment provides configurable jurisdictions, party and dealer types, public-disclosure controls, dealer and license status definitions, license classes, modular endorsements, public conditions, exact-reference privacy-safe functions, and dealer/license pages. The credential-access increment adds dealer actor identities, configurable representative roles, effective-dated scoped representation, cross-organization isolation, and a private read-only registry overview. Staff administration, secure-link exchange, applications, issuance, renewal, suspension, reinstatement, revocation, surrender, factor assignments, and production abuse controls remain gated by the decisions below.
 
 ### User outcome
 
@@ -152,6 +152,8 @@ Staff can authorize dealers and issue real licenses with modular endorsements; t
 - Dealer representative access cannot cross organization boundaries.
 
 ## 6. Slice 4 — Dealer catalogue and wholesale ordering
+
+Implementation status: Lightweight Supabase credential sessions, effective-dated `portal.read` representation, current dealer-authorization checks, and the private read-only organization registry overview are implemented. Dealer-specific catalogue evaluation, price schedules, requisitions, orders, quotas, approvals, and notification outbox records remain policy-gated.
 
 ### User outcome
 
