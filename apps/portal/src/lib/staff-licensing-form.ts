@@ -10,9 +10,9 @@ const codeSchema = z
 const reasonSchema = z.string().trim().min(1).max(500);
 
 const issueLicenseSchema = z.object({
-  dealerAuthorizationId: z.string().uuid().nullable(),
+  dealerAuthorizationId: z.guid().nullable(),
   endorsementCodes: z.array(codeSchema).max(30),
-  holderPartyId: z.string().uuid(),
+  holderPartyId: z.guid(),
   initialStatusCode: z.enum(["active", "provisional"]),
   jurisdictionCode: codeSchema,
   licenseClassCode: codeSchema,
@@ -24,7 +24,7 @@ const issueLicenseSchema = z.object({
 
 const changeStatusSchema = z.object({
   expectedVersion: z.coerce.number().int().positive().safe(),
-  licenseId: z.string().uuid(),
+  licenseId: z.guid(),
   reason: reasonSchema,
   targetStatusCode: z.enum(["active", "suspended", "revoked", "surrendered"]),
 });
@@ -32,15 +32,15 @@ const changeStatusSchema = z.object({
 const grantEndorsementSchema = z.object({
   endorsementCode: codeSchema,
   expectedLicenseVersion: z.coerce.number().int().positive().safe(),
-  licenseId: z.string().uuid(),
+  licenseId: z.guid(),
   publicDisclosureEnabled: z.boolean(),
   reason: reasonSchema,
 });
 
 const revokeEndorsementSchema = z.object({
   expectedLicenseVersion: z.coerce.number().int().positive().safe(),
-  licenseEndorsementId: z.string().uuid(),
-  licenseId: z.string().uuid(),
+  licenseEndorsementId: z.guid(),
+  licenseId: z.guid(),
   reason: reasonSchema,
 });
 

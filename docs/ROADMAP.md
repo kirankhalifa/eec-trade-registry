@@ -190,6 +190,8 @@ An authenticated dealer can see applicable terms, submit a requisition, and trac
 
 ## 7. Slice 5 — Reservations and warehouse ledger
 
+Implementation status: the first increment configures the EEC warehouse and locations without inventing opening stock; adds physical/external accounts, balanced immutable fungible receipts, linked reversals, ledger-derived positions, warehouse-scoped staff roles, and atomic 48-hour reservation creation, extension, release, and expiry coupled to order-line/header state. Serialized receipt, reservation consumption, picking, fulfillment, returns, counts, adjustments, reconciliation, scheduled expiry execution, and low-stock projections remain future work.
+
 ### User outcome
 
 Staff can receive, reserve, fulfill, transfer, and reconcile stock with a complete ledger trail; dealers see reliable reservation and collection status.

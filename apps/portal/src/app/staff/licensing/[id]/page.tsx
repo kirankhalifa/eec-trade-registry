@@ -39,7 +39,7 @@ export default async function LicenseDetailPage({
   searchParams,
 }: LicenseDetailPageProps) {
   const [{ id }, parameters] = await Promise.all([params, searchParams]);
-  if (!z.string().uuid().safeParse(id).success) {
+  if (!z.guid().safeParse(id).success) {
     notFound();
   }
 

@@ -1679,6 +1679,168 @@ button:focus-visible {
   line-height: 1.6;
 }
 
+.inventory-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin: 22px 0;
+}
+
+.inventory-summary article {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.inventory-summary span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.inventory-summary strong {
+  color: var(--brand-deep);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.8rem;
+}
+
+.inventory-command-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin: 24px 0 34px;
+}
+
+.inventory-command-card {
+  display: grid;
+  align-content: start;
+  gap: 22px;
+  margin: 0;
+  padding: 26px;
+}
+
+.inventory-command-card h2,
+.inventory-section h2,
+.inventory-reservation-card h3,
+.inventory-transaction-card h3 {
+  margin: 4px 0 8px;
+  color: var(--brand-deep);
+  font-family: var(--font-display), Georgia, serif;
+}
+
+.inventory-command-card p,
+.inventory-section-heading > p,
+.inventory-reservation-card > p,
+.inventory-transaction-card p,
+.inventory-transaction-card small {
+  margin: 0;
+  color: var(--muted);
+}
+
+.inventory-command-form {
+  display: grid;
+  gap: 14px;
+}
+
+.inventory-section {
+  margin: 28px 0;
+  padding: 26px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.inventory-section-heading,
+.inventory-reservation-card > header,
+.inventory-transaction-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 22px;
+}
+
+.inventory-table-wrap {
+  margin-top: 18px;
+  overflow-x: auto;
+}
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.inventory-table th,
+.inventory-table td {
+  padding: 13px 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.inventory-table th {
+  color: var(--muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.inventory-table td small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+}
+
+.inventory-reservation-list,
+.inventory-transaction-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.inventory-reservation-card,
+.inventory-transaction-card {
+  padding: 20px;
+  border: 1px solid var(--line);
+  background: var(--paper-deep);
+}
+
+.inventory-reservation-card > header strong {
+  color: var(--brand-deep);
+  font-size: 1.15rem;
+}
+
+.inventory-reservation-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.inventory-reservation-actions form,
+.inventory-transaction-card form {
+  display: grid;
+  align-content: end;
+  gap: 10px;
+}
+
+.order-status-elapsed {
+  border-color: #9a6a1f;
+  color: #7c5012;
+  background: #fff3d8;
+}
+
+.order-status-released,
+.order-status-expired {
+  border-color: #777;
+  color: #555;
+  background: #eee;
+}
+
 @media (max-width: 900px) {
   .hero,
   .card-body,
@@ -1686,6 +1848,11 @@ button:focus-visible {
   .staff-item-row,
   .staff-danger-zone {
     grid-template-columns: 1fr;
+  }
+
+  .inventory-summary,
+  .inventory-command-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .dealer-page-header,
@@ -1780,8 +1947,16 @@ button:focus-visible {
   }
 
   .order-card > header,
-  .order-line-card > header {
+  .order-line-card > header,
+  .inventory-section-heading,
+  .inventory-transaction-card {
     flex-direction: column;
+  }
+
+  .inventory-summary,
+  .inventory-command-grid,
+  .inventory-reservation-actions {
+    grid-template-columns: 1fr;
   }
 
   .verification-choices {

@@ -18,7 +18,7 @@ function destination(path: string, key: "error" | "notice", value: string) {
 }
 
 function licensePath(candidate: FormDataEntryValue | null): string {
-  return typeof candidate === "string" && z.string().uuid().safeParse(candidate).success
+  return typeof candidate === "string" && z.guid().safeParse(candidate).success
     ? `/staff/licensing/${candidate}`
     : "/staff/licensing";
 }

@@ -123,7 +123,7 @@ export async function updateCatalogueItemAction(formData: FormData) {
   const parsed = readUpdateCatalogueItemForm(formData);
   const fallbackId = formData.get("item_id");
   const fallbackPath =
-    typeof fallbackId === "string" && z.string().uuid().safeParse(fallbackId).success
+    typeof fallbackId === "string" && z.guid().safeParse(fallbackId).success
       ? `/staff/items/${fallbackId}/edit`
       : "/staff";
   if (!parsed.success) {
@@ -160,7 +160,7 @@ export async function setCatalogueItemStatusAction(formData: FormData) {
   const parsed = readSetCatalogueStatusForm(formData);
   const fallbackId = formData.get("item_id");
   const fallbackPath =
-    typeof fallbackId === "string" && z.string().uuid().safeParse(fallbackId).success
+    typeof fallbackId === "string" && z.guid().safeParse(fallbackId).success
       ? `/staff/items/${fallbackId}/edit`
       : "/staff";
   if (!parsed.success) {

@@ -20,7 +20,7 @@ interface StaffOrderDetailProps {
 
 export default async function StaffOrderDetail({ params, searchParams }: StaffOrderDetailProps) {
   const [{ id }, parameters] = await Promise.all([params, searchParams]);
-  if (!z.string().uuid().safeParse(id).success) notFound();
+  if (!z.guid().safeParse(id).success) notFound();
   const { client } = await requireStaffSession();
   const result = await getStaffOrder(client, id);
   if (!result.ok && result.code === "access_denied") {

@@ -2,7 +2,7 @@
 
 A configurable trade, licensing, wholesale distribution, inventory, and compliance platform. Supabase PostgreSQL is the sole authoritative data source; the web portal and future integrations are projections of its records.
 
-The active implementation includes the unauthenticated public catalogue, staff catalogue management, exact-reference public dealer and license verification, credential-based dealer access with effective-dated representation, an audited staff licensing office, and wholesale order intake. Dealers can submit and track requisitions without price or stock on hand; authorized staff can review each control level, record partial or awaiting-stock decisions, edit nullable prices, and cancel unfulfilled orders. Applications, renewal, reservations, fulfillment, warehouse inventory, external Discord delivery, and Google Sheets delivery remain documented but unimplemented.
+The active implementation includes the unauthenticated public catalogue, staff catalogue management, exact-reference public dealer and license verification, credential-based dealer access with effective-dated representation, an audited staff licensing office, wholesale order intake, and the first warehouse-ledger increment. Dealers can submit and track requisitions without price or stock on hand; authorized staff can review them, post balanced fungible receipts, derive on-hand/available positions, and create, extend, release, or expire 48-hour stock reservations. Applications, renewal, serialized-asset receipt, fulfillment, transfers, reconciliation, external Discord delivery, and Google Sheets delivery remain documented but unimplemented.
 
 ## Repository layout
 
@@ -144,3 +144,9 @@ Licensing commands allocate references, record immutable status/endorsement hist
 The staff order desk is available at `http://127.0.0.1:3000/staff/orders`. A staff login also needs the configurable `order_officer` role. For disposable local development, follow the staff bootstrap pattern above and select `order_officer` instead of `catalogue_manager`.
 
 The role contains separate read, routine review, ordinary, restricted, unique, price-edit, and cancellation permissions. The current desk never derives stock in the browser and cannot create a reservation or inventory movement.
+
+## Local inventory access
+
+The inventory desk is available at `http://127.0.0.1:3000/staff/inventory`. For disposable local development, follow the staff bootstrap pattern and select `warehouse_operator` for receipt and routine reservation work, or `inventory_controller` for linked receipt reversals as well.
+
+An empty `assignment_scope` grants the role across configured warehouses. To restrict an assignment, set `assignment_scope` to `{"warehouse_ids":["<WAREHOUSE_UUID>"]}`. The seeded primary warehouse UUID is `aa000000-0000-0000-0000-000000000001`; no opening balance is seeded. Use the receipt command so every quantity originates in the immutable ledger.
