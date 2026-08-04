@@ -6,7 +6,7 @@ This file applies to the entire repository. Read it before planning or changing 
 
 Build a configurable trade, licensing, wholesale distribution, inventory, and compliance platform. Preserve institutional auditability without hard-coding setting-specific terminology when configuration will work.
 
-The current repository phase is documentation foundation only. Do not implement the application until the product owner reviews the specification and resolves the policy decisions required for the first roadmap slice.
+The product owner authorized implementation on 2026-08-04. The active scope is the public catalogue foundation in `docs/ROADMAP.md`: canonical catalogue records, public pricing and presentation, a privacy-safe public projection, and an unauthenticated catalogue portal. Dealer access, licensing, orders, reservations, inventory, integrations, and compliance remain out of scope until their policy gates are resolved.
 
 ## 2. Required reading
 
