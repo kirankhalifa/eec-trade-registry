@@ -1,6 +1,6 @@
 # EEC Trade Registry — Product Specification
 
-Status: Documentation foundation  
+Status: Documentation foundation with implementation in progress
 Audience: Product owner, operations leads, designers, engineers, and reviewers  
 Authority: This document describes intended product behavior. Supabase PostgreSQL remains the sole authoritative data source at runtime.
 
@@ -10,7 +10,7 @@ The EEC Trade Registry is a configurable platform for administering a trading in
 
 The platform must feel like one coherent institution to the public, dealers, regional factors, and staff while maintaining a precise, auditable record underneath. It replaces duplicated catalogues and informal spreadsheets with one master catalogue and policy-driven access, pricing, allocation, and custody rules.
 
-This repository begins with documentation only. No application implementation is in scope for this foundation.
+Implementation proceeds through the policy-gated vertical slices in `ROADMAP.md`. The documentation remains the governing product boundary rather than a promise that every described domain is already implemented.
 
 ## 2. Product principles
 

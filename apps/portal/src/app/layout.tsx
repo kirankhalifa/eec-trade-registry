@@ -31,10 +31,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             </span>
           </Link>
           <nav aria-label="Primary navigation">
-            <Link aria-current="page" href="/">
-              Catalogue
-            </Link>
+            <Link href="/">Catalogue</Link>
             <span aria-disabled="true">Verification coming later</span>
+            <Link href="/staff/login">Staff access</Link>
           </nav>
         </header>
         {children}
