@@ -185,6 +185,8 @@ One authoritative issuance command:
 8. Writes outbox events for documents and notifications.
 9. Commits or rolls back as a unit.
 
+Implementation note: the first staff lifecycle increment implements direct staff issuance to an existing active party, transactional reference allocation, initial endorsements, status history, audit, and outbox work. The UI leaves the term open because duration policy is unresolved. Application approval and issuance-from-application remain distinct future work and cannot be inferred from this direct staff path.
+
 ### License states
 
 ```text
@@ -214,6 +216,8 @@ Exact allowed paths, grace behavior, and whether expiration is stored by a sched
 - It does not silently delete orders, reservations, or custody history.
 - Reinstatement is an explicit transition with its own authority and reason.
 - Surrender is holder-initiated only if policy permits and may be blocked by outstanding custody or compliance obligations.
+
+Implementation note: authorized staff can now activate a provisional license, suspend, reinstate, revoke, or record surrender through version-checked secure functions. Revoked and surrendered states are terminal. Every command requires its own permission and reason; there is no universal second-approver requirement.
 
 ## 6. Endorsement change
 
