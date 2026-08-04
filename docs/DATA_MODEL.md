@@ -214,6 +214,8 @@ Business records should store the policy or rule version used when reproducibili
 
 ## 5. Parties, dealers, and factors
 
+Implementation status: the public-verification increment implements jurisdictions, party types, protected party source records, dealer types, configurable dealer statuses, and effective-dated dealer authorizations. Contacts, external identities, representatives, factors, standing, and staff mutation commands remain future policy-gated work.
+
 ### `parties`
 
 One record per person, organization, public institution, or system-recognized commercial entity.
@@ -300,6 +302,8 @@ Key fields:
 Standing is private by default and must not be returned by public verification functions.
 
 ## 6. Licensing
+
+Implementation status: the public-verification increment implements configurable license classes and statuses, issued-license source records, modular endorsement grants, public/private conditions, and narrow exact-reference projections. Applications, reviews, status-event commands, and issuance or lifecycle operations remain future policy-gated work.
 
 ### `license_classes`
 
@@ -834,7 +838,7 @@ Expected projections include:
 - `staff_inventory_position_v`
 - `staff_work_queue_v`
 
-Names are provisional. Public functions return a fixed response shape and indistinguishable not-found/private-record behavior as required by policy.
+The implemented public functions are `public_license_verification(text)` and `public_dealer_verification(text)`. They return one fixed response row and indistinguishable unknown, malformed, unpublished, private-record, and non-public-status behavior. Other names remain provisional.
 
 ## 13. Cross-domain invariants
 

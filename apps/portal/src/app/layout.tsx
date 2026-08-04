@@ -32,7 +32,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </Link>
           <nav aria-label="Primary navigation">
             <Link href="/">Catalogue</Link>
-            <span aria-disabled="true">Verification coming later</span>
+            <Link href="/verify">Verification</Link>
             <Link href="/staff/login">Staff access</Link>
           </nav>
         </header>

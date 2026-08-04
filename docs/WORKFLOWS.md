@@ -1,6 +1,6 @@
 # EEC Trade Registry — Workflows and State Transitions
 
-Status: Documentation foundation  
+Status: Documentation foundation with public catalogue, staff draft management, and public verification implemented
 Purpose: Define user journeys, authoritative transitions, failure behavior, and audit expectations without prescribing an application implementation.
 
 ## 1. Workflow rules
@@ -85,7 +85,7 @@ Let a public visitor confirm whether a supplied public reference identifies an a
 ### Flow
 
 1. Visitor enters a license or dealer public reference.
-2. Portal normalizes the format and applies rate limiting.
+2. Portal normalizes case and whitespace without imposing a deployment-specific numbering format. The deployment edge must apply approved rate limiting before production use.
 3. A public verification function returns one fixed response contract.
 4. The result shows only approved fields: reference, public holder or organization name, class/type, public endorsements, jurisdiction, validity, expiration where allowed, and public conditions or notices.
 5. The result includes verification time and a non-authoritative explanation of status.
@@ -100,6 +100,8 @@ Let a public visitor confirm whether a supplied public reference identifies an a
 - `not_verifiable`
 
 `not_verifiable` covers nonexistent, private, malformed, or non-public records when policy requires non-enumeration.
+
+Implementation note: the initial function always returns one row. A miss contains the result code and verification time but no stored reference or record fields. Public labels and status-to-result mappings are configuration records. An elapsed authorization or license term cannot report current authority even if its stored status has not yet been advanced by a scheduled process.
 
 ### Rules
 

@@ -1,6 +1,6 @@
 # EEC Trade Registry — Product Specification
 
-Status: Documentation foundation with implementation in progress
+Status: Documentation foundation with catalogue, staff draft management, and public verification implementation in progress
 Audience: Product owner, operations leads, designers, engineers, and reviewers  
 Authority: This document describes intended product behavior. Supabase PostgreSQL remains the sole authoritative data source at runtime.
 

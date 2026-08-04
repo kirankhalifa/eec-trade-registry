@@ -1,6 +1,6 @@
 # EEC Trade Registry — Permissions and Data Exposure
 
-Status: Documentation foundation  
+Status: Documentation foundation with narrow public catalogue and verification grants implemented
 Security model: Deny by default, least privilege, scoped authority, and PostgreSQL row-level security
 
 ## 1. Principles
@@ -335,6 +335,8 @@ It must not include application answers, private contacts, internal standing, st
 - Authorization result and term if approved
 - Approved license summary or link
 - Public notices
+
+The implemented anonymous surface is limited to `public_dealer_verification(text)` and `public_license_verification(text)`. Anonymous and ordinary authenticated callers have no direct table access. Both functions use exact normalized references, fixed response contracts, and record-level public-disclosure flags. Production rate limiting remains an edge and operations requirement rather than database business state.
 
 ### Dealer portal may include
 
