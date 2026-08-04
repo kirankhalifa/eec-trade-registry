@@ -266,7 +266,7 @@ security definer
 set search_path = ''
 as $$
 declare
-  authorization record;
+  permission_grant record;
   normalized_reason text;
 begin
   normalized_reason := btrim(coalesce(p_reason, ''));
@@ -282,11 +282,15 @@ begin
       message = 'request_id_required';
   end if;
 
-  select * into strict authorization
+  select * into strict permission_grant
   from private.require_staff_permission(p_permission_code);
 
-  perform set_config('app.actor_id', authorization.actor_id::text, true);
-  perform set_config('app.staff_assignment_id', authorization.staff_assignment_id::text, true);
+  perform set_config('app.actor_id', permission_grant.actor_id::text, true);
+  perform set_config(
+    'app.staff_assignment_id',
+    permission_grant.staff_assignment_id::text,
+    true
+  );
   perform set_config('app.permission_code', p_permission_code, true);
   perform set_config('app.audit_reason', normalized_reason, true);
   perform set_config('app.request_id', p_request_id::text, true);
@@ -297,7 +301,7 @@ begin
     true
   );
 
-  return authorization.actor_id;
+  return permission_grant.actor_id;
 end;
 $$;
 
