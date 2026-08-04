@@ -170,6 +170,8 @@ The initial Slice 2 implementation grants the configurable `catalogue_manager` r
 
 Can review applications, issue or renew within assigned authority, grant ordinary endorsements, and manage routine conditions. Suspension, revocation, or exceptional endorsements may require senior or compliance approval.
 
+The implemented initial role receives `license.private.read`, `license.issue`, `license.activate`, `license.suspend`, `license.reinstate`, `license.revoke`, `license.surrender.record`, and `endorsement.manage`. Each command resolves its exact permission at execution time. Renewal, conditions, application review, limits, and action-specific secondary approval are not yet granted.
+
 ### Order officer
 
 Can review and approve orders within an assigned control level and value/quantity limit, manage routine reservations, and cancel eligible unfulfilled lines.
@@ -410,6 +412,8 @@ There is no universal dual-control rule. Any active actor with the required perm
 - Private URLs are not posted in public Discord channels or exported Sheets
 
 The implemented credential path grants authenticated dealer actors execute access only to `get_dealer_portal_overview()`. The function resolves current `party_representatives` rows with `portal.read`, requires a current authority-conferring dealer authorization, and returns only the represented organization's dealer and license summary. Direct party, representation, dealer, license, endorsement, and condition table reads remain denied.
+
+The implemented licensing path grants authenticated callers reachability only to secured licensing projections and commands. Each function independently resolves an active staff actor, assignment, and exact permission. Direct license, history, audit, reference-sequence, and outbox table access remains denied.
 
 ### Integrations
 

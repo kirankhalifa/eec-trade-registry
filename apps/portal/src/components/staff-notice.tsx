@@ -2,16 +2,20 @@ const notices: Record<string, string> = {
   active: "The item is active again.",
   archived: "The item was archived and removed from public results.",
   created: "The canonical item was created as an unpublished record.",
+  endorsement_granted: "The endorsement was granted and recorded in license history.",
+  endorsement_revoked: "The endorsement was revoked without deleting its history.",
+  license_issued: "The license was issued and its public reference was allocated.",
+  license_status_changed: "The license status decision was recorded.",
   saved: "The catalogue record was saved.",
 };
 
 const errors: Record<string, string> = {
   access_denied: "Your current staff assignment does not permit that action.",
   conflict:
-    "Another staff member changed this item first. Review the current values before saving again.",
+    "Another staff member changed this record first. Review the current values before saving again.",
   duplicate: "That item code or public slug is already in use.",
   invalid_input: "Review the form fields and provide a clear audit reason.",
-  not_found: "The catalogue item no longer exists.",
+  not_found: "The requested authoritative record no longer exists.",
   save_failed: "The change could not be saved. No authoritative data was changed.",
 };
 

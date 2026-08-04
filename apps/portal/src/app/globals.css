@@ -700,6 +700,17 @@ button:focus-visible {
   color: var(--brand);
 }
 
+.staff-status-provisional,
+.staff-status-suspended {
+  color: #735b17;
+}
+
+.staff-status-revoked,
+.staff-status-surrendered,
+.staff-status-expired {
+  color: #8a2925;
+}
+
 .staff-item-facts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -818,6 +829,125 @@ button:focus-visible {
 .staff-status-form {
   display: grid;
   gap: 14px;
+}
+
+.staff-checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.staff-checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.staff-checkbox-field input {
+  width: 18px;
+  min-height: 18px;
+  margin: 0;
+}
+
+.staff-license-section {
+  margin-top: 28px;
+  padding: 30px;
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+
+.staff-license-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.staff-license-section-heading h2,
+.staff-license-endorsement h3 {
+  margin: 0;
+  color: var(--brand-deep);
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 500;
+}
+
+.staff-license-section-heading h2 {
+  font-size: 2rem;
+}
+
+.staff-license-section-heading > span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.staff-license-endorsements {
+  display: grid;
+  gap: 12px;
+}
+
+.staff-license-endorsement {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(360px, 1.2fr);
+  gap: 24px;
+  align-items: end;
+  padding: 20px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.staff-license-endorsement h3 {
+  font-size: 1.35rem;
+}
+
+.staff-license-endorsement p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.staff-inline-action,
+.staff-license-action-form {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.staff-license-action-form {
+  margin-top: 22px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.staff-license-notes {
+  display: grid;
+  gap: 18px;
+  margin: 0;
+}
+
+.staff-license-notes div {
+  padding-left: 14px;
+  border-left: 2px solid var(--paper-deep);
+}
+
+.staff-license-notes dt {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.staff-license-notes dd {
+  margin: 7px 0 0;
+  line-height: 1.6;
 }
 
 .verification-hero,
@@ -1444,7 +1574,10 @@ button:focus-visible {
   }
 
   .dealer-record-grid,
-  .dealer-license-row {
+  .dealer-license-row,
+  .staff-license-endorsement,
+  .staff-inline-action,
+  .staff-license-action-form {
     grid-template-columns: 1fr;
   }
 
@@ -1518,7 +1651,8 @@ button:focus-visible {
   .staff-search,
   .staff-form-grid,
   .staff-readonly-grid,
-  .staff-item-facts {
+  .staff-item-facts,
+  .staff-checkbox-grid {
     grid-template-columns: 1fr;
   }
 

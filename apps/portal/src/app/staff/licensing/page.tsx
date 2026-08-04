@@ -5,11 +5,11 @@ import { StaffAccessDenied } from "@/components/staff-access-denied";
 import { StaffNotice } from "@/components/staff-notice";
 import { getDefaultLocale, readPublicSupabaseEnvironment } from "@/lib/env";
 import { requireStaffSession } from "@/lib/staff-auth";
-import { getStaffCatalogueItems } from "@/lib/staff-catalogue";
+import { getStaffLicenses } from "@/lib/staff-licensing";
 
 export const dynamic = "force-dynamic";
 
-interface StaffCataloguePageProps {
+interface StaffLicensingPageProps {
   searchParams: Promise<{
     error?: string;
     notice?: string;
@@ -17,9 +17,9 @@ interface StaffCataloguePageProps {
   }>;
 }
 
-export default async function StaffCataloguePage({
+export default async function StaffLicensingPage({
   searchParams,
-}: StaffCataloguePageProps) {
+}: StaffLicensingPageProps) {
   const parameters = await searchParams;
   const search = parameters.q?.trim().slice(0, 100) || undefined;
 
@@ -27,7 +27,7 @@ export default async function StaffCataloguePage({
     return (
       <main className="staff-main">
         <section className="notice-panel">
-          <p className="eyebrow">Staff catalogue unavailable</p>
+          <p className="eyebrow">Staff licensing unavailable</p>
           <h1>Supabase is not configured</h1>
           <p>No secondary data source is used when the registry is unavailable.</p>
         </section>
@@ -36,7 +36,7 @@ export default async function StaffCataloguePage({
   }
 
   const { client } = await requireStaffSession();
-  const result = await getStaffCatalogueItems(client, search);
+  const result = await getStaffLicenses(client, search);
   if (!result.ok && result.code === "access_denied") {
     return (
       <main className="staff-main">
@@ -48,8 +48,8 @@ export default async function StaffCataloguePage({
     return (
       <main className="staff-main">
         <section className="notice-panel">
-          <p className="eyebrow">Staff catalogue unavailable</p>
-          <h1>The work queue could not be loaded</h1>
+          <p className="eyebrow">Staff licensing unavailable</p>
+          <h1>The licensing queue could not be loaded</h1>
           <p>No authoritative data was changed. Try again after the registry recovers.</p>
         </section>
       </main>
@@ -62,19 +62,19 @@ export default async function StaffCataloguePage({
     <main className="staff-main">
       <header className="staff-page-header">
         <div>
-          <p className="eyebrow">Authenticated staff · catalogue management</p>
-          <h1>Canonical item work queue</h1>
+          <p className="eyebrow">Authenticated staff · licensing office</p>
+          <h1>License work queue</h1>
           <p>
-            Maintain internal source records. Publication and price changes are
-            visible for context but remain read-only until their policies are approved.
+            Issue configured authority, manage modular endorsements, and record
+            lifecycle decisions through audited Supabase commands.
           </p>
         </div>
         <div className="staff-button-row">
-          <Link className="button button-secondary" href="/staff/licensing">
-            Licensing office
+          <Link className="button button-secondary" href="/staff">
+            Catalogue desk
           </Link>
-          <Link className="button button-primary" href="/staff/items/new">
-            New canonical item
+          <Link className="button button-primary" href="/staff/licensing/new">
+            Issue license
           </Link>
           <form action={signOutAction}>
             <button className="button button-secondary" type="submit">
@@ -88,12 +88,12 @@ export default async function StaffCataloguePage({
 
       <form className="staff-search" method="get" role="search">
         <label className="field">
-          <span>Search internal catalogue</span>
+          <span>Search licenses</span>
           <input
             defaultValue={search}
             maxLength={100}
             name="q"
-            placeholder="Item code, source name, or slug"
+            placeholder="Reference, holder, or class"
             type="search"
           />
         </label>
@@ -101,58 +101,52 @@ export default async function StaffCataloguePage({
           Search
         </button>
         {search && (
-          <Link className="button button-secondary" href="/staff">
+          <Link className="button button-secondary" href="/staff/licensing">
             Clear
           </Link>
         )}
       </form>
 
       <p className="result-count">
-        {result.data.length} internal record{result.data.length === 1 ? "" : "s"}
+        {result.data.length} license record{result.data.length === 1 ? "" : "s"}
       </p>
 
-      <section className="staff-item-list" aria-label="Canonical catalogue records">
-        {result.data.map((item) => (
-          <article className="staff-item-row" key={item.id}>
+      <section className="staff-item-list" aria-label="License records">
+        {result.data.map((license) => (
+          <article className="staff-item-row" key={license.id}>
             <div className="staff-item-identity">
               <div className="staff-status-row">
-                <span className={`staff-status staff-status-${item.status}`}>
-                  {item.status}
+                <span className={`staff-status staff-status-${license.status_code}`}>
+                  {license.status_label}
                 </span>
-                <span>{item.category_name}</span>
+                <span>{license.license_class_label}</span>
               </div>
-              <h2>{item.display_name}</h2>
-              <p>
-                {item.item_code} · /{item.slug}
-              </p>
+              <h2>{license.holder_name}</h2>
+              <p>{license.public_reference}</p>
             </div>
             <dl className="staff-item-facts">
               <div>
-                <dt>Public presentation</dt>
-                <dd>{item.public_name ?? "Not published"}</dd>
+                <dt>Jurisdiction</dt>
+                <dd>{license.jurisdiction_label}</dd>
               </div>
               <div>
-                <dt>Publication state</dt>
-                <dd>{item.publication_status ?? "None"}</dd>
+                <dt>Dealer authority</dt>
+                <dd>{license.dealer_reference ?? "Not linked"}</dd>
               </div>
               <div>
-                <dt>Public price</dt>
-                <dd>
-                  {item.price_amount_minor === null
-                    ? "Not configured"
-                    : `${item.currency_code ?? "Currency"} · configured`}
-                </dd>
+                <dt>Endorsements</dt>
+                <dd>{license.endorsements.filter((item) => !item.revoked_at).length}</dd>
               </div>
               <div>
-                <dt>Last source update</dt>
-                <dd>{new Date(item.updated_at).toLocaleString(locale)}</dd>
+                <dt>Last update</dt>
+                <dd>{new Date(license.updated_at).toLocaleString(locale)}</dd>
               </div>
             </dl>
             <Link
               className="button button-secondary"
-              href={`/staff/items/${item.id}/edit`}
+              href={`/staff/licensing/${license.id}`}
             >
-              Review record
+              Review license
             </Link>
           </article>
         ))}
@@ -160,9 +154,9 @@ export default async function StaffCataloguePage({
 
       {result.data.length === 0 && (
         <section className="empty-state">
-          <p className="eyebrow">No internal records found</p>
-          <h2>Try another search</h2>
-          <p>The query is evaluated by the authorized Supabase projection.</p>
+          <p className="eyebrow">No licenses found</p>
+          <h2>The queue is clear</h2>
+          <p>Try another search or issue a new configured license.</p>
         </section>
       )}
     </main>
