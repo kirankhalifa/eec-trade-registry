@@ -283,11 +283,13 @@ Final machine state names will be fixed before migrations. User-facing wording r
 1. Dealer creates a draft for a represented organization.
 2. Dealer adds items and quantities. The UI displays current estimates.
 3. Dealer selects fulfillment mode, destination or collection preference, and supplies required justification.
-4. `submit_order` revalidates representative scope, dealer and license standing, item publication, control requirements, price, order increments, quota, circulation ceiling, and policy.
+4. The mature submission command revalidates representative scope, dealer and license standing, item publication, control requirements, price, order increments, quota, circulation ceiling, and policy.
 5. The function records price and rule snapshots, determines each line's review path, creates quota holds if policy requires, writes history/audit, and commits.
 6. Notifications are queued after commit.
 
 Submission does not create physical inventory movement or a stock reservation. Orders may be submitted when stock is unavailable; the authoritative workflow records an explicit awaiting-stock outcome instead of rejecting the commercial request or posting negative stock.
+
+Implementation note: `dealer_submit_order` currently validates active scoped representation, current dealer authorization, an optional current license, published items, positive quantities, and configured control snapshots. It creates every line as `review_required`, keeps the configured currency and price as a nullable snapshot, allocates an `EEC-ORD` reference from sequence data, and writes audit/history/outbox records atomically. Exact endorsement prerequisites, dealer-specific price schedules, increments, quotas, and circulation rules remain unresolved and therefore are not represented as passed checks.
 
 ### Staff review flow
 
@@ -297,12 +299,16 @@ Submission does not create physical inventory movement or a stock reservation. O
 4. Approval revalidates the current state and rule requirements.
 5. Approval may leave the line awaiting stock. A later authorized inventory operation creates a reservation atomically after stock is available.
 
+Implementation note: the current staff command selects the required ordinary, restricted, or unique approval permission from snapshotted control flags. It supports full or partial approval, denial, and awaiting-stock decisions with optimistic order versions. Price may be set or remain explicitly pending. Header status is derived transactionally from all line outcomes; no browser code decides it.
+
 ### Cancellation and denial
 
 - Cancelling or denying a line releases active stock reservations and quota holds in the same transaction.
 - A fulfilled quantity is never cancelled retroactively; use return, reversal, or dispute workflows.
 - Staff and dealer cancellation permissions may differ by state.
 - Cancellation and denial reasons follow visibility rules so private compliance information is not exposed.
+
+Implementation note: dealers with `order.cancel` scope and staff with `order.cancel` permission can cancel before reservation, ready, or fulfillment progress. The command is idempotent, versions the order, cancels every eligible line, and appends audit/history/outbox records. Once inventory claims exist, their release must be added to this same transaction before those states become cancellable.
 
 ## 9. Stock reservation
 

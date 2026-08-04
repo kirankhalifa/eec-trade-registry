@@ -154,7 +154,7 @@ Staff can authorize dealers and issue real licenses with modular endorsements; t
 
 ## 6. Slice 4 — Dealer catalogue and wholesale ordering
 
-Implementation status: Lightweight Supabase credential sessions, effective-dated `portal.read` representation, current dealer-authorization checks, and the private read-only organization registry overview are implemented. Dealer-specific catalogue evaluation, price schedules, requisitions, orders, quotas, approvals, and notification outbox records remain policy-gated.
+Implementation status: Lightweight Supabase credential sessions, effective-dated representative scopes, current dealer-authorization checks, and the private organization registry overview are implemented. The first wholesale increment adds a published-item requisition form, idempotent submission without price or stock, immutable line/control snapshots, dealer tracking and cancellation, a staff queue, control-specific partial/deny/awaiting-stock decisions, editable nullable prices, optimistic concurrency, audit/history, and notification outbox records. Dealer-specific catalogue eligibility, price schedules and provenance, drafts, quotas, override objects, reservations, and fulfillment remain future work.
 
 ### User outcome
 
@@ -164,7 +164,7 @@ An authenticated dealer can see applicable terms, submit a requisition, and trac
 
 - Dealer authentication through the approved lightweight path
 - Private catalogue evaluation by dealer, license, endorsement, jurisdiction, and price schedule
-- Order drafts, submission, line snapshots, review queue, approvals, denials, cancellations, and status history
+- Order drafts; submission, line snapshots, review queue, approvals, denials, cancellations, and status history are implemented at initial intake depth
 - Effective-dated price schedules and deterministic selection
 - Price override request and approval records
 - Quota policy foundation and holds if required by approved timing
