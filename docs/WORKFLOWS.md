@@ -1,0 +1,613 @@
+# EEC Trade Registry — Workflows and State Transitions
+
+Status: Documentation foundation with public catalogue, staff draft management, and public verification implemented
+Purpose: Define user journeys, authoritative transitions, failure behavior, and audit expectations without prescribing an application implementation.
+
+## 1. Workflow rules
+
+All consequential workflows follow these rules:
+
+1. The client requests an action; it does not write the authoritative result directly.
+2. A database function or secure server function authenticates the actor, resolves scope, revalidates current state, and applies policy.
+3. Coupled changes commit atomically. License, quota, reservation, inventory, custody, history, audit, and outbox records must not partially succeed.
+4. Each retriable command accepts an idempotency key or otherwise prevents duplicate execution.
+5. A state transition requires an allowed source state, permitted actor, required inputs, and any prerequisite approvals.
+6. Terminal or posted history is corrected through explicit reversal, reopening, or supersession—not direct rewriting.
+7. Notifications and exports occur after commit through durable outbox processing. Delivery failure does not roll back business state.
+8. Display labels may be configured, but stable machine states and their transition semantics must remain testable.
+
+## 2. Public catalogue browsing
+
+### Goal
+
+Let any visitor discover publicly offered goods without authentication while preventing disclosure of private stock, prices, eligibility, or internal records.
+
+### Flow
+
+1. Visitor opens the catalogue.
+2. Portal queries an explicit public catalogue view or public function.
+3. Visitor filters by configured category, tags, public control label, price range, or availability language.
+4. Portal displays public item details, public price if any, purchasing requirements, and generated-at time where applicable.
+5. If the visitor follows a purchase path, the portal explains whether dealer access, a license, an endorsement, or special review may be required.
+
+### Rules
+
+- Public visibility is effective-dated and independent of physical stock.
+- Public price is not a substitute for an order price snapshot.
+- Availability language is a configured projection such as available, limited, by request, or unavailable. Exact stock is withheld unless policy allows it.
+- Unpublished and internal-only items must be indistinguishable from nonexistent items to unauthorized users.
+- The portal must not calculate private eligibility or price without an authenticated context.
+
+### Failure behavior
+
+- A projection failure shows a safe temporary-unavailability response; it does not fall back to Google Sheets.
+- A stale projection displays its age and must not claim current stock.
+
+## 2.1 Staff canonical catalogue management
+
+### Goal
+
+Let specifically assigned catalogue staff maintain canonical item source records without granting table access or inventing unresolved publication and pricing policy.
+
+### Flow
+
+1. Staff signs in through Supabase Auth using an individually provisioned account.
+2. The server validates the session token; each database request independently resolves an active actor profile, effective-dated role assignment, and required permission.
+3. The internal work queue is returned by a secured projection and includes staff-only catalogue fields needed for this task.
+4. Creating an item calls a secure command that creates one unpublished canonical record. It does not create publication, price, eligibility, inventory, or asset state.
+5. Editing an item supplies the expected record version. The command locks and rechecks the row so stale work cannot overwrite a concurrent change.
+6. Item code and public slug remain immutable after creation until a correction policy is approved.
+7. Archive and restore are explicit status commands with a mandatory reason. Archiving removes the item from current public projections without deleting publication, price, or audit history.
+8. Every accepted write records actor, authentication identity, permission and assignment, request/correlation ID, reason, previous state, new state, source surface, and timestamp.
+
+### Failure behavior
+
+- Authentication without an active catalogue assignment fails closed.
+- Direct authenticated table reads and writes remain denied.
+- Invalid references, missing reasons, duplicate stable identifiers, and stale record versions reject the whole transaction.
+- The client displays stable safe errors and never retries a stale write with a new version automatically.
+- If Supabase is unavailable or unconfigured, the staff surface has no Sheets, browser-storage, or static-data fallback.
+
+### Deliberate exclusions
+
+- Effective-dated publication creation, withdrawal, backdating, or scheduling
+- Public or private price changes and approvals
+- Item-code or slug corrections
+- Category, unit, control-profile, role, or assignment administration
+- Production identity-provider, recovery, MFA, and step-up policy
+
+## 3. Public license and dealer verification
+
+### Goal
+
+Let a public visitor confirm whether a supplied public reference identifies an authorized license or dealer, while preserving privacy.
+
+### Flow
+
+1. Visitor enters a license or dealer public reference.
+2. Portal normalizes case and whitespace without imposing a deployment-specific numbering format. The deployment edge must apply approved rate limiting before production use.
+3. A public verification function returns one fixed response contract.
+4. The result shows only approved fields: reference, public holder or organization name, class/type, public endorsements, jurisdiction, validity, expiration where allowed, and public conditions or notices.
+5. The result includes verification time and a non-authoritative explanation of status.
+
+### Result categories
+
+- `valid`
+- `provisional` if publicly recognized
+- `suspended`
+- `revoked`
+- `expired`
+- `not_verifiable`
+
+`not_verifiable` covers nonexistent, private, malformed, or non-public records when policy requires non-enumeration.
+
+Implementation note: the initial function always returns one row. A miss contains the result code and verification time but no stored reference or record fields. Public labels and status-to-result mappings are configuration records. An elapsed authorization or license term cannot report current authority even if its stored status has not yet been advanced by a scheduled process.
+
+### Rules
+
+- Search by holder name or organization is disabled unless explicitly approved.
+- Internal notes, application answers, risk standing, orders, investigations, private contacts, and staff identities are never public.
+- Verification does not create or change license state.
+- Public references are not login secrets.
+
+## 4. Dealer access
+
+### Goal
+
+Provide low-friction access scoped to the correct dealer organization and representative.
+
+### Credential path
+
+1. Staff or an approved enrollment function creates a representative relationship.
+2. Dealer representative enrolls with a lightweight Supabase Auth credential or approved identity provider.
+3. Successful authentication creates a session.
+4. Each request resolves active representative grants and allowed scopes.
+
+### Secure-link path
+
+1. Authorized staff or workflow creates a short-lived access grant containing a strong random token.
+2. Only the token digest, intended party, scope, expiration, issuer, and usage metadata are stored.
+3. The token is delivered through an approved channel.
+4. The representative opens the link; the server validates digest, expiration, revocation, and usage policy.
+5. The token is exchanged for a short-lived scoped session and marked used when single-use policy applies.
+6. The browser removes the raw token from the visible URL and history where practical.
+
+### Rules
+
+- A link never encodes a party identifier as its only proof of access.
+- A representative switching organizations must select an active represented party; permissions are recalculated.
+- Expired, revoked, or out-of-scope grants fail closed.
+- Sensitive actions may require credential reauthentication even if catalogue viewing was allowed by link.
+
+## 5. License application and issuance
+
+### Application states
+
+```text
+draft -> submitted -> under_review -> awaiting_information -> under_review
+                              \-> approved -> issued
+                              \-> denied
+submitted / under_review / awaiting_information -> withdrawn
+```
+
+`approved` is a decision state. `issued` means the license record and all approved endorsements were created successfully. A license is never inferred from an approved application alone.
+
+### Applicant flow
+
+1. Applicant or staff starts an application of a configured type.
+2. Form questions are rendered from a versioned definition appropriate to license class, jurisdiction, and request type.
+3. Applicant saves a draft.
+4. On submit, an authoritative function validates required answers, representative authority, duplicates, and policy prerequisites.
+5. The application becomes `submitted`, receives a public reference, and enters the staff queue.
+6. Applicant may supply requested information or withdraw while policy permits.
+
+### Staff review flow
+
+1. A licensing officer claims or is assigned the application.
+2. The officer reviews submitted answers, dealer authorization, existing licenses, standing, debts if relevant, prior actions, and requested endorsements.
+3. The officer may request information, record an interview, add a recommendation, approve with conditions, deny, or escalate.
+4. Required secondary approvals are collected according to the approval policy.
+5. The decision function validates actor authority and current application state.
+
+### Issuance transaction
+
+One authoritative issuance command:
+
+1. Locks the approved application.
+2. Revalidates approval, applicant, dealer, dates, policy version, and non-duplication rules.
+3. Allocates an immutable public license reference.
+4. Creates the license, endorsements, and structured conditions.
+5. Creates initial license status events.
+6. Marks the application `issued`.
+7. Writes audit entries.
+8. Writes outbox events for documents and notifications.
+9. Commits or rolls back as a unit.
+
+### License states
+
+```text
+provisional -> active -> suspended -> active
+     |           |          |          |
+     |           |          +-------> revoked
+     |           +------------------> revoked
+     |           +------------------> surrendered
+     +------------------------------> revoked / expired
+active / suspended / provisional ---> expired (time policy or scheduled transition)
+```
+
+Exact allowed paths, grace behavior, and whether expiration is stored by a scheduled transition or derived are policy decisions. `expiring soon` is always derived.
+
+### Renewal
+
+1. Authorized party opens a renewal application tied to the existing license.
+2. The system snapshots current endorsements and conditions as renewal inputs.
+3. Review considers compliance, standing, outstanding obligations, and updated policy.
+4. Approval either extends/supersedes the license term or issues a successor record, according to the chosen historical model.
+5. Changes in class, endorsements, or conditions are explicit and auditable.
+
+### Suspension, reinstatement, revocation, and surrender
+
+- Suspension and revocation require authority, reason, effective time, and any required compliance action.
+- The transaction invalidates or blocks affected new orders and evaluates existing reservations according to policy.
+- It does not silently delete orders, reservations, or custody history.
+- Reinstatement is an explicit transition with its own authority and reason.
+- Surrender is holder-initiated only if policy permits and may be blocked by outstanding custody or compliance obligations.
+
+## 6. Endorsement change
+
+### Flow
+
+1. Holder requests an endorsement through an application, or authorized staff initiates a policy action.
+2. Review validates the containing license, prerequisites, exclusivity, jurisdiction, dates, and conditions.
+3. Approval grants an effective-dated `license_endorsement` record.
+4. Suspension, expiration, or removal creates a status event or closes the effective interval.
+5. Existing orders and reservations are re-evaluated only according to explicit policy; no client may assume they remain valid.
+
+### Invariants
+
+- An endorsement cannot outlive or exceed the authority of the containing license unless policy explicitly defines a transition window.
+- Removing an endorsement does not erase its history.
+- Prose conditions that affect ordering must map to enforceable rule fields.
+
+## 7. Dealer catalogue and price evaluation
+
+### Flow
+
+1. Dealer representative opens the private catalogue under a selected organization context.
+2. A secure function resolves active representation, dealer authorization, licenses, endorsements, jurisdiction, standing, current rule versions, and catalogue publication.
+3. For each item, it returns policy-safe eligibility, review requirement, price or price-unavailable reason, quota presentation, and availability language.
+4. When an item is added to an order, the server re-evaluates the item.
+5. On order submission, the server evaluates again and records authoritative snapshots.
+
+### Rules
+
+- Catalogue display is advisory until submission.
+- Price, eligibility, quota, and stock are separate outputs with separate explanations.
+- The frontend may not infer eligibility by hiding or showing categories.
+- A staff override requires an explicit request, authorization, reason, and potentially a second approval.
+
+## 8. Order creation and review
+
+### Order header states
+
+```text
+draft -> submitted -> under_review -> approved -> processing -> fulfilled
+                   |       |             |            |
+                   |       +-> awaiting_information   +-> partially_fulfilled
+                   |       +-> awaiting_stock          +-> cancelled/expired by policy
+                   |       +-> denied
+                   +-> cancelled
+```
+
+Header state may be derived from line states when mixed outcomes are supported. Implementation must avoid contradictory header and line states.
+
+### Order line states
+
+```text
+draft -> submitted -> review_required -> approved -> reserved -> ready -> fulfilled
+                   \-> awaiting_stock ----^          |
+                   \-> denied                         +-> partially_fulfilled
+submitted / approved / reserved -> cancelled or expired, subject to release rules
+```
+
+Final machine state names will be fixed before migrations. User-facing wording remains configurable.
+
+### Dealer submission flow
+
+1. Dealer creates a draft for a represented organization.
+2. Dealer adds items and quantities. The UI displays current estimates.
+3. Dealer selects fulfillment mode, destination or collection preference, and supplies required justification.
+4. `submit_order` revalidates representative scope, dealer and license standing, item publication, control requirements, price, order increments, quota, circulation ceiling, and policy.
+5. The function records price and rule snapshots, determines each line's review path, creates quota holds if policy requires, writes history/audit, and commits.
+6. Notifications are queued after commit.
+
+Submission does not create physical inventory movement. It creates reservations only if the approved policy explicitly reserves at submission and availability is atomically checked.
+
+### Staff review flow
+
+1. Order queue shows age, dealer, requested mode, blocking reasons, stock position, licensing result, quota result, and required approval level.
+2. Authorized staff may approve a quantity, approve with conditions, request information, place in awaiting-stock, deny, or escalate.
+3. An override is a distinct object and never hidden inside an edited field.
+4. Approval revalidates the current state and rule requirements.
+5. Where policy requires stock reservation on approval, approval and reservation commit atomically.
+
+### Cancellation and denial
+
+- Cancelling or denying a line releases active stock reservations and quota holds in the same transaction.
+- A fulfilled quantity is never cancelled retroactively; use return, reversal, or dispute workflows.
+- Staff and dealer cancellation permissions may differ by state.
+- Cancellation and denial reasons follow visibility rules so private compliance information is not exposed.
+
+## 9. Stock reservation
+
+### Create reservation
+
+1. Caller supplies order line, requested quantity, stock scope, and idempotency key.
+2. Function authenticates authority and locks the relevant item/location availability scope.
+3. Function calculates posted on-hand, existing active reservations, applicable quarantine or hold exclusions, and requested quantity.
+4. Function verifies order line state, approved quantity, quota/circulation policy, and serialized-asset exclusivity where applicable.
+5. Function creates reservation and coupled quota hold records.
+6. Function advances the line state, writes history/audit, and emits outbox events.
+7. Transaction commits.
+
+### Extend reservation
+
+Requires an authorized actor, reason, permitted state, and maximum-duration policy. Extension updates the reservation's expiration with an audit record; repeated extensions may require escalation.
+
+### Consume reservation
+
+Consumption occurs only as part of fulfillment, dispatch, or collection. It posts the relevant inventory or custody movement and converts quota hold to consumption in the same transaction.
+
+### Release or expire reservation
+
+1. Function locks the active reservation.
+2. Function verifies caller or scheduler authority and current state.
+3. Reservation becomes released or expired.
+4. Coupled quota hold is released.
+5. Order line returns to approved/awaiting-stock or becomes cancelled/expired according to policy.
+6. Audit and notification events are recorded.
+
+### Concurrency tests required later
+
+- Two orders racing for the final unit
+- Retry after ambiguous network timeout
+- Expiration racing with fulfillment
+- Staff extension racing with scheduled expiration
+- Partial consumption followed by cancellation
+- Same unique asset requested by two orders
+
+## 10. Warehouse receipt and adjustment
+
+### Receive stock
+
+1. Warehouse operator starts a receipt against a shipment or approved source record.
+2. Operator records item, quantity, condition, location, owner, custodian, and source.
+3. For serialized goods, each asset is registered or matched individually.
+4. A second check is required if policy or control profile demands it.
+5. `post_inventory_transaction` creates balanced ledger entries, asset events, history, audit, and outbox events atomically.
+6. Available stock projection updates from committed records.
+
+### Correct a receipt
+
+- Unposted drafts may be edited.
+- A posted receipt is immutable.
+- Correction posts a reversal, then a corrected transaction, both linked to the original and reasoned.
+
+### Reconciliation
+
+1. Authorized staff opens a stock count for frozen or defined scope.
+2. Counters record observations without seeing expected quantities when blind-count policy applies.
+3. The system calculates variance against the ledger as of a cutoff.
+4. Staff investigates and classifies discrepancies.
+5. Authorized approval posts a reconciliation adjustment; the system never overwrites stock.
+6. Restricted or unique discrepancies may automatically open a compliance case.
+
+Negative adjustments, large variances, or unique-asset discrepancies may require second approval.
+
+## 11. Wholesale fulfillment and collection
+
+### Ready for collection
+
+1. All required approvals and active reservations exist.
+2. Warehouse staff picks and validates quantities or serialized asset identities.
+3. The order is marked ready through an authoritative function.
+4. Dealer receives a notification with expiry and collection instructions.
+
+### Collection
+
+1. Staff validates collecting representative authority and any required identity proof.
+2. Staff confirms actual quantities/assets, payment or finance prerequisite if applicable, and condition.
+3. Dealer or staff records acceptance where required.
+4. Fulfillment transaction consumes reservations, posts ledger or asset custody movements, consumes quota, advances line/order status, creates documents, audit entries, and notifications.
+5. Partial collection leaves explicit remaining state and adjusted reservations according to policy.
+
+### Uncollected order
+
+At reservation expiry, the system releases stock and quota holds. Whether the order returns to awaiting-stock, is cancelled, incurs a fee, or affects standing is unresolved policy.
+
+## 12. Transfer between custodians or locations
+
+### Transfer states
+
+```text
+draft -> requested -> authorized -> dispatched -> received
+                    \-> denied       \-> disputed -> resolved/received/returned
+draft/requested/authorized -> cancelled
+```
+
+Cancellation after dispatch is not permitted; use return or dispute handling.
+
+### Dispatch
+
+1. Operator verifies transfer authorization, source custody, stock reservation if applicable, destination, and asset/quantity identity.
+2. Dispatch function posts movement from source to in-transit custody, records custody events for serialized assets, and advances transfer state.
+3. Audit and notifications are queued.
+
+### Receipt
+
+1. Authorized recipient reviews shipment and records quantities, assets, condition, and discrepancies.
+2. Receipt function moves accepted stock from in-transit to destination custody.
+3. Missing, damaged, or disputed lines remain explicitly in transit or disputed and may open a compliance case.
+4. Transfer completes only when all lines have terminal receipt, return, loss, or resolution outcomes.
+
+### Unique asset transfer
+
+- Transaction-specific approval is validated at dispatch and receipt.
+- The exact asset code is scanned or selected.
+- Required custody acceptance is recorded.
+- The asset cannot be dispatched from a custodian or location inconsistent with its derived current state.
+
+## 13. Consignment
+
+### Issue consignment
+
+1. Staff selects an active consignment agreement and eligible dealer.
+2. Items, quantities/assets, settlement terms, and reporting date are validated.
+3. Required stock is reserved and approved.
+4. Dispatch transfers custody to the consignee or in-transit account while retaining configured ownership.
+5. Consignment position is derived from ledger and asset events.
+
+### Dealer report
+
+1. Dealer submits sold-through, returned, damaged, lost, and observed-on-hand information.
+2. Submission creates a report claim; it does not directly alter inventory.
+3. Staff or an automated policy validates the report against previous position and supporting evidence.
+4. Acceptance posts authoritative ledger/custody changes and settlement obligations.
+5. Variances open an exception and possibly a compliance case.
+
+### Return or closeout
+
+1. Dealer requests return or agreement closeout.
+2. Physical transfer returns remaining stock.
+3. Staff reconciles accepted sales, returns, losses, and settlement.
+4. Agreement closes only when inventory, custody, disputes, and financial obligations meet policy.
+
+## 14. Unique asset lifecycle
+
+### Registration
+
+1. Authorized operator selects the canonical item with serialized inventory mode.
+2. System allocates an immutable asset code.
+3. Operator records provenance, markings, condition, initial owner, custodian, and location.
+4. Required witness or approval is captured.
+5. Registration and initial custody event commit atomically.
+
+### Allocation and fulfillment
+
+1. Approved order line requests a specific asset or authorizes staff selection.
+2. Function verifies control profile, license, endorsement, quota/circulation, transaction approval, current custody, and active reservations.
+3. Exclusive asset reservation is created.
+4. Dispatch or collection consumes that reservation and posts custody event.
+
+### Inspection
+
+1. System schedules or staff initiates inspection under configured policy.
+2. Inspector records custodian confirmation, condition, location, evidence, and findings.
+3. Significant discrepancy opens a case and can trigger an authorized temporary action.
+4. Next inspection due date is derived or scheduled.
+
+### Loss, seizure, destruction, or recovery
+
+- Each is a controlled lifecycle event with evidence, authority, and reason.
+- A missing asset is not deleted.
+- Recovery references the prior loss event.
+- Destruction or retirement is terminal unless a formally approved correction reverses an erroneous event.
+
+## 15. Compliance case and appeal
+
+### Case states
+
+```text
+open -> triage -> investigating -> awaiting_response -> deciding -> resolved -> closed
+                  \-> no_action ------------------------------^
+closed -> reopened (authorized, reason required)
+```
+
+### Flow
+
+1. Staff, workflow, inspection, inventory discrepancy, or validated report opens a case.
+2. Triage classifies scope, confidentiality, subjects, urgency, and assignment.
+3. Investigator records allegations, evidence, interviews, and observations.
+4. Decision-maker records findings separately from allegations.
+5. Authorized enforcement actions are approved and applied atomically to affected domains.
+6. Required notices are generated from authoritative data.
+7. Case is resolved and later closed under retention policy.
+
+### Appeal
+
+1. Eligible party files within the configured window.
+2. System validates standing, timeliness, and appealable action.
+3. Reviewer must satisfy independence requirements.
+4. Appeal may affirm, vary, remand, stay, or reverse an action according to policy.
+5. Resulting domain state changes and notices commit atomically.
+
+The system must never equate opening a case with guilt or finding.
+
+## 16. Google Sheets export
+
+### Flow
+
+1. Scheduler or authorized staff requests an export definition.
+2. Worker claims an outbox event or scheduled job using an idempotent run key.
+3. Worker queries the approved Supabase projection at a recorded watermark.
+4. Worker writes a full replacement or versioned snapshot to the configured Sheet.
+5. Worker records row count, checksum, generated-at time, destination version, and delivery result.
+6. Retry uses the same run identity and cannot duplicate business data.
+
+### Rules
+
+- Sheet formulas or edits are not imported as business state.
+- Public export columns require a privacy review.
+- A failed export is visible to staff and does not change the last successful business watermark.
+- Public output includes source attribution and freshness information.
+
+## 17. Discord lookup and notification
+
+### Public lookup
+
+1. User invokes an approved command with a public reference or catalogue query.
+2. Bot rate-limits and validates input.
+3. Bot queries an explicit public function.
+4. Bot returns the same public disclosure class as the website.
+
+### Private lookup
+
+1. Discord identity must be bound to an actor or party through an approved verification flow.
+2. Bot resolves current representative or staff scope at request time.
+3. Response is ephemeral or sent to an approved private channel when sensitive.
+4. No private status is inferred from public command failure.
+
+### Notification
+
+1. Business transaction writes an outbox event.
+2. Worker applies a versioned template and destination policy.
+3. Worker posts the message.
+4. Delivery metadata and external message ID are recorded.
+5. Retry uses deduplication controls.
+
+Discord emoji, message edits, and manual deletion do not modify authoritative state. Interactive approval commands, if ever allowed, must authenticate the actor and invoke the same secure business function used by the staff console.
+
+## 18. Staff audit review
+
+1. Authorized auditor chooses subject, actor, time range, request ID, or action type.
+2. System returns domain history and audit entries, with sensitivity redaction appropriate to the auditor.
+3. Auditor can trace an order from submission through approval, reservation, fulfillment, inventory movement, quota consumption, and notifications.
+4. Export of audit data is itself audited.
+5. Audit records cannot be edited or deleted through the application.
+
+## 19. Operational recovery
+
+### Failed business command
+
+The transaction rolls back. Caller receives a stable error code, safe message, and request ID. The client may retry only when the command supports idempotency.
+
+### Ambiguous client timeout
+
+Caller retries with the same idempotency key or queries command status. It must not submit a new logical operation blindly.
+
+### Failed notification or export
+
+Business state remains committed. Delivery retries from outbox metadata. Staff can inspect and replay within policy.
+
+### Incorrect posted ledger or custody event
+
+Authorized staff posts a linked reversal or corrective event. Original evidence remains visible.
+
+### Compromised dealer link
+
+Staff revokes the access grant and active sessions as policy allows, reviews access logs, and issues a replacement. Business records are not migrated to a new identity.
+
+### Suspected credential or integration-secret compromise
+
+Rotate the secret, revoke affected sessions or principal, inspect audit/delivery activity, and follow the incident procedure. Secrets are never placed in tickets, documents, or logs.
+
+## 20. Assumptions
+
+- Ordinary goods may follow a simplified approval path, but still receive authoritative validation.
+- Dealer submission and staff processing are asynchronous; notifications supplement rather than replace work queues.
+- Reservation duration and renewal are configuration-driven.
+- Warehouse dispatch and destination receipt may occur at different times, requiring an in-transit state.
+- Consignment reports require acceptance before authoritative inventory or settlement effects.
+- Unique assets require explicit identity at reservation and transfer.
+
+## 21. Unresolved workflow decisions
+
+- Final state names and which header states are derived from line states
+- Whether ordinary orders reserve at submission, approval, or warehouse processing
+- Whether quotas are held at submission and when they become consumed
+- Automatic approval thresholds and when staff review is mandatory
+- Required second approvals and whether requester/approver separation is mandatory
+- Reservation durations, extension limits, uncollected-order consequences, and waiting-list behavior
+- Partial approval, partial reservation, substitution, back-order, and split-shipment policy
+- Payment, deposit, credit, and settlement gates in the order workflow
+- Dealer receipt proof and when wholesale title transfers
+- Consignment reporting frequency, acceptance, settlement, shrinkage, and loss rules
+- License expiration scheduling, grace periods, pending-renewal authority, and effects on existing orders
+- Whether an appeal stays an enforcement action
+- Emergency overrides and after-the-fact review requirements
+- Public verification result categories and disclosure text
+- Discord commands allowed to cause state changes, if any
+- Sheet refresh cadence and failure escalation
+
+No workflow-dependent implementation should guess these decisions. A decision record and updated transition tests are required first.
+
