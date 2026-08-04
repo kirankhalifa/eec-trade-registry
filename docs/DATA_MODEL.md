@@ -309,7 +309,7 @@ Standing is private by default and must not be returned by public verification f
 
 ## 6. Licensing
 
-Implementation status: the public-verification increment implements configurable license classes and statuses, issued-license source records, modular endorsement grants, public/private conditions, and narrow exact-reference projections. Applications, reviews, status-event commands, and issuance or lifecycle operations remain future policy-gated work.
+Implementation status: the public-verification increment implements configurable license classes and statuses, issued-license source records, modular endorsement grants, public/private conditions, and narrow exact-reference projections. The staff lifecycle increment adds transactional reference allocation, idempotent issuance, versioned status commands, endorsement grant/revocation, append-only domain events, complete audit context, and durable outbox events. Applications, reviews, renewal, condition mutation, and scheduled expiration remain future policy-gated work.
 
 ### `license_classes`
 
@@ -383,6 +383,8 @@ Pending and under-review are application states. `expiring_soon` is derived. Rev
 ### `license_status_events`
 
 Append-only transitions with effective time, actor, reason, related compliance action, and previous/new status.
+
+Implementation note: issuance and accepted status changes write this history in the same transaction. Each event has a unique request identifier for safe retry behavior.
 
 ### `license_endorsements`
 
@@ -810,6 +812,8 @@ Key fields:
 - `occurred_at`, `available_at`
 - `status`, `attempt_count`, `last_error`
 - `deduplication_key`
+
+Implementation note: the licensing lifecycle creates the initial durable outbox table and emits versioned issuance, status, endorsement-grant, and endorsement-revocation events. Delivery workers and destinations are deliberately absent from this increment.
 
 ### `integration_deliveries`
 

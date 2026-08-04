@@ -2,7 +2,7 @@
 
 A configurable trade, licensing, wholesale distribution, inventory, and compliance platform. Supabase PostgreSQL is the sole authoritative data source; the web portal and future integrations are projections of its records.
 
-The active implementation includes the unauthenticated public catalogue, policy-neutral staff catalogue management, exact-reference public dealer and license verification, and a credential-based read-only dealer portal with effective-dated representation. Secure-link exchange, license application and issuance workflows, ordering, warehouse inventory, Discord, and Google Sheets remain documented but unimplemented.
+The active implementation includes the unauthenticated public catalogue, staff catalogue management, exact-reference public dealer and license verification, a credential-based read-only dealer portal with effective-dated representation, and an audited staff licensing office for issuance, lifecycle transitions, and modular endorsements. Applications, renewal, ordering, warehouse inventory, external Discord delivery, and Google Sheets delivery remain documented but unimplemented.
 
 ## Repository layout
 
@@ -127,3 +127,9 @@ join public.representative_role_definitions as role
 ```
 
 The credential path is intentionally read-only. Production enrollment, recovery, revocation operations, magic links, and secure private-link exchange require approved administrative workflows.
+
+## Local licensing access
+
+The licensing office is available at `http://127.0.0.1:3000/staff/licensing`. A staff login also needs the configurable `licensing_officer` role. For disposable local development, follow the staff bootstrap pattern above and select `licensing_officer` instead of `catalogue_manager`.
+
+Licensing commands allocate references, record immutable status/endorsement history, write full audit context, and enqueue durable outbox events in one transaction. The current issue form intentionally creates an open-term license because duration and renewal policy have not been approved.

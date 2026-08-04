@@ -19,7 +19,7 @@ export function readPublicSupabaseEnvironment(
 export function getInstitutionName(
   environment: NodeJS.ProcessEnv = process.env,
 ): string {
-  return environment.NEXT_PUBLIC_INSTITUTION_NAME?.trim() || "EEC Trade Registry";
+  return environment.NEXT_PUBLIC_INSTITUTION_NAME?.trim() || "East Empire Company";
 }
 
 export function getDefaultLocale(

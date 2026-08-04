@@ -1,13 +1,14 @@
--- Fictional development data only. These values demonstrate configuration and
--- must not be treated as approved institutional policy or production records.
+-- Non-sensitive development data only. Institution-wide values may mirror
+-- approved configuration, while parties, goods, prices, and references remain
+-- fictional fixtures rather than production records.
 
 insert into public.currencies (
   id, code, display_name, symbol, symbol_position, minor_unit_scale
 ) values (
   '10000000-0000-0000-0000-000000000001',
-  'COIN',
-  'Trade coin',
-  '¤',
+  'SEP',
+  'Septims',
+  'Septims',
   'suffix',
   0
 );
@@ -308,7 +309,7 @@ values (
   'harbor-district',
   'Demonstration Harbor District',
   'Harbor District',
-  'UTC'
+  'America/New_York'
 );
 
 insert into public.party_types (id, code, display_name)
@@ -429,43 +430,6 @@ values
     'Hidden dealer record used for leakage tests.',
     '2026-01-01T00:00:00Z',
     null,
-    false
-  );
-
-insert into public.license_classes (
-  id, code, display_name, public_display_name, description
-)
-values (
-  '96000000-0000-0000-0000-000000000001',
-  'commercial-operations',
-  'Commercial operations authorization',
-  'Commercial operations authorization',
-  'Fictional configurable class used to demonstrate public verification.'
-);
-
-insert into public.license_status_definitions (
-  id,
-  code,
-  display_name,
-  public_result_code,
-  confers_authority,
-  publicly_verifiable
-)
-values
-  (
-    '97000000-0000-0000-0000-000000000001',
-    'active',
-    'Current license',
-    'valid',
-    true,
-    true
-  ),
-  (
-    '97000000-0000-0000-0000-000000000002',
-    'internal-review',
-    'Internal review',
-    'not_verifiable',
-    false,
     false
   );
 
