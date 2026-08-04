@@ -43,6 +43,39 @@ Let any visitor discover publicly offered goods without authentication while pre
 - A projection failure shows a safe temporary-unavailability response; it does not fall back to Google Sheets.
 - A stale projection displays its age and must not claim current stock.
 
+## 2.1 Staff canonical catalogue management
+
+### Goal
+
+Let specifically assigned catalogue staff maintain canonical item source records without granting table access or inventing unresolved publication and pricing policy.
+
+### Flow
+
+1. Staff signs in through Supabase Auth using an individually provisioned account.
+2. The server validates the session token; each database request independently resolves an active actor profile, effective-dated role assignment, and required permission.
+3. The internal work queue is returned by a secured projection and includes staff-only catalogue fields needed for this task.
+4. Creating an item calls a secure command that creates one unpublished canonical record. It does not create publication, price, eligibility, inventory, or asset state.
+5. Editing an item supplies the expected record version. The command locks and rechecks the row so stale work cannot overwrite a concurrent change.
+6. Item code and public slug remain immutable after creation until a correction policy is approved.
+7. Archive and restore are explicit status commands with a mandatory reason. Archiving removes the item from current public projections without deleting publication, price, or audit history.
+8. Every accepted write records actor, authentication identity, permission and assignment, request/correlation ID, reason, previous state, new state, source surface, and timestamp.
+
+### Failure behavior
+
+- Authentication without an active catalogue assignment fails closed.
+- Direct authenticated table reads and writes remain denied.
+- Invalid references, missing reasons, duplicate stable identifiers, and stale record versions reject the whole transaction.
+- The client displays stable safe errors and never retries a stale write with a new version automatically.
+- If Supabase is unavailable or unconfigured, the staff surface has no Sheets, browser-storage, or static-data fallback.
+
+### Deliberate exclusions
+
+- Effective-dated publication creation, withdrawal, backdating, or scheduling
+- Public or private price changes and approvals
+- Item-code or slug corrections
+- Category, unit, control-profile, role, or assignment administration
+- Production identity-provider, recovery, MFA, and step-up policy
+
 ## 3. Public license and dealer verification
 
 ### Goal

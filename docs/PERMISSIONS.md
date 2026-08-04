@@ -164,6 +164,8 @@ Can read routine party, dealer, license, and order information; enter drafts; re
 
 Can manage items, categories, public presentation, price proposals, and control assignments. High-impact price or control changes may require approval by another role.
 
+The initial Slice 2 implementation grants the configurable `catalogue_manager` role only `catalogue.private.read` and `catalogue.manage`. Publication, pricing, control-policy, access-management, and approval permissions remain unassigned until their policy is approved.
+
 ### Licensing officer
 
 Can review applications, issue or renew within assigned authority, grant ordinary endorsements, and manage routine conditions. Suspension, revocation, or exceptional endorsements may require senior or compliance approval.

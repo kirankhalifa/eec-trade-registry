@@ -1,6 +1,6 @@
 # EEC Trade Registry — Delivery Roadmap
 
-Status: Documentation foundation  
+Status: Implementation in progress
 Delivery strategy: Small, reviewable vertical slices with policy gates and database-first invariants
 
 ## 1. Roadmap principles
@@ -85,6 +85,8 @@ Anyone can browse a single, coherent public catalogue without logging in.
 - Tests prove unpublished and restricted fields cannot leak.
 
 ## 4. Slice 2 — Staff catalogue management
+
+Implementation status: The first policy-neutral increment provides Supabase Auth session handling, effective-dated catalogue role assignments, an authorized internal work queue, and audited create/edit/archive commands with optimistic concurrency. Effective-dated publication and price writes remain gated by the unresolved decisions below.
 
 ### User outcome
 

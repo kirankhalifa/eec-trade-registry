@@ -2,7 +2,7 @@
 
 A configurable trade, licensing, wholesale distribution, inventory, and compliance platform. Supabase PostgreSQL is the sole authoritative data source; the web portal and future integrations are projections of its records.
 
-The active implementation slice is the unauthenticated public catalogue. Dealer access, licensing, ordering, warehouse inventory, Discord, and Google Sheets remain documented but unimplemented.
+The active implementation includes the unauthenticated public catalogue and the policy-neutral staff catalogue-management foundation. Dealer access, licensing, ordering, warehouse inventory, Discord, and Google Sheets remain documented but unimplemented.
 
 ## Repository layout
 
@@ -51,3 +51,27 @@ npm run db:lint
 All schema changes belong in `supabase/migrations`. Development data belongs in `supabase/seed.sql`. Use `npm run db:reset` to rebuild the local database from migrations and seed data, and `npm run db:test` to execute pgTAP tests.
 
 Do not make authoritative schema changes only through the hosted dashboard. See `AGENTS.md` for the complete engineering rules.
+
+## Local staff access
+
+The staff portal is available at `http://127.0.0.1:3000/staff/login`. Authentication alone grants no catalogue access.
+
+For local development only:
+
+1. Open local Supabase Studio at `http://127.0.0.1:54323`.
+2. Create an email/password user under Authentication and copy its user UUID.
+3. In the local SQL editor, assign the existing configurable catalogue role:
+
+```sql
+with created_actor as (
+  insert into public.actor_profiles (auth_user_id, display_name)
+  values ('<AUTH_USER_UUID>', 'Local Catalogue Manager')
+  returning id
+)
+insert into public.staff_assignments (actor_id, staff_role_id)
+select created_actor.id, role.id
+from created_actor
+join public.staff_roles as role on role.code = 'catalogue_manager';
+```
+
+This bootstrap procedure is for disposable local environments. Production staff provisioning, recovery, MFA, and access review remain policy-gated and require a controlled administrative workflow.
