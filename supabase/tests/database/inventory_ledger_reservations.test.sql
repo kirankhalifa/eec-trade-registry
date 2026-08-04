@@ -414,7 +414,7 @@ select ok(
 );
 select is(
   (
-    select line ->> 'order_status' || ':' || line ->> 'order_version'
+    select (line ->> 'order_status') || ':' || (line ->> 'order_version')
     from jsonb_array_elements(get_staff_inventory_workspace() -> 'order_lines') as line
     where line ->> 'order_id' = 'e4000000-0000-0000-0000-000000000001'
   ),
@@ -451,7 +451,7 @@ select lives_ok(
 );
 select is(
   (
-    select line ->> 'order_status' || ':' || line ->> 'order_version'
+    select (line ->> 'order_status') || ':' || (line ->> 'order_version')
     from jsonb_array_elements(get_staff_inventory_workspace() -> 'order_lines') as line
     where line ->> 'order_id' = 'e4000000-0000-0000-0000-000000000001'
   ),
@@ -542,7 +542,7 @@ select ok(
 );
 select is(
   (
-    select line ->> 'order_status' || ':' || line ->> 'order_version'
+    select (line ->> 'order_status') || ':' || (line ->> 'order_version')
     from jsonb_array_elements(get_staff_inventory_workspace() -> 'order_lines') as line
     where line ->> 'order_id' = 'e4000000-0000-0000-0000-000000000001'
   ),
