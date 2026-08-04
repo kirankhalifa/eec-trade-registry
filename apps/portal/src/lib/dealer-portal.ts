@@ -35,9 +35,9 @@ const dealerRepresentationSchema = z.object({
   dealer_authorizations: z.array(dealerAuthorizationSchema),
   jurisdiction_label: z.string().nullable(),
   licenses: z.array(dealerLicenseSchema),
-  party_id: z.string().uuid(),
+  party_id: z.guid(),
   party_name: z.string(),
-  representation_id: z.string().uuid(),
+  representation_id: z.guid(),
   role_label: z.string(),
 });
 

@@ -619,6 +619,8 @@ Key fields:
 
 ## 9. Warehouses, inventory, and transfers
 
+Implementation status: the first warehouse increment implements configurable warehouses and locations, physical and external inventory accounts, immutable posted transaction headers, balanced signed ledger entries, derived on-hand/reserved/available projections, linked receipt reversals, warehouse-scoped staff grants, and effective-dated reservations with append-only events. It supports fungible receipts and reservation creation/extension/release/expiry only. Serialized assets, issues, fulfillment, transfers, counts, reconciliation adjustments, and consignment accounts remain future work.
+
 ### `warehouses`
 
 Physical or controlled facilities with jurisdiction, operating status, and access scope.
@@ -669,6 +671,8 @@ Key fields:
 - `line_number`
 
 For a fungible item, each posted transaction must balance across appropriate source, destination, or explicitly modeled external accounts. A correction posts a new reversing transaction; it never edits the original entry.
+
+The implemented receipt command creates one negative external-source entry and one positive physical entry in a single statement. Constraint triggers require a zero transaction sum, prevent negative physical balances, and prevent a ledger reversal from reducing on-hand below current effective reservations. Inventory accounts contain classification and custody dimensions but no editable quantity.
 
 ### `stock_counts` and `stock_count_lines`
 

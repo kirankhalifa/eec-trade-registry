@@ -5,7 +5,7 @@ const licenseEndorsementSchema = z.object({
   code: z.string(),
   effective_from: z.string(),
   expires_at: z.string().nullable(),
-  id: z.string().uuid(),
+  id: z.guid(),
   label: z.string(),
   public_disclosure_enabled: z.boolean(),
   revoked_at: z.string().nullable(),
@@ -18,7 +18,7 @@ const staffLicenseSchema = z.object({
   endorsements: z.array(licenseEndorsementSchema),
   expires_at: z.string().nullable(),
   holder_name: z.string(),
-  id: z.string().uuid(),
+  id: z.guid(),
   jurisdiction_code: z.string(),
   jurisdiction_label: z.string(),
   license_class_code: z.string(),
@@ -40,13 +40,13 @@ const optionSchema = z.object({
 
 const partyOptionSchema = z.object({
   display_name: z.string(),
-  id: z.string().uuid(),
+  id: z.guid(),
   party_type: z.string(),
 });
 
 const dealerOptionSchema = z.object({
-  id: z.string().uuid(),
-  party_id: z.string().uuid(),
+  id: z.guid(),
+  party_id: z.guid(),
   public_reference: z.string(),
 });
 

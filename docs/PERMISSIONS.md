@@ -108,6 +108,7 @@ Scope names are provisional; they should become stable machine identifiers befor
 
 - `inventory.position.read`
 - `inventory.receipt.post`
+- `inventory.receipt.reverse`
 - `inventory.issue.post`
 - `inventory.adjust.request`
 - `inventory.adjust.approve`
@@ -183,9 +184,13 @@ The implemented initial role receives `order.private.read`, `order.review`, `ord
 
 Can receive, pick, dispatch, and receive transfers for assigned warehouses. Cannot self-approve reconciliation adjustments above configured thresholds.
 
+The implemented initial role receives `inventory.position.read`, `inventory.receipt.post`, `reservation.manage`, `reservation.extend`, and `reservation.release`. Each function evaluates `assignment_scope.warehouse_ids`; an absent key means all configured warehouses, while a present array is an allowlist. Picking, dispatch, fulfillment, transfer, and reconciliation permissions are not yet implemented.
+
 ### Inventory controller
 
 Can supervise reconciliations, approve adjustments, manage warehouses, and review inventory history. Whether this role may also dispatch stock is a segregation-of-duties decision.
+
+The implemented initial role receives the warehouse-operator foundation plus `inventory.receipt.reverse`. Reversal is an append-only correction permission, not authority to edit posted transactions or create arbitrary adjustments.
 
 ### Regional factor
 

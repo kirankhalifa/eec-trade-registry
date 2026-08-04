@@ -3,18 +3,18 @@ import { z } from "zod";
 const reasonSchema = z.string().trim().min(1).max(500);
 
 const orderLineInputSchema = z.object({
-  itemId: z.string().uuid(),
+  itemId: z.guid(),
   quantity: z.coerce.number().positive(),
 });
 
 const submitOrderSchema = z
   .object({
-    dealerAuthorizationId: z.string().uuid(),
+    dealerAuthorizationId: z.guid(),
     dealerNotes: z.string().trim().max(2000),
     fulfillmentMode: z.enum(["collection", "delivery", "consignment"]),
-    licenseId: z.string().uuid().nullable(),
+    licenseId: z.guid().nullable(),
     lines: z.array(orderLineInputSchema).min(1).max(10),
-    orderingPartyId: z.string().uuid(),
+    orderingPartyId: z.guid(),
     reason: reasonSchema,
   })
   .superRefine((value, context) => {
@@ -30,7 +30,7 @@ const submitOrderSchema = z
 
 const cancelOrderSchema = z.object({
   expectedVersion: z.coerce.number().int().positive().safe(),
-  orderId: z.string().uuid(),
+  orderId: z.guid(),
   reason: reasonSchema,
 });
 
@@ -38,16 +38,16 @@ const reviewOrderLineSchema = z.object({
   approvedQuantity: z.coerce.number().positive().nullable(),
   decision: z.enum(["approve", "awaiting_stock", "deny"]),
   expectedOrderVersion: z.coerce.number().int().positive().safe(),
-  orderId: z.string().uuid(),
-  orderLineId: z.string().uuid(),
+  orderId: z.guid(),
+  orderLineId: z.guid(),
   reason: reasonSchema,
   unitPriceMinor: z.coerce.number().int().nonnegative().safe().nullable(),
 });
 
 const priceOrderLineSchema = z.object({
   expectedOrderVersion: z.coerce.number().int().positive().safe(),
-  orderId: z.string().uuid(),
-  orderLineId: z.string().uuid(),
+  orderId: z.guid(),
+  orderLineId: z.guid(),
   reason: reasonSchema,
   unitPriceMinor: z.coerce.number().int().nonnegative().safe().nullable(),
 });

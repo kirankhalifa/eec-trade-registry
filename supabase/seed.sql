@@ -354,6 +354,62 @@ values
     null,
     '90000000-0000-0000-0000-000000000001',
     false
+  ),
+  (
+    '92000000-0000-0000-0000-000000000004',
+    '91000000-0000-0000-0000-000000000001',
+    'East Empire Company',
+    'East Empire Company',
+    'East Empire Company',
+    '90000000-0000-0000-0000-000000000001',
+    true
+  );
+
+insert into public.warehouses (
+  id,
+  code,
+  display_name,
+  jurisdiction_id,
+  operating_party_id,
+  default_timezone
+)
+values (
+  'aa000000-0000-0000-0000-000000000001',
+  'eec-primary',
+  'East Empire Company Warehouse',
+  '90000000-0000-0000-0000-000000000001',
+  '92000000-0000-0000-0000-000000000004',
+  'America/New_York'
+);
+
+insert into public.stock_locations (
+  id,
+  warehouse_id,
+  code,
+  display_name,
+  location_type
+)
+values
+  (
+    'ab000000-0000-0000-0000-000000000001',
+    'aa000000-0000-0000-0000-000000000001',
+    'receiving',
+    'Receiving',
+    'receiving'
+  ),
+  (
+    'ab000000-0000-0000-0000-000000000002',
+    'aa000000-0000-0000-0000-000000000001',
+    'available',
+    'Available stock',
+    'available'
+  ),
+  (
+    'ab000000-0000-0000-0000-000000000003',
+    'aa000000-0000-0000-0000-000000000001',
+    'quarantine',
+    'Quarantine',
+    'quarantine'
   );
 
 insert into public.dealer_types (id, code, display_name, public_description)
