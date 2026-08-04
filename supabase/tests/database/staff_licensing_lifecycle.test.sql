@@ -457,6 +457,7 @@ select ok(
     from public.audit_log as audit
     where audit.record_type = 'public.licenses'
       and audit.new_state ->> 'public_reference' = 'EEC-LIC-1001'
+      and audit.request_id = 'e2000000-0000-0000-0000-000000000001'::uuid
     order by audit.occurred_at desc, audit.id desc
     limit 1
   ),
