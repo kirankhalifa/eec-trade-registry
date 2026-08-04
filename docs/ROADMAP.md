@@ -118,6 +118,8 @@ Authorized staff can maintain the master catalogue, prices, publication, and con
 
 ## 5. Slice 3 — Parties, dealers, and licensing
 
+Implementation status: The public-verification increment provides configurable jurisdictions, party and dealer types, public-disclosure controls, dealer and license status definitions, license classes, modular endorsements, public conditions, exact-reference privacy-safe functions, and dealer/license pages. Staff administration, representation, applications, issuance, renewal, suspension, reinstatement, revocation, surrender, factor assignments, and production abuse controls remain gated by the decisions below.
+
 ### User outcome
 
 Staff can authorize dealers and issue real licenses with modular endorsements; the public can verify approved records.

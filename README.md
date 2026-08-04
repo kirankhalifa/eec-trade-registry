@@ -2,7 +2,7 @@
 
 A configurable trade, licensing, wholesale distribution, inventory, and compliance platform. Supabase PostgreSQL is the sole authoritative data source; the web portal and future integrations are projections of its records.
 
-The active implementation includes the unauthenticated public catalogue and the policy-neutral staff catalogue-management foundation. Dealer access, licensing, ordering, warehouse inventory, Discord, and Google Sheets remain documented but unimplemented.
+The active implementation includes the unauthenticated public catalogue, policy-neutral staff catalogue management, and exact-reference public dealer and license verification. Dealer sessions, license application and issuance workflows, ordering, warehouse inventory, Discord, and Google Sheets remain documented but unimplemented.
 
 ## Repository layout
 
@@ -75,3 +75,12 @@ join public.staff_roles as role on role.code = 'catalogue_manager';
 ```
 
 This bootstrap procedure is for disposable local environments. Production staff provisioning, recovery, MFA, and access review remain policy-gated and require a controlled administrative workflow.
+
+## Public verification fixtures
+
+After `npm run db:reset`, the public verification pages are available at:
+
+- `http://127.0.0.1:3000/verify/dealer` with fictional reference `DLR-DEMO-A7K9`
+- `http://127.0.0.1:3000/verify/license` with fictional reference `LIC-DEMO-4Q2M`
+
+These are demonstration records, not approved institutional terminology or policy. Public lookups use exact references and return the same `not_verifiable` contract for unknown, malformed, private, and unpublished records. Production launch still requires edge rate limiting and abuse monitoring.
