@@ -2,7 +2,7 @@
 
 A configurable trade, licensing, wholesale distribution, inventory, and compliance platform. Supabase PostgreSQL is the sole authoritative data source; the web portal and future integrations are projections of its records.
 
-The active implementation includes the unauthenticated public catalogue, staff catalogue management, exact-reference public dealer and license verification, a credential-based read-only dealer portal with effective-dated representation, and an audited staff licensing office for issuance, lifecycle transitions, and modular endorsements. Applications, renewal, ordering, warehouse inventory, external Discord delivery, and Google Sheets delivery remain documented but unimplemented.
+The active implementation includes the unauthenticated public catalogue, staff catalogue management, exact-reference public dealer and license verification, credential-based dealer access with effective-dated representation, an audited staff licensing office, and wholesale order intake. Dealers can submit and track requisitions without price or stock on hand; authorized staff can review each control level, record partial or awaiting-stock decisions, edit nullable prices, and cancel unfulfilled orders. Applications, renewal, reservations, fulfillment, warehouse inventory, external Discord delivery, and Google Sheets delivery remain documented but unimplemented.
 
 ## Repository layout
 
@@ -119,17 +119,28 @@ select
   '92000000-0000-0000-0000-000000000001',
   created_actor.id,
   role.id,
-  '{"portal.read": true}'::jsonb,
+  '{
+    "portal.read": true,
+    "order.read": true,
+    "order.create": true,
+    "order.cancel": true
+  }'::jsonb,
   now()
 from created_actor
 join public.representative_role_definitions as role
   on role.code = 'portal-representative';
 ```
 
-The credential path is intentionally read-only. Production enrollment, recovery, revocation operations, magic links, and secure private-link exchange require approved administrative workflows.
+The overview remains read-only, while `/dealer/orders` exposes only the represented party's order projection and secure order commands. Submission records demand but does not reserve or move stock. Production enrollment, recovery, revocation operations, magic links, and secure private-link exchange require approved administrative workflows.
 
 ## Local licensing access
 
 The licensing office is available at `http://127.0.0.1:3000/staff/licensing`. A staff login also needs the configurable `licensing_officer` role. For disposable local development, follow the staff bootstrap pattern above and select `licensing_officer` instead of `catalogue_manager`.
 
 Licensing commands allocate references, record immutable status/endorsement history, write full audit context, and enqueue durable outbox events in one transaction. The current issue form intentionally creates an open-term license because duration and renewal policy have not been approved.
+
+## Local order desk access
+
+The staff order desk is available at `http://127.0.0.1:3000/staff/orders`. A staff login also needs the configurable `order_officer` role. For disposable local development, follow the staff bootstrap pattern above and select `order_officer` instead of `catalogue_manager`.
+
+The role contains separate read, routine review, ordinary, restricted, unique, price-edit, and cancellation permissions. The current desk never derives stock in the browser and cannot create a reservation or inventory movement.

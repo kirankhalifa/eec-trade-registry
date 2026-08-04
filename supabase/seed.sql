@@ -3,14 +3,15 @@
 -- fictional fixtures rather than production records.
 
 insert into public.currencies (
-  id, code, display_name, symbol, symbol_position, minor_unit_scale
+  id, code, display_name, symbol, symbol_position, minor_unit_scale, is_default
 ) values (
   '10000000-0000-0000-0000-000000000001',
   'SEP',
   'Septims',
   'Septims',
   'suffix',
-  0
+  0,
+  true
 );
 
 insert into public.units_of_measure (id, code, display_name, symbol, quantity_scale)
