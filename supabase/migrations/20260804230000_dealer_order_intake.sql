@@ -86,6 +86,54 @@ begin
 end;
 $$;
 
+create or replace function private.set_staff_audit_context(
+  p_permission_code text,
+  p_reason text,
+  p_request_id uuid,
+  p_source_surface text default 'staff_portal'
+)
+returns uuid
+language plpgsql
+volatile
+security definer
+set search_path = ''
+as $$
+declare
+  permission_grant record;
+  normalized_reason text;
+begin
+  normalized_reason := btrim(coalesce(p_reason, ''));
+  if normalized_reason = '' or char_length(normalized_reason) > 500 then
+    raise exception using errcode = '22023', message = 'reason_required';
+  end if;
+  if p_request_id is null then
+    raise exception using errcode = '22023', message = 'request_id_required';
+  end if;
+
+  select * into strict permission_grant
+  from private.require_staff_permission(p_permission_code);
+
+  perform set_config('app.actor_id', permission_grant.actor_id::text, true);
+  perform set_config(
+    'app.staff_assignment_id',
+    permission_grant.staff_assignment_id::text,
+    true
+  );
+  perform set_config('app.represented_party_id', '', true);
+  perform set_config('app.permission_code', p_permission_code, true);
+  perform set_config('app.audit_reason', normalized_reason, true);
+  perform set_config('app.request_id', p_request_id::text, true);
+  perform set_config('app.correlation_id', p_request_id::text, true);
+  perform set_config(
+    'app.source_surface',
+    coalesce(nullif(btrim(p_source_surface), ''), 'staff_portal'),
+    true
+  );
+
+  return permission_grant.actor_id;
+end;
+$$;
+
 create table public.orders (
   id uuid primary key default extensions.gen_random_uuid(),
   public_reference text not null unique,
