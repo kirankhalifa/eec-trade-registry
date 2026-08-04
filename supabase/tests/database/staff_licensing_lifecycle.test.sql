@@ -259,6 +259,8 @@ select lives_ok(
   'retrying issuance with the same request id is safe'
 );
 
+reset role;
+
 select is(
   (select count(*)::integer from public.licenses where source_request_id = 'e2000000-0000-0000-0000-000000000001'),
   1,
@@ -269,6 +271,13 @@ select is(
   (select count(*)::integer from public.outbox_events where deduplication_key = 'license.issued:e2000000-0000-0000-0000-000000000001'),
   1,
   'an issuance retry does not duplicate integration work'
+);
+
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"b2000000-0000-0000-0000-000000000001","role":"authenticated"}',
+  true
 );
 
 select is(
