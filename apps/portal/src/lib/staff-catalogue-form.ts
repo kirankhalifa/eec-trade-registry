@@ -30,12 +30,12 @@ export const createCatalogueItemSchema = mutableCatalogueFieldsSchema.extend({
 });
 
 export const updateCatalogueItemSchema = mutableCatalogueFieldsSchema.extend({
-  itemId: z.string().uuid(),
+  itemId: z.guid(),
   expectedVersion: z.coerce.number().int().positive().safe(),
 });
 
 export const setCatalogueStatusSchema = z.object({
-  itemId: z.string().uuid(),
+  itemId: z.guid(),
   expectedVersion: z.coerce.number().int().positive().safe(),
   status: z.enum(["active", "archived"]),
   reason: reasonSchema,

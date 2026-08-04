@@ -7,7 +7,7 @@ const staffCatalogueItemSchema = z.object({
   currency_code: z.string().nullable(),
   description: z.string(),
   display_name: z.string(),
-  id: z.string().uuid(),
+  id: z.guid(),
   internal_notes: z.string(),
   inventory_mode: z.enum(["fungible", "serialized"]),
   item_code: z.string(),

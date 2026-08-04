@@ -10,6 +10,8 @@ The product owner authorized implementation on 2026-08-04 and approved the opera
 
 The implemented order-intake boundary is recorded in `docs/adr/0007-dealer-order-intake.md`. It records commercial demand only: no submission or review command may imply a stock reservation, inventory movement, title transfer, quota entry, or settled price when those records do not exist.
 
+The implemented inventory boundary is recorded in `docs/adr/0008-inventory-ledger-and-reservations.md`. Fungible stock exists only as balanced immutable ledger entries; reservations are separate expiring claims. Serialized receipt, fulfillment, title transfer, reconciliation adjustments, and transfers remain outside that increment.
+
 ## 2. Required reading
 
 Before implementation work, read the documents relevant to the task:

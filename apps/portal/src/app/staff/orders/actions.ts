@@ -16,7 +16,7 @@ function destination(path: string, key: "error" | "notice", value: string) {
 }
 
 function orderPath(value: FormDataEntryValue | null) {
-  return typeof value === "string" && z.string().uuid().safeParse(value).success
+  return typeof value === "string" && z.guid().safeParse(value).success
     ? `/staff/orders/${value}`
     : "/staff/orders";
 }

@@ -3,7 +3,7 @@ import { z } from "zod";
 
 const orderLineSchema = z.object({
   control_profile_code: z.string(),
-  id: z.string().uuid(),
+  id: z.guid(),
   item_code: z.string(),
   item_name: z.string(),
   line_number: z.number().int().positive(),
@@ -26,10 +26,10 @@ const orderSchema = z.object({
   dealer_notes: z.string(),
   dealer_reference: z.string(),
   fulfillment_mode: z.enum(["collection", "delivery", "consignment"]),
-  id: z.string().uuid(),
+  id: z.guid(),
   license_reference: z.string().nullable(),
   lines: z.array(orderLineSchema),
-  ordering_party_id: z.string().uuid(),
+  ordering_party_id: z.guid(),
   ordering_party_name: z.string(),
   public_reference: z.string(),
   status: z.string(),
@@ -38,7 +38,7 @@ const orderSchema = z.object({
 });
 
 const dealerAuthorizationOptionSchema = z.object({
-  id: z.string().uuid(),
+  id: z.guid(),
   jurisdiction_code: z.string(),
   jurisdiction_label: z.string(),
   public_reference: z.string(),
@@ -46,14 +46,14 @@ const dealerAuthorizationOptionSchema = z.object({
 
 const licenseOptionSchema = z.object({
   class_label: z.string(),
-  id: z.string().uuid(),
+  id: z.guid(),
   public_reference: z.string(),
 });
 
 const orderRepresentationSchema = z.object({
   dealer_authorizations: z.array(dealerAuthorizationOptionSchema),
   licenses: z.array(licenseOptionSchema),
-  party_id: z.string().uuid(),
+  party_id: z.guid(),
   party_name: z.string(),
 });
 
@@ -61,7 +61,7 @@ const orderItemSchema = z.object({
   availability_label: z.string(),
   control_label: z.string(),
   display_name: z.string(),
-  id: z.string().uuid(),
+  id: z.guid(),
   item_code: z.string(),
   pricing_status: z.literal("pending"),
   unit_code: z.string(),

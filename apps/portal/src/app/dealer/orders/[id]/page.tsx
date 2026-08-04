@@ -19,7 +19,7 @@ export default async function DealerOrderDetail({
   searchParams,
 }: DealerOrderDetailProps) {
   const [{ id }, parameters] = await Promise.all([params, searchParams]);
-  if (!z.string().uuid().safeParse(id).success) notFound();
+  if (!z.guid().safeParse(id).success) notFound();
 
   const { client } = await requireDealerSession();
   const result = await getDealerOrder(client, id);

@@ -326,6 +326,8 @@ Implementation note: dealers with `order.cancel` scope and staff with `order.can
 
 Requires an authorized actor, reason, and permitted state. The initial term is 48 hours. Extension updates the reservation's expiration with an audit record; maximum cumulative duration remains a configurable policy gate.
 
+Implementation note: `staff_create_reservation` locks the physical inventory account and order line, re-derives ledger on-hand and non-elapsed active claims, enforces approved remaining quantity, and creates a 48-hour claim atomically. Full claims move a line to `reserved`; partial claims remain explicitly `partially_awaiting_stock`. Extension is version-checked and cannot revive an elapsed claim.
+
 ### Consume reservation
 
 Consumption occurs only as part of fulfillment, dispatch, or collection. It posts the relevant inventory or custody movement and converts quota hold to consumption in the same transaction.
@@ -338,6 +340,8 @@ Consumption occurs only as part of fulfillment, dispatch, or collection. It post
 4. Coupled quota hold is released.
 5. Order line returns to approved/awaiting-stock or becomes cancelled/expired according to policy.
 6. Audit and notification events are recorded.
+
+Implementation note: staff can explicitly release a current claim or finalize an elapsed claim as expired. Either operation updates reservation, line, derived order state, audit, append-only domain history, and outbox records in one transaction. Elapsed active claims no longer reduce availability even before the explicit finalization worker is implemented.
 
 ### Concurrency tests required later
 
@@ -359,11 +363,15 @@ Consumption occurs only as part of fulfillment, dispatch, or collection. It post
 5. `post_inventory_transaction` creates balanced ledger entries, asset events, history, audit, and outbox events atomically.
 6. Available stock projection updates from committed records.
 
+Implementation note: the first receipt command supports fungible items only and posts at the current time into an assigned configured location. It creates or reuses physical and external-source accounts, locks the account scope, writes a balanced two-entry transaction, and emits audit/outbox records. Serialized goods are rejected until the asset registry can record their identities and custody events.
+
 ### Correct a receipt
 
 - Unposted drafts may be edited.
 - A posted receipt is immutable.
 - Correction posts a reversal, then a corrected transaction, both linked to the original and reasoned.
+
+Implementation note: an inventory controller can now post one idempotent linked reversal of a receipt. The command locks the original and affected accounts and is rejected if the reversal would make physical stock negative or consume quantities claimed by effective reservations. A corrected replacement receipt remains a separate command with its own provenance.
 
 ### Reconciliation
 
