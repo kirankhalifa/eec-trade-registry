@@ -107,9 +107,21 @@ select is(
   'three public export definitions are seeded'
 );
 select is(
-  (select count(*)::integer from public.notification_templates),
+  (
+    select count(*)::integer
+    from public.notification_templates
+    where event_type in (
+      'order.submitted',
+      'order.line_reviewed',
+      'license.issued',
+      'license.status_changed',
+      'reservation.created',
+      'reservation.expired',
+      'inventory.receipt_posted'
+    )
+  ),
   7,
-  'versioned staff notification templates are seeded'
+  'the projection foundation notification templates are seeded'
 );
 select is(
   (select count(*)::integer from public.get_public_catalogue_export()),
