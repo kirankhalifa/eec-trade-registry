@@ -132,39 +132,44 @@ select lives_ok(
   )$test$,
   'operator can prepare the destination account'
 );
+
+reset role;
+select set_config(
+  'test.transfer_source_account_id',
+  (
+    select account.id::text from public.inventory_accounts as account
+    where account.warehouse_id = 'aa000000-0000-0000-0000-000000000001'
+      and account.stock_location_id = 'ab000000-0000-0000-0000-000000000002'
+      and account.item_id = '70000000-0000-0000-0000-000000000001'
+  ),
+  true
+);
+select set_config(
+  'test.transfer_destination_account_id',
+  (
+    select account.id::text from public.inventory_accounts as account
+    where account.warehouse_id = 'aa000000-0000-0000-0000-000000000003'
+      and account.stock_location_id = 'ab000000-0000-0000-0000-000000000020'
+      and account.item_id = '70000000-0000-0000-0000-000000000001'
+  ),
+  true
+);
+
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"b5000000-0000-0000-0000-000000000001","role":"authenticated"}', true);
 select lives_ok(
   format(
-    $test$select * from public.staff_create_stock_transfer(%L, %L, 5, 'Rebalance warehouses', 'f5000000-0000-0000-0000-000000000003')$test$,
-    (
-      select account.id from public.inventory_accounts as account
-      where account.warehouse_id = 'aa000000-0000-0000-0000-000000000001'
-        and account.stock_location_id = 'ab000000-0000-0000-0000-000000000002'
-        and account.item_id = '70000000-0000-0000-0000-000000000001'
-    ),
-    (
-      select account.id from public.inventory_accounts as account
-      where account.warehouse_id = 'aa000000-0000-0000-0000-000000000003'
-        and account.stock_location_id = 'ab000000-0000-0000-0000-000000000020'
-        and account.item_id = '70000000-0000-0000-0000-000000000001'
-    )
+    $test$select * from public.staff_create_stock_transfer(%L::uuid, %L::uuid, 5, 'Rebalance warehouses', 'f5000000-0000-0000-0000-000000000003')$test$,
+    current_setting('test.transfer_source_account_id'),
+    current_setting('test.transfer_destination_account_id')
   ),
   'operator can create a transfer request'
 );
 select lives_ok(
   format(
-    $test$select * from public.staff_create_stock_transfer(%L, %L, 5, 'Rebalance warehouses', 'f5000000-0000-0000-0000-000000000003')$test$,
-    (
-      select account.id from public.inventory_accounts as account
-      where account.warehouse_id = 'aa000000-0000-0000-0000-000000000001'
-        and account.stock_location_id = 'ab000000-0000-0000-0000-000000000002'
-        and account.item_id = '70000000-0000-0000-0000-000000000001'
-    ),
-    (
-      select account.id from public.inventory_accounts as account
-      where account.warehouse_id = 'aa000000-0000-0000-0000-000000000003'
-        and account.stock_location_id = 'ab000000-0000-0000-0000-000000000020'
-        and account.item_id = '70000000-0000-0000-0000-000000000001'
-    )
+    $test$select * from public.staff_create_stock_transfer(%L::uuid, %L::uuid, 5, 'Rebalance warehouses', 'f5000000-0000-0000-0000-000000000003')$test$,
+    current_setting('test.transfer_source_account_id'),
+    current_setting('test.transfer_destination_account_id')
   ),
   'repeating the request is idempotent'
 );
@@ -172,10 +177,23 @@ select lives_ok(
   $test$select public.get_staff_transfer_workspace()$test$,
   'operator can open the transfer workspace'
 );
+select set_config(
+  'test.stock_transfer_id',
+  (
+    select stock_transfer_id::text
+    from public.staff_create_stock_transfer(
+      current_setting('test.transfer_source_account_id')::uuid,
+      current_setting('test.transfer_destination_account_id')::uuid,
+      5, 'Rebalance warehouses',
+      'f5000000-0000-0000-0000-000000000003'
+    )
+  ),
+  true
+);
 select throws_ok(
   format(
     $test$select * from public.staff_authorize_stock_transfer(%L, 1, 'Approve movement', 'f5000000-0000-0000-0000-000000000004')$test$,
-    (select id from public.stock_transfers where source_request_id = 'f5000000-0000-0000-0000-000000000003')
+    current_setting('test.stock_transfer_id')
   ),
   '42501', 'staff_warehouse_permission_denied',
   'warehouse operator cannot self-authorize a transfer'
@@ -185,14 +203,14 @@ select set_config('request.jwt.claims', '{"sub":"b5000000-0000-0000-0000-0000000
 select lives_ok(
   format(
     $test$select * from public.staff_authorize_stock_transfer(%L, 1, 'Approve movement', 'f5000000-0000-0000-0000-000000000004')$test$,
-    (select id from public.stock_transfers where source_request_id = 'f5000000-0000-0000-0000-000000000003')
+    current_setting('test.stock_transfer_id')
   ),
   'inventory controller can authorize a transfer'
 );
 select lives_ok(
   format(
     $test$select * from public.staff_authorize_stock_transfer(%L, 1, 'Approve movement', 'f5000000-0000-0000-0000-000000000004')$test$,
-    (select id from public.stock_transfers where source_request_id = 'f5000000-0000-0000-0000-000000000003')
+    current_setting('test.stock_transfer_id')
   ),
   'authorization retries are idempotent'
 );
@@ -207,21 +225,21 @@ select set_config('request.jwt.claims', '{"sub":"b5000000-0000-0000-0000-0000000
 select lives_ok(
   format(
     $test$select * from public.staff_dispatch_stock_transfer(%L, 2, 'Release carrier custody', 'f5000000-0000-0000-0000-000000000005')$test$,
-    (select id from public.stock_transfers where source_request_id = 'f5000000-0000-0000-0000-000000000003')
+    current_setting('test.stock_transfer_id')
   ),
   'operator can dispatch an authorized transfer'
 );
 select lives_ok(
   format(
     $test$select * from public.staff_dispatch_stock_transfer(%L, 2, 'Release carrier custody', 'f5000000-0000-0000-0000-000000000005')$test$,
-    (select id from public.stock_transfers where source_request_id = 'f5000000-0000-0000-0000-000000000003')
+    current_setting('test.stock_transfer_id')
   ),
   'dispatch retries are idempotent'
 );
 select throws_ok(
   format(
     $test$select * from public.staff_cancel_stock_transfer(%L, 3, 'Try to erase dispatch', 'f5000000-0000-0000-0000-000000000006')$test$,
-    (select id from public.stock_transfers where source_request_id = 'f5000000-0000-0000-0000-000000000003')
+    current_setting('test.stock_transfer_id')
   ),
   '42501', 'staff_warehouse_permission_denied',
   'operator lacks the controller cancellation permission'
@@ -243,7 +261,7 @@ select set_config('request.jwt.claims', '{"sub":"b5000000-0000-0000-0000-0000000
 select throws_ok(
   format(
     $test$select * from public.staff_cancel_stock_transfer(%L, 3, 'Post-dispatch cancellation', 'f5000000-0000-0000-0000-000000000006')$test$,
-    (select id from public.stock_transfers where source_request_id = 'f5000000-0000-0000-0000-000000000003')
+    current_setting('test.stock_transfer_id')
   ),
   '22023', 'stock_transfer_not_cancellable',
   'even a controller cannot cancel dispatched stock'
@@ -253,21 +271,21 @@ select set_config('request.jwt.claims', '{"sub":"b5000000-0000-0000-0000-0000000
 select lives_ok(
   format(
     $test$select * from public.staff_dispute_stock_transfer(%L, 3, 'Seal mismatch at receiving', 'f5000000-0000-0000-0000-000000000007')$test$,
-    (select id from public.stock_transfers where source_request_id = 'f5000000-0000-0000-0000-000000000003')
+    current_setting('test.stock_transfer_id')
   ),
   'destination operator can dispute a dispatched transfer'
 );
 select lives_ok(
   format(
     $test$select * from public.staff_receive_stock_transfer(%L, 4, 'Count reconciled and accepted', 'f5000000-0000-0000-0000-000000000008')$test$,
-    (select id from public.stock_transfers where source_request_id = 'f5000000-0000-0000-0000-000000000003')
+    current_setting('test.stock_transfer_id')
   ),
   'destination operator can receive a disputed transfer after reconciliation'
 );
 select lives_ok(
   format(
     $test$select * from public.staff_receive_stock_transfer(%L, 4, 'Count reconciled and accepted', 'f5000000-0000-0000-0000-000000000008')$test$,
-    (select id from public.stock_transfers where source_request_id = 'f5000000-0000-0000-0000-000000000003')
+    current_setting('test.stock_transfer_id')
   ),
   'receipt retries are idempotent'
 );
@@ -297,26 +315,29 @@ set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"b5000000-0000-0000-0000-000000000002","role":"authenticated"}', true);
 select lives_ok(
   format(
-    $test$select * from public.staff_create_stock_transfer(%L, %L, 1, 'Create cancellable transfer', 'f5000000-0000-0000-0000-000000000009')$test$,
-    (
-      select account.id from public.inventory_accounts as account
-      where account.warehouse_id = 'aa000000-0000-0000-0000-000000000001'
-        and account.stock_location_id = 'ab000000-0000-0000-0000-000000000002'
-        and account.item_id = '70000000-0000-0000-0000-000000000001'
-    ),
-    (
-      select account.id from public.inventory_accounts as account
-      where account.warehouse_id = 'aa000000-0000-0000-0000-000000000003'
-        and account.stock_location_id = 'ab000000-0000-0000-0000-000000000020'
-        and account.item_id = '70000000-0000-0000-0000-000000000001'
-    )
+    $test$select * from public.staff_create_stock_transfer(%L::uuid, %L::uuid, 1, 'Create cancellable transfer', 'f5000000-0000-0000-0000-000000000009')$test$,
+    current_setting('test.transfer_source_account_id'),
+    current_setting('test.transfer_destination_account_id')
   ),
   'controller can create a second transfer'
+);
+select set_config(
+  'test.cancel_transfer_id',
+  (
+    select stock_transfer_id::text
+    from public.staff_create_stock_transfer(
+      current_setting('test.transfer_source_account_id')::uuid,
+      current_setting('test.transfer_destination_account_id')::uuid,
+      1, 'Create cancellable transfer',
+      'f5000000-0000-0000-0000-000000000009'
+    )
+  ),
+  true
 );
 select lives_ok(
   format(
     $test$select * from public.staff_cancel_stock_transfer(%L, 1, 'Demand withdrawn before dispatch', 'f5000000-0000-0000-0000-000000000010')$test$,
-    (select id from public.stock_transfers where source_request_id = 'f5000000-0000-0000-0000-000000000009')
+    current_setting('test.cancel_transfer_id')
   ),
   'controller can cancel a pending transfer'
 );
