@@ -226,6 +226,8 @@ Staff can receive, reserve, fulfill, transfer, and reconcile stock with a comple
 
 ## 8. Slice 6 — Transfers, consignment, and unique assets
 
+Implementation status: the first custody increment adds fungible warehouse transfer requests, explicit authorization, balanced source-to-transit dispatch, destination receipt, discrepancy recording, pre-dispatch cancellation, warehouse-scoped permissions, optimistic concurrency, idempotency, immutable transfer history, audit events, and staff alerts. Consignment agreements/reporting, returns, partial discrepancy resolution, and serialized asset custody remain future increments.
+
 ### User outcome
 
 The organization can control custody across warehouses, factors, and dealers; serialized goods remain individually traceable.

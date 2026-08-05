@@ -619,7 +619,7 @@ Key fields:
 
 ## 9. Warehouses, inventory, and transfers
 
-Implementation status: warehouse operations implement configurable warehouses and locations, physical and external inventory accounts, immutable posted transaction headers, balanced signed ledger entries, derived on-hand/reserved/available projections, linked reversals, warehouse-scoped staff grants, effective-dated reservations, and fungible stock issues driven by reservation fulfillment. Serialized assets, transfers, counts, reconciliation adjustments, returns, and consignment custody accounts remain future work.
+Implementation status: warehouse operations implement configurable warehouses and locations; physical, in-transit custody, and external accounts; immutable posted transaction headers; balanced signed ledger entries; derived on-hand/reserved/available projections; linked reversals; warehouse-scoped staff grants; effective-dated reservations; fungible fulfillment; and full-quantity warehouse transfer dispatch and receipt. Serialized assets, counts, reconciliation adjustments, returns, partial discrepancy resolution, and consignment custody remain future work.
 
 ### `warehouses`
 
@@ -675,6 +675,8 @@ For a fungible item, each posted transaction must balance across appropriate sou
 The implemented receipt command creates one negative external-source entry and one positive physical entry in a single statement. Constraint triggers require a zero transaction sum, prevent negative physical balances, and prevent a ledger reversal from reducing on-hand below current effective reservations. Inventory accounts contain classification and custody dimensions but no editable quantity.
 
 The fulfillment command creates the inverse balanced issue after marking its reservation consumed in the same transaction. `order_fulfillments` links the reservation, order line, warehouse, quantity, actor, and issue transaction. A reversal adds inverse ledger entries, marks the fulfillment reversed, and reopens demand; it never reactivates the consumed reservation.
+
+`stock_transfers` records the source and destination physical accounts, unchanged owner, quantity, explicit lifecycle, responsible actors, optimistic version, and dispatch/receipt transaction evidence. Dispatch moves quantity from the source physical account to an `in_transit` custody account; receipt clears transit into the destination physical account. `stock_transfer_events` is immutable. A dispatched transfer cannot be cancelled, and a discrepancy keeps its quantity in transit until an authorized receipt or later return/resolution workflow.
 
 ### `stock_counts` and `stock_count_lines`
 
