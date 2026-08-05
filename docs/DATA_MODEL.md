@@ -819,7 +819,7 @@ Key fields:
 - `status`, `attempt_count`, `last_error`
 - `deduplication_key`
 
-Implementation note: the licensing lifecycle creates the initial durable outbox table and emits versioned issuance, status, endorsement-grant, and endorsement-revocation events. Delivery workers and destinations are deliberately absent from this increment.
+Implementation note: licensing, order, and inventory commands emit versioned events into this durable table. The projection-integration increment materializes only configured event routes, leases delivery attempts, records external message metadata, retries safe failures, and never makes outbox or message state authoritative for the source transaction.
 
 ### `integration_deliveries`
 
@@ -834,13 +834,19 @@ Key fields:
 
 An external message ID is delivery metadata, not business authority.
 
+Implementation note: the current schema separates non-secret `integration_destinations`, versioned `notification_templates`, configured `integration_event_routes`, and per-event `integration_deliveries`. Destination and route deactivation stops new claims. Leases, attempt limits, deduplication keys, worker IDs, errors, manual replay, and audit snapshots provide an inspectable delivery history. Secrets never enter these tables.
+
 ### `export_definitions`
 
 Approved projection source, column contract, destination reference, refresh policy, and visibility.
 
+The initial definitions are disabled by default and cover only approved public catalogue, dealer, and license fields. Their shared Google spreadsheet identifier is a non-secret destination reference; credential material stays in the server environment.
+
 ### `export_runs`
 
 Records watermark, row count, generated-at time, checksum, destination version, status, attempts, and error. It does not import Sheet edits.
+
+The current worker uses a unique scheduled or manual run key, a time-bounded lease, bounded automatic retry, and full-tab replacement. A manual replay is a new audited operational decision on existing delivery state; it cannot mutate a catalogue, dealer, license, order, or inventory record.
 
 ### Public views and functions
 

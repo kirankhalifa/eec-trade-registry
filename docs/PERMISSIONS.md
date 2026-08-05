@@ -148,9 +148,9 @@ Scope names are provisional; they should become stable machine identifiers befor
 - `configuration.read`
 - `configuration.manage`
 - `access.manage`
-- `integration.status.read`
+- `integration.private.read`
+- `integration.manage`
 - `integration.replay`
-- `export.run`
 - `document.generate`
 - `system.health.read`
 
@@ -286,6 +286,8 @@ No authorization check should use a text title such as `factor` as sufficient pr
 ### Integration scope
 
 An integration principal receives only an allowlist of functions and projection columns. Destination configuration is server-side. The bot or exporter cannot query arbitrary tables.
+
+The implemented `integration_operator` role bundles `integration.private.read`, `integration.manage`, and `integration.replay`. It may inspect the integration workspace, store or change non-secret spreadsheet/channel identifiers, enable approved definitions, request a snapshot, and replay a failed delivery with an audit reason. It cannot read secret environment values, edit template SQL, query business tables directly, or change source business state. Worker claim/complete/fail functions and enumerating export projections are executable only by the server-side `service_role` principal.
 
 ## 7. Data classification
 

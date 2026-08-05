@@ -6,6 +6,11 @@ const notices: Record<string, string> = {
   endorsement_revoked: "The endorsement was revoked without deleting its history.",
   license_issued: "The license was issued and its public reference was allocated.",
   license_status_changed: "The license status decision was recorded.",
+  integration_destination_saved: "The integration destination configuration was saved.",
+  export_schedule_saved: "The public export schedule was saved.",
+  export_queued: "A public projection snapshot was queued for the next worker cycle.",
+  export_requeued: "The failed export was returned to the worker queue.",
+  delivery_requeued: "The failed notification was returned to the worker queue.",
   saved: "The catalogue record was saved.",
 };
 
