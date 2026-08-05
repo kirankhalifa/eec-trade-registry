@@ -321,36 +321,36 @@ security definer
 set search_path = ''
 as $$
   select
-    authorization.public_reference,
+    dealer_authorization.public_reference,
     party.public_display_name,
     dealer_type.display_name,
     jurisdiction.public_name,
-    nullif(btrim(authorization.approved_premises_public), ''),
+    nullif(btrim(dealer_authorization.approved_premises_public), ''),
     status.display_name,
     (
       status.confers_authority
-      and authorization.effective_from <= current_timestamp
+      and dealer_authorization.effective_from <= current_timestamp
       and (
-        authorization.effective_until is null
-        or authorization.effective_until > current_timestamp
+        dealer_authorization.effective_until is null
+        or dealer_authorization.effective_until > current_timestamp
       )
     ),
-    authorization.effective_from,
-    authorization.effective_until,
+    dealer_authorization.effective_from,
+    dealer_authorization.effective_until,
     coalesce(related.references, ''),
-    nullif(btrim(authorization.public_notes), ''),
+    nullif(btrim(dealer_authorization.public_notes), ''),
     current_timestamp
-  from public.dealer_authorizations as authorization
+  from public.dealer_authorizations as dealer_authorization
   join public.parties as party
-    on party.id = authorization.dealer_party_id
+    on party.id = dealer_authorization.dealer_party_id
     and party.status = 'active'
     and party.public_profile_enabled
   join public.dealer_types as dealer_type
-    on dealer_type.id = authorization.dealer_type_id
+    on dealer_type.id = dealer_authorization.dealer_type_id
   join public.jurisdictions as jurisdiction
-    on jurisdiction.id = authorization.jurisdiction_id
+    on jurisdiction.id = dealer_authorization.jurisdiction_id
   join public.dealer_status_definitions as status
-    on status.id = authorization.status_definition_id
+    on status.id = dealer_authorization.status_definition_id
     and status.publicly_verifiable
   left join lateral (
     select string_agg(license.public_reference, ', ' order by license.public_reference) as references
@@ -362,11 +362,11 @@ as $$
       on license_holder.id = license.holder_party_id
       and license_holder.status = 'active'
       and license_holder.public_profile_enabled
-    where license.dealer_authorization_id = authorization.id
+    where license.dealer_authorization_id = dealer_authorization.id
       and license.public_disclosure_enabled
   ) as related on true
-  where authorization.public_disclosure_enabled
-  order by party.public_display_name, authorization.public_reference;
+  where dealer_authorization.public_disclosure_enabled
+  order by party.public_display_name, dealer_authorization.public_reference;
 $$;
 
 create function public.get_public_license_export()
