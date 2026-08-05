@@ -402,6 +402,8 @@ Negative adjustments, large variances, or unique-asset discrepancies may require
 4. Fulfillment transaction consumes reservations, posts ledger or asset custody movements, consumes quota, advances line/order status, creates documents, audit entries, and notifications.
 5. Partial collection leaves explicit remaining state and adjusted reservations. Wholesale title passes only for the quantity confirmed collected or received.
 
+Implementation note: the fungible completion increment accepts one active, unexpired reservation at a time. A warehouse-scoped command locks the physical account, reservation, order line, and order; marks the reservation consumed; posts a balanced physical-to-external issue; increments fulfilled quantity; derives statuses; appends audit/history; and emits `fulfillment.completed` atomically. An inventory controller may add a linked reversal that restores stock and reopens demand. The consumed reservation remains historical and a replacement claim must be created before another completion.
+
 ### Uncollected order
 
 At reservation expiry, the system releases stock and quota holds. The unfulfilled quantity remains explicit and may return to awaiting stock; fees, standing effects, or automatic cancellation remain unresolved policy.

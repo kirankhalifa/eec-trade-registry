@@ -184,7 +184,9 @@ The implemented initial role receives `order.private.read`, `order.review`, `ord
 
 Can receive, pick, dispatch, and receive transfers for assigned warehouses. Cannot self-approve reconciliation adjustments above configured thresholds.
 
-The implemented initial role receives `inventory.position.read`, `inventory.receipt.post`, `reservation.manage`, `reservation.extend`, and `reservation.release`. Each function evaluates `assignment_scope.warehouse_ids`; an absent key means all configured warehouses, while a present array is an allowlist. Picking, dispatch, fulfillment, transfer, and reconciliation permissions are not yet implemented.
+The implemented role receives `inventory.position.read`, `inventory.receipt.post`, `reservation.manage`, `reservation.extend`, `reservation.release`, `inventory.fulfillment.read`, and `inventory.fulfillment.post`. Each function evaluates `assignment_scope.warehouse_ids`; an absent key means all configured warehouses, while a present array is an allowlist. Picking stages, dispatch, transfer, and reconciliation permissions remain future work.
+
+`inventory_controller` additionally receives `inventory.receipt.reverse` and `inventory.fulfillment.reverse`. A fulfillment reversal restores ledger stock and reopens demand without granting authority to rewrite the original issue or reactivate its consumed reservation.
 
 ### Inventory controller
 

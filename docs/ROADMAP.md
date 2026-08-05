@@ -190,7 +190,7 @@ An authenticated dealer can see applicable terms, submit a requisition, and trac
 
 ## 7. Slice 5 — Reservations and warehouse ledger
 
-Implementation status: the first increment configures the EEC warehouse and locations without inventing opening stock; adds physical/external accounts, balanced immutable fungible receipts, linked reversals, ledger-derived positions, warehouse-scoped staff roles, and atomic 48-hour reservation creation, extension, release, and expiry coupled to order-line/header state. Serialized receipt, reservation consumption, picking, fulfillment, returns, counts, adjustments, reconciliation, scheduled expiry execution, and low-stock projections remain future work.
+Implementation status: the current increments configure the EEC warehouse and locations without inventing opening stock; add physical/external accounts, balanced immutable fungible receipts and issues, linked reversals, ledger-derived positions, warehouse-scoped staff roles, atomic 48-hour reservation management, and fungible reservation consumption coupled to fulfillment, order-line, and order state. Serialized receipt and custody, picking stages, returns, counts, adjustments, reconciliation, scheduled expiry execution, and low-stock projections remain future work.
 
 ### User outcome
 
