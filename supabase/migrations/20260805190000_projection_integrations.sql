@@ -337,7 +337,7 @@ as $$
     ),
     dealer_authorization.effective_from,
     dealer_authorization.effective_until,
-    coalesce(related.references, ''),
+    coalesce(related.public_references, ''),
     nullif(btrim(dealer_authorization.public_notes), ''),
     current_timestamp
   from public.dealer_authorizations as dealer_authorization
@@ -353,7 +353,7 @@ as $$
     on status.id = dealer_authorization.status_definition_id
     and status.publicly_verifiable
   left join lateral (
-    select string_agg(license.public_reference, ', ' order by license.public_reference) as references
+    select string_agg(license.public_reference, ', ' order by license.public_reference) as public_references
     from public.licenses as license
     join public.license_status_definitions as license_status
       on license_status.id = license.status_definition_id
