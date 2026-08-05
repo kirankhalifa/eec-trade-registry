@@ -117,10 +117,14 @@ Scope names are provisional; they should become stable machine identifiers befor
 - `transfer.authorize`
 - `transfer.dispatch`
 - `transfer.receive`
+- `asset.private.read`
 - `asset.register`
-- `asset.allocate`
+- `asset.reserve`
 - `asset.custody.transfer`
 - `asset.inspect`
+- `asset.lifecycle.manage`
+
+Implementation note: `warehouse_operator` receives private read, registration, allocation, custody-transfer, and inspection capabilities; `inventory_controller` receives all serialized-asset capabilities, including lifecycle transitions; and `order_officer` receives private read and allocation. Registration remains warehouse-scoped. No asset permission grants direct table access, public disclosure, transaction-specific approval, or unique fulfillment authority.
 
 ### Consignment and finance
 

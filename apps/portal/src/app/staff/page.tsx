@@ -82,6 +82,9 @@ export default async function StaffCataloguePage({
           <Link className="button button-secondary" href="/staff/transfers">
             Transfers
           </Link>
+          <Link className="button button-secondary" href="/staff/assets">
+            Serialized assets
+          </Link>
           <Link className="button button-secondary" href="/staff/licensing">
             Licensing office
           </Link>
