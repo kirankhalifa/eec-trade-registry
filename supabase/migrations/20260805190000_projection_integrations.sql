@@ -69,7 +69,9 @@ create table public.integration_destinations (
   check (
     external_reference is null
     or case destination_type
-      when 'google_sheets' then external_reference ~ '^[A-Za-z0-9_-]{10,256}$'
+      when 'google_sheets' then
+        char_length(external_reference) between 10 and 256
+        and external_reference ~ '^[A-Za-z0-9_-]+$'
       when 'discord_channel' then external_reference ~ '^[0-9]{16,22}$'
       else false
     end
