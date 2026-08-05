@@ -275,7 +275,8 @@ Frontend code may display estimates for usability only when clearly labeled and 
 
 ## 8. Security and privacy requirements
 
-- Staff authenticate through Supabase Auth using an approved identity method.
+- Staff authenticate through Supabase Auth using Discord OAuth and the server-side PKCE callback flow approved in ADR 0009. The staff portal exposes no email/password form.
+- Discord authentication never grants staff authority by itself; active actor and permission assignments in PostgreSQL remain mandatory.
 - Staff authorization is enforced in PostgreSQL row-level security and secure functions, not only hidden UI controls.
 - Dealer sessions are scoped to represented parties and expire or can be revoked.
 - Raw private-link tokens are never stored; only strong token digests and metadata are retained.
@@ -341,6 +342,7 @@ The product owner approved the following initial deployment policy on 2026-08-04
 - The initial license catalogue uses three configurable classes—general trade, commercial dealer, and institutional trade—and modular configurable endorsements.
 - Authorization follows active permissions and scope. There is no universal second-approver requirement.
 - Dealer authentication begins with individual password credentials through Supabase Auth.
+- Staff authentication begins with individual Discord OAuth identities through Supabase Auth. Provider identity and database business authorization remain separate.
 - Prices are editable but may be unset. An unset price is pending/unavailable, not zero.
 - Ordinary, restricted, and unique are the initial configurable control behaviors; restricted and unique paths require stronger review in line with ADR 0005.
 - Partial approval and fulfillment are supported. Orders may be submitted without stock and may wait for stock.

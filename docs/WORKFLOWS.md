@@ -51,14 +51,15 @@ Let specifically assigned catalogue staff maintain canonical item source records
 
 ### Flow
 
-1. Staff signs in through Supabase Auth using an individually provisioned account.
-2. The server validates the session token; each database request independently resolves an active actor profile, effective-dated role assignment, and required permission.
-3. The internal work queue is returned by a secured projection and includes staff-only catalogue fields needed for this task.
-4. Creating an item calls a secure command that creates one unpublished canonical record. It does not create publication, price, eligibility, inventory, or asset state.
-5. Editing an item supplies the expected record version. The command locks and rechecks the row so stale work cannot overwrite a concurrent change.
-6. Item code and public slug remain immutable after creation until a correction policy is approved.
-7. Archive and restore are explicit status commands with a mandatory reason. Archiving removes the item from current public projections without deleting publication, price, or audit history.
-8. Every accepted write records actor, authentication identity, permission and assignment, request/correlation ID, reason, previous state, new state, source surface, and timestamp.
+1. Staff selects **Continue with Discord**. Supabase Auth initiates Discord OAuth and returns the browser to the portal's fixed allowlisted callback.
+2. The server exchanges the one-time PKCE authorization code for a cookie session. The portal accepts no caller-controlled post-login destination.
+3. Each database request independently validates the Supabase session and resolves an active actor profile, effective-dated role assignment, and required permission. A Discord-authenticated user without assignments receives no staff data or business authority.
+4. The internal work queue is returned by a secured projection and includes staff-only catalogue fields needed for this task.
+5. Creating an item calls a secure command that creates one unpublished canonical record. It does not create publication, price, eligibility, inventory, or asset state.
+6. Editing an item supplies the expected record version. The command locks and rechecks the row so stale work cannot overwrite a concurrent change.
+7. Item code and public slug remain immutable after creation until a correction policy is approved.
+8. Archive and restore are explicit status commands with a mandatory reason. Archiving removes the item from current public projections without deleting publication, price, or audit history.
+9. Every accepted write records actor, authentication identity, permission and assignment, request/correlation ID, reason, previous state, new state, source surface, and timestamp.
 
 ### Failure behavior
 
@@ -74,7 +75,7 @@ Let specifically assigned catalogue staff maintain canonical item source records
 - Public or private price changes and approvals
 - Item-code or slug corrections
 - Category, unit, control-profile, role, or assignment administration
-- Production identity-provider, recovery, MFA, and step-up policy
+- Recovery, MFA, and step-up policy beyond the approved Discord OAuth provider
 
 ## 3. Public license and dealer verification
 
