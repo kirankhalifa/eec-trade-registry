@@ -442,6 +442,8 @@ Implementation note: the initial fungible transfer command supports one item and
 - Required custody acceptance is recorded.
 - The asset cannot be dispatched from a custodian or location inconsistent with its derived current state.
 
+Implementation note: the initial asset-custody command records a single accepted handoff immediately, with the acting staff member as the recorded acceptor. It preserves ownership, revalidates the current version and absence of an active allocation, validates warehouse-location custody consistency, updates the current projection, appends an immutable event and audit entry, and emits notification work in one transaction. Multi-step dispatch/receipt, external recipient acceptance, transaction-specific approval, and custody correction remain gated rather than inferred.
+
 ## 13. Consignment
 
 ### Issue consignment
@@ -497,6 +499,8 @@ Implementation note: the initial fungible transfer command supports one item and
 - A missing asset is not deleted.
 - Recovery references the prior loss event.
 - Destruction or retirement is terminal unless a formally approved correction reverses an erroneous event.
+
+Implementation note: authorized staff can now register a serialized asset, create one exclusive 48-hour allocation for one approved unique order line, finalize release or elapsed expiry, record accepted custody and inspections, and append missing, recovery, damage, seizure, retirement, and destruction transitions. Terminal assets cannot be reactivated. An allocation never moves custody, and the current increment deliberately does not consume an allocation into order fulfillment until transaction-specific approval and title-transfer policy are approved.
 
 ## 15. Compliance case and appeal
 

@@ -619,7 +619,7 @@ Key fields:
 
 ## 9. Warehouses, inventory, and transfers
 
-Implementation status: warehouse operations implement configurable warehouses and locations; physical, in-transit custody, and external accounts; immutable posted transaction headers; balanced signed ledger entries; derived on-hand/reserved/available projections; linked reversals; warehouse-scoped staff grants; effective-dated reservations; fungible fulfillment; and full-quantity warehouse transfer dispatch and receipt. Serialized assets, counts, reconciliation adjustments, returns, partial discrepancy resolution, and consignment custody remain future work.
+Implementation status: warehouse operations implement configurable warehouses and locations; physical, in-transit custody, and external accounts; immutable posted transaction headers; balanced signed ledger entries; derived on-hand/reserved/available projections; linked reversals; warehouse-scoped staff grants; effective-dated reservations; fungible fulfillment; and full-quantity warehouse transfer dispatch and receipt. Serialized assets use the dedicated event model in section 10 rather than fungible ledger quantities. Counts, reconciliation adjustments, returns, partial discrepancy resolution, and consignment custody remain future work.
 
 ### `warehouses`
 
@@ -710,6 +710,8 @@ Dealer-reported sales, returns, losses, and on-hand observations. Reports are cl
 
 ## 10. Serialized assets and custody
 
+Implementation status: the initial serialized registry creates stable `EEC-AST` identities for items configured with serialized inventory mode; preserves separate owner, custodian, warehouse, and location fields as transactionally consistent event projections; enforces one active allocation per asset and order line; records registration, release or expiry, accepted custody, inspection, condition, loss, recovery, seizure, retirement, and destruction events; and emits audited outbox work. Registration is warehouse-scoped, all exposed tables are denied directly, and staff commands are permission checked, version checked, reasoned, idempotent, and append-only. Transaction-specific approval, reservation consumption into unique fulfillment, dealer custody views, public disclosure, formal corrections, and evidence attachments remain policy-gated increments.
+
 ### `serialized_assets`
 
 One record per individually controlled item.
@@ -745,6 +747,8 @@ Authoritative functions enforce a valid event sequence and exactly one current c
 ### `asset_reservations`
 
 Exclusive, time-bounded allocation of a serialized asset to an order line or approved purpose. A partial unique-asset reservation is impossible.
+
+The current staff path allocates only one approved serialized order line with quantity one, uses a fixed initial 48-hour term, and explicitly finalizes release or elapsed expiry. Allocation does not move custody and cannot be mistaken for fulfillment.
 
 ### `asset_inspections`
 

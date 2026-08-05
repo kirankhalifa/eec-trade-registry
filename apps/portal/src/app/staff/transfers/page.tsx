@@ -84,6 +84,7 @@ export default async function StaffTransfersPage({ searchParams }: StaffTransfer
         <div className="staff-button-row">
           <Link className="button button-secondary" href="/staff/inventory">Inventory desk</Link>
           <Link className="button button-secondary" href="/staff/fulfillment">Fulfillment</Link>
+          <Link className="button button-secondary" href="/staff/assets">Serialized assets</Link>
           <form action={signOutAction}><button className="button button-primary" type="submit">Sign out</button></form>
         </div>
       </header>
