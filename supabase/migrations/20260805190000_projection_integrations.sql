@@ -1130,13 +1130,13 @@ begin
     'staff_portal'
   );
 
-  update public.integration_destinations
+  update public.integration_destinations as destination
   set external_reference = nullif(btrim(p_external_reference), ''),
       active = p_active,
-      version = version + 1
-  where id = p_destination_id
-    and version = p_expected_version
-  returning integration_destinations.version into next_version;
+      version = destination.version + 1
+  where destination.id = p_destination_id
+    and destination.version = p_expected_version
+  returning destination.version into next_version;
 
   if next_version is null then
     if exists (
@@ -1174,13 +1174,13 @@ begin
     'staff_portal'
   );
 
-  update public.export_definitions
+  update public.export_definitions as definition
   set active = p_active,
-      next_run_at = case when p_active then current_timestamp else next_run_at end,
-      version = version + 1
-  where id = p_export_definition_id
-    and version = p_expected_version
-  returning export_definitions.version into next_version;
+      next_run_at = case when p_active then current_timestamp else definition.next_run_at end,
+      version = definition.version + 1
+  where definition.id = p_export_definition_id
+    and definition.version = p_expected_version
+  returning definition.version into next_version;
 
   if next_version is null then
     if exists (
