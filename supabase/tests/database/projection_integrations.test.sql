@@ -111,8 +111,8 @@ select is(
     select count(*)::integer
     from public.notification_templates
     where event_type in (
-      'dealer.application_submitted',
       'order.submitted',
+      'order.line_reviewed',
       'license.issued',
       'license.status_changed',
       'reservation.created',
