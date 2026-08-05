@@ -67,6 +67,7 @@ export default async function StaffInventoryPage({ searchParams }: StaffInventor
         <div className="staff-button-row">
           <Link className="button button-secondary" href="/staff/orders">Order desk</Link>
           <Link className="button button-secondary" href="/staff/fulfillment">Fulfillment</Link>
+          <Link className="button button-secondary" href="/staff/transfers">Transfers</Link>
           <Link className="button button-secondary" href="/staff">Catalogue desk</Link>
           <form action={signOutAction}><button className="button button-primary" type="submit">Sign out</button></form>
         </div>

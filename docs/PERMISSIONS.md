@@ -184,9 +184,9 @@ The implemented initial role receives `order.private.read`, `order.review`, `ord
 
 Can receive, pick, dispatch, and receive transfers for assigned warehouses. Cannot self-approve reconciliation adjustments above configured thresholds.
 
-The implemented role receives `inventory.position.read`, `inventory.receipt.post`, `reservation.manage`, `reservation.extend`, `reservation.release`, `inventory.fulfillment.read`, and `inventory.fulfillment.post`. Each function evaluates `assignment_scope.warehouse_ids`; an absent key means all configured warehouses, while a present array is an allowlist. Picking stages, dispatch, transfer, and reconciliation permissions remain future work.
+The implemented role receives `inventory.position.read`, `inventory.receipt.post`, `reservation.manage`, `reservation.extend`, `reservation.release`, `inventory.fulfillment.read`, `inventory.fulfillment.post`, and routine transfer read/create/dispatch/receive permissions. Each function evaluates `assignment_scope.warehouse_ids`; an absent key means all configured warehouses, while a present array is an allowlist. Picking stages and reconciliation permissions remain future work.
 
-`inventory_controller` additionally receives `inventory.receipt.reverse` and `inventory.fulfillment.reverse`. A fulfillment reversal restores ledger stock and reopens demand without granting authority to rewrite the original issue or reactivate its consumed reservation.
+`inventory_controller` additionally receives `inventory.receipt.reverse`, `inventory.fulfillment.reverse`, and the complete transfer permission set including authorization and pre-dispatch cancellation. A fulfillment reversal restores ledger stock and reopens demand without granting authority to rewrite the original issue or reactivate its consumed reservation. Transfer authorization may be performed by any sufficiently scoped controller; no universal two-person rule is assumed.
 
 ### Inventory controller
 
