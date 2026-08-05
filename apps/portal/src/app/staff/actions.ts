@@ -9,12 +9,8 @@ import {
   readSetCatalogueStatusForm,
   readUpdateCatalogueItemForm,
 } from "@/lib/staff-catalogue-form";
+import { getStaffOAuthCallbackUrl } from "@/lib/staff-oauth";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
-
-const loginSchema = z.object({
-  email: z.string().trim().email().max(320),
-  password: z.string().min(1).max(1024),
-});
 
 function destination(path: string, key: "error" | "notice", value: string) {
   const query = new URLSearchParams({ [key]: value });
@@ -61,21 +57,19 @@ async function verifiedClient() {
   return client;
 }
 
-export async function signInAction(formData: FormData) {
-  const parsed = loginSchema.safeParse({
-    email: formData.get("email"),
-    password: formData.get("password"),
-  });
-  if (!parsed.success) {
-    redirect(destination("/staff/login", "error", "invalid_credentials"));
-  }
-
+export async function signInWithDiscordAction() {
   const client = await createServerSupabaseClient();
-  const { error } = await client.auth.signInWithPassword(parsed.data);
-  if (error) {
-    redirect(destination("/staff/login", "error", "invalid_credentials"));
+  const { data, error } = await client.auth.signInWithOAuth({
+    provider: "discord",
+    options: {
+      redirectTo: getStaffOAuthCallbackUrl(),
+    },
+  });
+  if (error || !data.url) {
+    console.error(`[staff-auth:discord] ${error?.code ?? "missing_url"}`);
+    redirect(destination("/staff/login", "error", "provider_unavailable"));
   }
-  redirect("/staff");
+  redirect(data.url);
 }
 
 export async function signOutAction() {

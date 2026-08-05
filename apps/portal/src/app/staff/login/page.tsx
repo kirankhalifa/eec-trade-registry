@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { signInAction } from "@/app/staff/actions";
+import { signInWithDiscordAction } from "@/app/staff/actions";
 import { readPublicSupabaseEnvironment } from "@/lib/env";
 import { hasStaffSession } from "@/lib/staff-auth";
 
@@ -25,9 +25,9 @@ export default async function StaffLoginPage({
           <p className="eyebrow">Restricted staff surface</p>
           <h1>Catalogue operations</h1>
           <p>
-            Sign in with an individually provisioned Supabase Auth account.
-            Authentication is followed by a database role-assignment check for
-            every read and write.
+            Continue with your individually approved Discord identity. Discord
+            proves who you are; Supabase role assignments still authorize every
+            staff read and write.
           </p>
         </div>
 
@@ -37,33 +37,21 @@ export default async function StaffLoginPage({
             source is available.
           </div>
         ) : (
-          <form action={signInAction} className="staff-login-form">
-            {error === "invalid_credentials" && (
+          <form action={signInWithDiscordAction} className="staff-login-form">
+            {error === "cancelled" && (
               <div className="staff-flash staff-flash-error" role="alert">
-                The supplied credentials could not be verified.
+                Discord sign-in was cancelled. No session was created.
               </div>
             )}
-            <label className="field">
-              <span>Staff email</span>
-              <input
-                autoComplete="username"
-                inputMode="email"
-                name="email"
-                required
-                type="email"
-              />
-            </label>
-            <label className="field">
-              <span>Password</span>
-              <input
-                autoComplete="current-password"
-                name="password"
-                required
-                type="password"
-              />
-            </label>
+            {(error === "exchange_failed" ||
+              error === "provider_unavailable") && (
+              <div className="staff-flash staff-flash-error" role="alert">
+                Discord sign-in could not be completed. No staff authority was
+                granted or changed.
+              </div>
+            )}
             <button className="button button-primary" type="submit">
-              Sign in
+              Continue with Discord
             </button>
           </form>
         )}
@@ -73,8 +61,9 @@ export default async function StaffLoginPage({
             ← Return to the public catalogue
           </Link>
           <p>
-            Account creation, recovery, MFA, and production identity-provider
-            policy remain administrative concerns and are not exposed here.
+            There is no staff email/password form. A successful Discord sign-in
+            grants no access unless the linked Supabase identity has an active
+            staff assignment.
           </p>
         </footer>
       </section>

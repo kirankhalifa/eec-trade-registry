@@ -2,7 +2,7 @@
 
 A configurable trade, licensing, wholesale distribution, inventory, and compliance platform. Supabase PostgreSQL is the sole authoritative data source; the web portal and future integrations are projections of its records.
 
-The active implementation includes the unauthenticated public catalogue, staff catalogue management, exact-reference public dealer and license verification, credential-based dealer access with effective-dated representation, an audited staff licensing office, wholesale order intake, and the first warehouse-ledger increment. Dealers can submit and track requisitions without price or stock on hand; authorized staff can review them, post balanced fungible receipts, derive on-hand/available positions, and create, extend, release, or expire 48-hour stock reservations. Applications, renewal, serialized-asset receipt, fulfillment, transfers, reconciliation, external Discord delivery, and Google Sheets delivery remain documented but unimplemented.
+The active implementation includes the unauthenticated public catalogue, Discord OAuth staff sign-in with database-authorized staff operations, exact-reference public dealer and license verification, credential-based dealer access with effective-dated representation, an audited staff licensing office, wholesale order intake, and the first warehouse-ledger increment. Dealers can submit and track requisitions without price or stock on hand; authorized staff can review them, post balanced fungible receipts, derive on-hand/available positions, and create, extend, release, or expire 48-hour stock reservations. Applications, renewal, serialized-asset receipt, fulfillment, transfers, reconciliation, external Discord delivery, and Google Sheets delivery remain documented but unimplemented.
 
 ## Repository layout
 
@@ -31,7 +31,7 @@ npm run db:reset
 npm run dev
 ```
 
-After `supabase start`, replace the placeholder in `.env.local` with the local anon key printed by the CLI. Never place the service-role key in a browser environment variable.
+After `supabase start`, replace the placeholder in `.env.local` with the local anon key printed by the CLI. Set `NEXT_PUBLIC_SITE_URL` to the exact portal origin; production requires HTTPS. Never place the service-role key in a browser environment variable.
 
 ## Checks
 
@@ -54,13 +54,13 @@ Do not make authoritative schema changes only through the hosted dashboard. See 
 
 ## Local staff access
 
-The staff portal is available at `http://127.0.0.1:3000/staff/login`. Authentication alone grants no catalogue access.
+The staff portal is available at `http://127.0.0.1:3000/staff/login`. It presents Discord OAuth only; there is no staff email/password form. Supabase Auth owns the application session, and authentication alone grants no staff access.
 
 For local development only:
 
-1. Open local Supabase Studio at `http://127.0.0.1:54323`.
-2. Create an email/password user under Authentication and copy its user UUID.
-3. In the local SQL editor, assign the existing configurable catalogue role:
+1. Configure a Discord developer application with the local Supabase callback `http://localhost:54321/auth/v1/callback` and enable the Discord provider in local Supabase Auth.
+2. Complete Discord sign-in once, open local Supabase Studio at `http://127.0.0.1:54323`, and copy the resulting user UUID.
+3. In the local SQL editor, assign the existing configurable catalogue role to that exact identity:
 
 ```sql
 with created_actor as (
@@ -74,7 +74,7 @@ from created_actor
 join public.staff_roles as role on role.code = 'catalogue_manager';
 ```
 
-This bootstrap procedure is for disposable local environments. Production staff provisioning, recovery, MFA, and access review remain policy-gated and require a controlled administrative workflow.
+This bootstrap procedure is for disposable local environments. In production, provider enrollment and actor/role assignment are separate controlled operations. The Discord display name is never an identity key. MFA, recovery, and access-review details remain policy-gated.
 
 ## Public verification fixtures
 
