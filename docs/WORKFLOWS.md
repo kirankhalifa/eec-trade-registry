@@ -542,7 +542,7 @@ The system must never equate opening a case with guilt or finding.
 - A failed export is visible to staff and does not change the last successful business watermark.
 - Public output includes source attribution and freshness information.
 
-Implementation note: Vercel invokes the worker every 15 minutes with a server-only bearer secret. The worker queues due active definitions, claims work with database leases, calls a service-role-only allowlisted projection, creates a missing tab if required, clears the prior tab, and writes a complete `RAW` snapshot. The first rows identify the portal source, projection code, and generation time. Operators configure only the spreadsheet ID in `/staff/integrations`; the Sheet must already exist and be shared with the configured service account. The worker cannot create business records or import cell edits.
+Implementation note: Supabase Cron invokes the protected Vercel worker route every 15 minutes through `pg_net`, with the worker URL and matching bearer secret read from Supabase Vault. This avoids making Vercel's plan-specific scheduler an architectural dependency. The worker queues due active definitions, claims work with database leases, calls a service-role-only allowlisted projection, creates a missing tab if required, clears the prior tab, and writes a complete `RAW` snapshot. The first rows identify the portal source, projection code, and generation time. Operators configure only the spreadsheet ID in `/staff/integrations`; the Sheet must already exist and be shared with the configured service account. The worker cannot create business records or import cell edits.
 
 ## 17. Discord lookup and notification
 

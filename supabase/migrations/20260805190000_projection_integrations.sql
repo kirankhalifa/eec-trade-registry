@@ -1,3 +1,6 @@
+create extension if not exists pg_net with schema extensions;
+create extension if not exists pg_cron;
+
 insert into public.permission_scopes (code, display_name, description)
 values
   (
@@ -533,6 +536,52 @@ begin
 end;
 $$;
 
+create function private.invoke_integration_worker()
+returns bigint
+language plpgsql
+volatile
+security definer
+set search_path = ''
+as $$
+declare
+  worker_url text;
+  worker_secret text;
+  request_id bigint;
+begin
+  select decrypted_secret into worker_url
+  from vault.decrypted_secrets
+  where name = 'eec_integration_worker_url';
+
+  select decrypted_secret into worker_secret
+  from vault.decrypted_secrets
+  where name = 'eec_integration_cron_secret';
+
+  if worker_url is null
+    or worker_url !~ '^https://[^[:space:]]+/api/cron/integrations$'
+    or worker_secret is null
+    or char_length(worker_secret) < 16 then
+    return null;
+  end if;
+
+  select net.http_get(
+    url := worker_url,
+    headers := jsonb_build_object(
+      'Authorization', 'Bearer ' || worker_secret,
+      'User-Agent', 'eec-supabase-cron/1.0'
+    ),
+    timeout_milliseconds := 300000
+  ) into request_id;
+
+  return request_id;
+end;
+$$;
+
+select cron.schedule(
+  'eec-integration-worker',
+  '*/15 * * * *',
+  $cron$select private.invoke_integration_worker()$cron$
+);
+
 create function public.integration_claim_deliveries(
   p_worker_id text,
   p_batch_size integer default 10,
@@ -1027,6 +1076,31 @@ begin
       'processing', (select count(*) from public.outbox_events where status = 'processing'),
       'failed', (select count(*) from public.outbox_events where status = 'failed')
     ),
+    'scheduler', jsonb_build_object(
+      'active', coalesce((
+        select job.active
+        from cron.job as job
+        where job.jobname = 'eec-integration-worker'
+        order by job.jobid desc
+        limit 1
+      ), false),
+      'last_run_at', (
+        select run.start_time
+        from cron.job_run_details as run
+        join cron.job as job on job.jobid = run.jobid
+        where job.jobname = 'eec-integration-worker'
+        order by run.start_time desc
+        limit 1
+      ),
+      'last_run_status', (
+        select run.status
+        from cron.job_run_details as run
+        join cron.job as job on job.jobid = run.jobid
+        where job.jobname = 'eec-integration-worker'
+        order by run.start_time desc
+        limit 1
+      )
+    ),
     'generated_at', current_timestamp
   );
 end;
@@ -1402,3 +1476,4 @@ grant execute on function public.staff_replay_integration_delivery(uuid, text, u
 
 revoke all on function private.refresh_outbox_delivery_status(uuid) from public, anon, authenticated;
 revoke all on function private.materialize_integration_deliveries() from public, anon, authenticated;
+revoke all on function private.invoke_integration_worker() from public, anon, authenticated, service_role;

@@ -179,4 +179,4 @@ Invoke-RestMethod -Method Post -Headers $headers -Uri "https://<portal-origin>/a
 
 5. Enter the numeric private alert channel ID in `/staff/integrations` and activate the destination only after a test message path is ready.
 
-Vercel invokes `/api/cron/integrations` every 15 minutes and supplies `CRON_SECRET` as a bearer credential. Do not make either protected route public through a proxy that strips authorization. Sheet edits, Discord commands, messages, emoji, and deletions never change source business data.
+Supabase Cron invokes `/api/cron/integrations` every 15 minutes through `pg_net`. The migration creates the inactive-until-configured network job, but it sends no request until Supabase Vault contains both `eec_integration_worker_url` (the full production route URL) and `eec_integration_cron_secret` (the same value as Vercel `CRON_SECRET`). Create those two secrets in the Supabase Vault dashboard after the production deployment exists; never paste them into a migration. Do not make either protected route public through a proxy that strips authorization. Sheet edits, Discord commands, messages, emoji, and deletions never change source business data.

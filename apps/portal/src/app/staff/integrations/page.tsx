@@ -86,7 +86,8 @@ export default async function IntegrationsPage({ searchParams }: IntegrationsPag
       <section className="integration-readiness" aria-label="Server integration configuration">
         {[
           ["Worker authority", runtime.serviceRole],
-          ["Cron protection", runtime.cron],
+          ["Worker secret", runtime.cron],
+          ["Supabase 15-minute job", workspace.scheduler.active],
           ["Google Sheets", runtime.googleSheets],
           ["Discord endpoint", runtime.discordInteractions],
           ["Discord delivery", runtime.discordDelivery],
@@ -98,6 +99,10 @@ export default async function IntegrationsPage({ searchParams }: IntegrationsPag
           </div>
         ))}
       </section>
+
+      <p className="result-count">
+        Scheduler: {workspace.scheduler.active ? "active" : "inactive"}. Last database trigger: {workspace.scheduler.last_run_at ? `${new Date(workspace.scheduler.last_run_at).toLocaleString(locale)} (${workspace.scheduler.last_run_status ?? "unknown"})` : "not run yet"}.
+      </p>
 
       <section className="integration-section">
         <div className="inventory-section-heading">

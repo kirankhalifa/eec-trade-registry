@@ -259,7 +259,7 @@ The organization can control custody across warehouses, factors, and dealers; se
 
 ## 9. Slice 7 — Projection integrations
 
-Implementation status: the first production-oriented integration increment implements server-only projection functions, disabled-by-default destination records, 15-minute catalogue/dealer/license Google Sheet definitions, leased and retryable export runs, outbox-to-destination delivery materialization, versioned Discord alert templates, signed public `/catalogue`, `/dealer`, and `/license` interactions, a Vercel cron worker, and an authenticated staff console for configuration, monitoring, manual export, and safe replay. Private Discord identity binding, generated documents, final destination ownership, retention, and escalation policy remain gated.
+Implementation status: the first production-oriented integration increment implements server-only projection functions, disabled-by-default destination records, 15-minute catalogue/dealer/license Google Sheet definitions, leased and retryable export runs, outbox-to-destination delivery materialization, versioned Discord alert templates, signed public `/catalogue`, `/dealer`, and `/license` interactions, a protected server worker triggered by Supabase Cron, and an authenticated staff console for configuration, monitoring, manual export, and safe replay. Private Discord identity binding, generated documents, final destination ownership, retention, and escalation policy remain gated.
 
 ### User outcome
 

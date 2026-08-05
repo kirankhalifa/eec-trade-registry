@@ -12,7 +12,7 @@ The platform requires public Google Sheet exports, Discord public lookups, and p
 - Store approved non-secret destinations, export contracts, notification templates, event routes, run metadata, leases, retries, and delivery results in Supabase.
 - Keep the Supabase service-role key, Google service-account credentials, Discord bot token, Discord interaction public key, and cron secret in the managed server environment. Never return them from a staff projection.
 - Seed every external destination and schedule inactive. An authorized `integration_operator` must configure an identifier and explicitly activate it with an audit reason.
-- Run the delivery worker from a Vercel cron route protected by `CRON_SECRET`. The worker uses the service role only for narrowly granted projection and delivery functions.
+- Run the delivery worker from a Vercel route protected by `CRON_SECRET`. Supabase Cron invokes that route every 15 minutes through `pg_net`; its exact URL and matching bearer secret are stored encrypted in Supabase Vault. The worker uses the service role only for narrowly granted projection and delivery functions.
 - Export the public catalogue, dealer registry, and license registry as full Sheet-tab replacements every 15 minutes when enabled. Include source and generation metadata, record row count/checksum/range, and never read values back.
 - Materialize Discord deliveries from transactional outbox events through versioned templates and routes. Use database deduplication, bounded retry, and time-bounded claims. Do not use webhooks; post with a server-only bot token and suppress mentions.
 - Expose `/catalogue`, `/dealer`, and `/license` as read-only Discord application commands. Verify the Ed25519 signature over the unmodified request body and reject stale requests. These commands call the same public disclosure boundaries as the website.
@@ -25,6 +25,7 @@ The platform requires public Google Sheet exports, Discord public lookups, and p
 - Sheet edits, Discord messages, reactions, and message deletion have no path back into business tables.
 - Operators can identify stale or failed work without seeing credentials and can replay only failed work through secured functions.
 - Public Sheet creation, sharing, and ownership remain an external launch operation. The service account must receive edit access and public viewer access must be configured in Google.
+- Supabase owns the schedule because Vercel Hobby permits only daily cron triggers. The database records scheduled job runs, while the external worker still owns Google and Discord network delivery.
 - Global Discord commands may take time to propagate; guild-scoped registration is available for launch testing.
 - Final channel ownership, retention, escalation, and any future private or state-changing Discord command require separate policy approval.
 

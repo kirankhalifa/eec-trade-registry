@@ -1,6 +1,6 @@
 begin;
 
-select plan(46);
+select plan(48);
 
 select has_table('public', 'integration_destinations', 'integration destinations table exists');
 select has_table('public', 'notification_templates', 'notification templates table exists');
@@ -44,6 +44,23 @@ select has_function(
   'get_staff_integration_workspace',
   array[]::text[],
   'staff integration workspace exists'
+);
+select has_function(
+  'private',
+  'invoke_integration_worker',
+  array[]::text[],
+  'the protected scheduled worker invocation boundary exists'
+);
+select is(
+  (
+    select count(*)::integer
+    from cron.job
+    where jobname = 'eec-integration-worker'
+      and schedule = '*/15 * * * *'
+      and active
+  ),
+  1,
+  'Supabase Cron owns one active 15-minute worker trigger'
 );
 
 select ok(

@@ -75,6 +75,11 @@ const workspaceSchema = z.object({
     pending: z.number().int().nonnegative(),
     processing: z.number().int().nonnegative(),
   }),
+  scheduler: z.object({
+    active: z.boolean(),
+    last_run_at: z.string().nullable(),
+    last_run_status: z.string().nullable(),
+  }),
 });
 
 export type StaffIntegrationWorkspace = z.infer<typeof workspaceSchema>;
