@@ -1002,7 +1002,7 @@ select
   true
 from public.notification_templates as template
 join public.integration_destinations as destination
-  on destination.code = 'staff-discord-alerts'
+  on destination.code = 'staff-alerts'
 where template.code = 'staff-fulfillment-completed-v1';
 
 revoke all on public.order_fulfillments from anon, authenticated;
