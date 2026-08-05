@@ -34,6 +34,7 @@ export default async function StaffOrdersPage({ searchParams }: StaffOrdersPageP
         </div>
         <div className="staff-button-row">
           <Link className="button button-secondary" href="/staff">Catalogue desk</Link>
+          <Link className="button button-secondary" href="/staff/fulfillment">Fulfillment</Link>
           <Link className="button button-secondary" href="/staff/licensing">Licensing office</Link>
           <form action={signOutAction}><button className="button button-primary" type="submit">Sign out</button></form>
         </div>

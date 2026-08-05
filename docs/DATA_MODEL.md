@@ -536,7 +536,7 @@ Remaining quota is derived. Repeated requests must not create duplicate entries.
 
 ## 8. Orders and reservations
 
-Implementation status: the first order-intake increment implements dealer requisition headers and lines, nullable price snapshots, control snapshots, append-only header/line events, version-checked staff review and price commands, dealer/staff cancellation, represented-party audit context, and durable outbox events. Submission deliberately creates no reservation, quota entry, inventory movement, custody event, or title transfer. Dealer-specific price schedules, eligibility rules, order drafts, assignments, overrides, reservations, and fulfillment remain future work.
+Implementation status: order intake implements dealer requisition headers and lines, nullable price snapshots, control snapshots, append-only header/line events, version-checked staff review and price commands, dealer/staff cancellation, represented-party audit context, and durable outbox events. Submission deliberately creates no reservation or movement. A later warehouse command may reserve approved fungible demand, and the fulfillment command consumes exactly one current reservation into an issue and fulfilled quantity. Dealer-specific price schedules, eligibility rules, drafts, assignments, overrides, quotas, and serialized fulfillment remain future work.
 
 ### `orders`
 
@@ -619,7 +619,7 @@ Key fields:
 
 ## 9. Warehouses, inventory, and transfers
 
-Implementation status: the first warehouse increment implements configurable warehouses and locations, physical and external inventory accounts, immutable posted transaction headers, balanced signed ledger entries, derived on-hand/reserved/available projections, linked receipt reversals, warehouse-scoped staff grants, and effective-dated reservations with append-only events. It supports fungible receipts and reservation creation/extension/release/expiry only. Serialized assets, issues, fulfillment, transfers, counts, reconciliation adjustments, and consignment accounts remain future work.
+Implementation status: warehouse operations implement configurable warehouses and locations, physical and external inventory accounts, immutable posted transaction headers, balanced signed ledger entries, derived on-hand/reserved/available projections, linked reversals, warehouse-scoped staff grants, effective-dated reservations, and fungible stock issues driven by reservation fulfillment. Serialized assets, transfers, counts, reconciliation adjustments, returns, and consignment custody accounts remain future work.
 
 ### `warehouses`
 
@@ -673,6 +673,8 @@ Key fields:
 For a fungible item, each posted transaction must balance across appropriate source, destination, or explicitly modeled external accounts. A correction posts a new reversing transaction; it never edits the original entry.
 
 The implemented receipt command creates one negative external-source entry and one positive physical entry in a single statement. Constraint triggers require a zero transaction sum, prevent negative physical balances, and prevent a ledger reversal from reducing on-hand below current effective reservations. Inventory accounts contain classification and custody dimensions but no editable quantity.
+
+The fulfillment command creates the inverse balanced issue after marking its reservation consumed in the same transaction. `order_fulfillments` links the reservation, order line, warehouse, quantity, actor, and issue transaction. A reversal adds inverse ledger entries, marks the fulfillment reversed, and reopens demand; it never reactivates the consumed reservation.
 
 ### `stock_counts` and `stock_count_lines`
 
