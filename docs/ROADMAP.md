@@ -87,7 +87,7 @@ Anyone can browse a single, coherent public catalogue without logging in.
 
 ## 4. Slice 2 — Staff catalogue management
 
-Implementation status: The first policy-neutral increment provides Supabase Auth session handling, effective-dated catalogue role assignments, an authorized internal work queue, and audited create/edit/archive commands with optimistic concurrency. Effective-dated publication and price writes remain gated by the unresolved decisions below.
+Implementation status: The first policy-neutral increment provides Supabase Auth cookie sessions initiated by Discord OAuth, a fixed server-side PKCE callback, effective-dated catalogue role assignments, an authorized internal work queue, and audited create/edit/archive commands with optimistic concurrency. The staff portal has no email/password form, and provider authentication grants no database authority. Effective-dated publication and price writes remain gated by the unresolved decisions below.
 
 ### User outcome
 
@@ -268,7 +268,7 @@ Approved public data reaches Google Sheets and users receive timely Discord look
 - Transactional outbox worker and delivery monitoring
 - Public Google Sheet export definitions, full/versioned export, freshness markers, checksums, and retries
 - Discord public lookup commands against public functions
-- Discord private lookup after identity binding
+- Discord private bot lookup after command-specific identity binding
 - Versioned notification templates and destination policies
 - Staff monitoring and safe replay controls
 - Generated license/order documents if prioritized and policy-approved
@@ -276,7 +276,7 @@ Approved public data reaches Google Sheets and users receive timely Discord look
 ### Remaining decisions
 
 - Sheet destinations, columns, public ownership, and stale-data language beyond the approved 15-minute cadence
-- Discord server/channel mapping, identity binding, and retention beyond the approved read-only commands and private staff alerts
+- Discord server/channel mapping, bot/command identity binding, and retention beyond the approved read-only commands and private staff alerts; staff OAuth is already decided by ADR 0009
 - Which events are public, dealer-private, staff-only, or silent
 - Generated document authority, signature/seal, template ownership, and retention
 

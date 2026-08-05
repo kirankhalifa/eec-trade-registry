@@ -405,7 +405,9 @@ There is no universal dual-control rule. Any active actor with the required perm
 
 ### Staff
 
-- Supabase Auth with an approved identity provider or credential policy
+- Supabase Auth cookie sessions initiated through individual Discord OAuth identities; no staff email/password form
+- Fixed allowlisted OAuth callback and server-side PKCE code exchange
+- Discord provider subject and Supabase Auth UUID are identity data, never role or permission claims
 - Multi-factor authentication for elevated roles before launch
 - Shorter sessions or step-up authentication for high-risk actions
 - Immediate assignment revocation and practical session invalidation
@@ -483,7 +485,8 @@ Break-glass access does not permit secret disclosure, audit deletion, or untrack
 
 ## 15. Assumptions
 
-- Supabase Auth is the identity provider for application sessions even if an external provider performs initial authentication.
+- Supabase Auth is the identity and session provider for the application; Discord performs initial staff authentication under ADR 0009.
+- Staff authority remains in effective-dated database assignments. Discord authorization, server membership, roles, display names, and bot permissions grant no business authority.
 - Dealer access may begin with magic links or secure grants and evolve to persistent credentials without changing business authorization data.
 - Roles are composable and assignments can be scoped.
 - Public views return a deliberately smaller schema than staff or dealer views.
@@ -502,7 +505,7 @@ Break-glass access does not permit secret disclosure, audit deletion, or untrack
 - Session durations, step-up intervals, revocation behavior, and inactive-account policy
 - Data retention and deletion rights for contacts, authentication metadata, applications, evidence, and audit logs
 - Emergency-access custodians and review process
-- Discord identity-binding method and which private commands are permitted
+- Discord bot/command identity-binding method and which private commands are permitted; this is separate from the approved staff OAuth sign-in flow
 
 These decisions are launch blockers for their affected surfaces and must be recorded before permission migrations are written.
 

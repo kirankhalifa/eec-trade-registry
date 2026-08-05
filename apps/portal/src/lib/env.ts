@@ -16,6 +16,34 @@ export function readPublicSupabaseEnvironment(
   return result.success ? result.data : null;
 }
 
+export function getSiteOrigin(
+  environment: NodeJS.ProcessEnv = process.env,
+): string {
+  const configured = environment.NEXT_PUBLIC_SITE_URL?.trim();
+  if (!configured) {
+    if (environment.NODE_ENV === "production") {
+      throw new Error("NEXT_PUBLIC_SITE_URL is required in production.");
+    }
+    return "http://127.0.0.1:3000";
+  }
+
+  const url = new URL(configured);
+  if (
+    url.username ||
+    url.password ||
+    url.search ||
+    url.hash ||
+    (url.pathname !== "/" && url.pathname !== "")
+  ) {
+    throw new Error("NEXT_PUBLIC_SITE_URL must contain only an origin.");
+  }
+  if (environment.NODE_ENV === "production" && url.protocol !== "https:") {
+    throw new Error("NEXT_PUBLIC_SITE_URL must use HTTPS in production.");
+  }
+
+  return url.origin;
+}
+
 export function getInstitutionName(
   environment: NodeJS.ProcessEnv = process.env,
 ): string {
