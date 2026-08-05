@@ -412,7 +412,8 @@ select lives_ok(
 );
 reset role;
 update public.asset_reservations
-set expires_at = statement_timestamp() - interval '1 minute'
+set reserved_at = statement_timestamp() - interval '2 minutes',
+  expires_at = statement_timestamp() - interval '1 minute'
 where asset_id = current_setting('test.expiry_asset_id')::uuid and status = 'active';
 
 set local role authenticated;
