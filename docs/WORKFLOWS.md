@@ -433,6 +433,8 @@ Cancellation after dispatch is not permitted; use return or dispute handling.
 3. Missing, damaged, or disputed lines remain explicitly in transit or disputed and may open a compliance case.
 4. Transfer completes only when all lines have terminal receipt, return, loss, or resolution outcomes.
 
+Implementation note: the initial fungible transfer command supports one item and full quantity per transfer. A warehouse operator requests across two authorized warehouses; an inventory controller explicitly authorizes; dispatch posts source-to-transit ledger entries; and destination receipt posts transit-to-physical entries. Discrepancy recording changes workflow state without fabricating a balance change. Cancellation is limited to requested or authorized state. Every retry is idempotent, every state change is version checked, and all actions append audit/history evidence.
+
 ### Unique asset transfer
 
 - Transaction-specific approval is validated at dispatch and receipt.

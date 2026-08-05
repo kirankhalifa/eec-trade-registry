@@ -61,6 +61,7 @@ export default async function StaffFulfillmentPage({
         <div className="staff-button-row">
           <Link className="button button-secondary" href="/staff/inventory">Inventory desk</Link>
           <Link className="button button-secondary" href="/staff/orders">Order desk</Link>
+          <Link className="button button-secondary" href="/staff/transfers">Transfers</Link>
           <form action={signOutAction}>
             <button className="button button-primary" type="submit">Sign out</button>
           </form>
