@@ -2,7 +2,7 @@
 
 A configurable trade, licensing, wholesale distribution, inventory, and compliance platform. Supabase PostgreSQL is the sole authoritative data source; the web portal and future integrations are projections of its records.
 
-The active implementation includes the unauthenticated public catalogue, Discord OAuth staff sign-in with database-authorized staff operations, exact-reference public dealer and license verification, credential-based dealer access with effective-dated representation, an audited staff licensing office, wholesale order intake, and the first warehouse-ledger increment. Dealers can submit and track requisitions without price or stock on hand; authorized staff can review them, post balanced fungible receipts, derive on-hand/available positions, and create, extend, release, or expire 48-hour stock reservations. Applications, renewal, serialized-asset receipt, fulfillment, transfers, reconciliation, external Discord delivery, and Google Sheets delivery remain documented but unimplemented.
+The active implementation includes the unauthenticated public catalogue, Discord OAuth staff sign-in with database-authorized staff operations, exact-reference public dealer and license verification, credential-based dealer access with effective-dated representation, an audited staff licensing office, wholesale order intake, the first warehouse-ledger increment, and one-way projection integrations. Dealers can submit and track requisitions without price or stock on hand; authorized staff can review them, post balanced fungible receipts, derive on-hand/available positions, and create, extend, release, or expire 48-hour stock reservations. A leased worker can replace approved public Google Sheet tabs and deliver allowlisted Discord alerts, while signed Discord commands expose only the existing public catalogue and verification contracts. Applications, renewal, serialized-asset receipt, fulfillment, transfers, reconciliation, compliance cases, and generated documents remain future policy-gated work.
 
 ## Repository layout
 
@@ -32,6 +32,8 @@ npm run dev
 ```
 
 After `supabase start`, replace the placeholder in `.env.local` with the local anon key printed by the CLI. Set `NEXT_PUBLIC_SITE_URL` to the exact portal origin; production requires HTTPS. Never place the service-role key in a browser environment variable.
+
+The integration variables in `.env.example` are server-only. Leave destinations disabled when credentials are absent. A copied placeholder is intentionally invalid and must never be used in production.
 
 ## Checks
 
@@ -150,3 +152,31 @@ The role contains separate read, routine review, ordinary, restricted, unique, p
 The inventory desk is available at `http://127.0.0.1:3000/staff/inventory`. For disposable local development, follow the staff bootstrap pattern and select `warehouse_operator` for receipt and routine reservation work, or `inventory_controller` for linked receipt reversals as well.
 
 An empty `assignment_scope` grants the role across configured warehouses. To restrict an assignment, set `assignment_scope` to `{"warehouse_ids":["<WAREHOUSE_UUID>"]}`. The seeded primary warehouse UUID is `aa000000-0000-0000-0000-000000000001`; no opening balance is seeded. Use the receipt command so every quantity originates in the immutable ledger.
+
+## Projection integrations
+
+The integration console is available at `/staff/integrations` to an authenticated actor assigned the `integration_operator` role. It exposes destination identifiers and delivery metadata only; it never returns credentials. The seeded Google and Discord destinations and all Sheet schedules start disabled.
+
+For Google Sheets:
+
+1. Create a spreadsheet in the account that will own the public document.
+2. Create a Google Cloud service account with the Sheets API enabled, then store its email and private key in the deployment's server-only environment variables.
+3. Share the spreadsheet with the service-account email as an editor. Configure public viewer access in Google if this is the public registry Sheet.
+4. In `/staff/integrations`, enter only the spreadsheet ID from its URL, activate the destination, then activate the approved catalogue, dealer, and license definitions.
+5. Queue a manual snapshot and confirm the `Catalogue`, `Dealers`, and `Licenses` tabs show source and generated-at metadata. Scheduled replacement then runs every 15 minutes.
+
+For Discord:
+
+1. Add `https://<portal-origin>/api/discord/interactions` as the application's Interactions Endpoint URL.
+2. Store `DISCORD_APPLICATION_ID`, `DISCORD_PUBLIC_KEY`, and the server-only bot token in the deployment environment. The bot needs only the permissions required to view and send messages in the selected private alert channel.
+3. Optionally set `DISCORD_GUILD_ID` for immediate guild-scoped command testing. Omit it for global registration.
+4. Register the declared commands once using the protected deployment endpoint. In PowerShell, load the cron secret into a process variable and call:
+
+```powershell
+$headers = @{ Authorization = "Bearer $env:EEC_CRON_SECRET" }
+Invoke-RestMethod -Method Post -Headers $headers -Uri "https://<portal-origin>/api/admin/discord/register-commands"
+```
+
+5. Enter the numeric private alert channel ID in `/staff/integrations` and activate the destination only after a test message path is ready.
+
+Vercel invokes `/api/cron/integrations` every 15 minutes and supplies `CRON_SECRET` as a bearer credential. Do not make either protected route public through a proxy that strips authorization. Sheet edits, Discord commands, messages, emoji, and deletions never change source business data.

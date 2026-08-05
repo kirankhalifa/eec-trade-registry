@@ -1793,6 +1793,103 @@ button:focus-visible {
   color: var(--muted);
 }
 
+.integration-section {
+  margin: 28px 0;
+  padding: 26px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.integration-readiness {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.integration-readiness div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  background: var(--paper-deep);
+}
+
+.integration-grid,
+.integration-run-list {
+  display: grid;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.integration-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.integration-card,
+.integration-run {
+  padding: 22px;
+  border: 1px solid var(--line);
+  background: var(--paper-deep);
+}
+
+.integration-card > header,
+.integration-run {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.integration-card h3 {
+  margin: 8px 0 4px;
+  color: var(--brand-deep);
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.4rem;
+}
+
+.integration-card header p,
+.integration-card small,
+.integration-run small,
+.integration-run > div > span {
+  display: block;
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.integration-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.integration-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.integration-run > div:first-child {
+  display: grid;
+  gap: 6px;
+}
+
+.integration-run code {
+  color: #7d2b1d;
+  font-size: 0.76rem;
+  overflow-wrap: anywhere;
+}
+
+.integration-replay {
+  display: flex;
+  gap: 10px;
+}
+
+.integration-replay input {
+  min-width: 180px;
+}
+
 .inventory-reservation-list,
 .inventory-transaction-list {
   display: grid;
@@ -1851,7 +1948,9 @@ button:focus-visible {
   }
 
   .inventory-summary,
-  .inventory-command-grid {
+  .inventory-command-grid,
+  .integration-grid,
+  .integration-readiness {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1955,8 +2054,18 @@ button:focus-visible {
 
   .inventory-summary,
   .inventory-command-grid,
-  .inventory-reservation-actions {
+  .inventory-reservation-actions,
+  .integration-grid,
+  .integration-action-grid,
+  .integration-readiness {
     grid-template-columns: 1fr;
+  }
+
+  .integration-card > header,
+  .integration-run,
+  .integration-replay {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .verification-choices {

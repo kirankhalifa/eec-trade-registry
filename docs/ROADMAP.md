@@ -259,6 +259,8 @@ The organization can control custody across warehouses, factors, and dealers; se
 
 ## 9. Slice 7 — Projection integrations
 
+Implementation status: the first production-oriented integration increment implements server-only projection functions, disabled-by-default destination records, 15-minute catalogue/dealer/license Google Sheet definitions, leased and retryable export runs, outbox-to-destination delivery materialization, versioned Discord alert templates, signed public `/catalogue`, `/dealer`, and `/license` interactions, a Vercel cron worker, and an authenticated staff console for configuration, monitoring, manual export, and safe replay. Private Discord identity binding, generated documents, final destination ownership, retention, and escalation policy remain gated.
+
 ### User outcome
 
 Approved public data reaches Google Sheets and users receive timely Discord lookups and notifications without creating secondary business state.
@@ -268,7 +270,7 @@ Approved public data reaches Google Sheets and users receive timely Discord look
 - Transactional outbox worker and delivery monitoring
 - Public Google Sheet export definitions, full/versioned export, freshness markers, checksums, and retries
 - Discord public lookup commands against public functions
-- Discord private bot lookup after command-specific identity binding
+- Discord private bot lookup after command-specific identity binding (future policy-gated depth)
 - Versioned notification templates and destination policies
 - Staff monitoring and safe replay controls
 - Generated license/order documents if prioritized and policy-approved
