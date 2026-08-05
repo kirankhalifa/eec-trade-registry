@@ -136,6 +136,14 @@ select is(
   'the known private license fixture is not exported'
 );
 
+create temporary table integration_test_ids as
+select
+  (select id from public.integration_destinations where code = 'public-registry-sheet') as sheet_destination_id,
+  (select id from public.integration_destinations where code = 'staff-alerts') as staff_alert_destination_id,
+  (select id from public.export_definitions where code = 'public-catalogue') as catalogue_definition_id;
+
+grant select on table integration_test_ids to authenticated, service_role;
+
 insert into auth.users (
   id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at
 )
@@ -206,7 +214,7 @@ select lives_ok(
   $test$
     select *
     from public.staff_configure_integration_destination(
-      (select id from public.integration_destinations where code = 'public-registry-sheet'),
+      (select sheet_destination_id from pg_temp.integration_test_ids),
       1,
       'test-spreadsheet-id',
       true,
@@ -241,7 +249,7 @@ select lives_ok(
   $test$
     select *
     from public.staff_set_export_definition_status(
-      (select id from public.export_definitions where code = 'public-catalogue'),
+      (select catalogue_definition_id from pg_temp.integration_test_ids),
       1,
       true,
       'Enable the approved catalogue projection.',
@@ -254,7 +262,7 @@ select lives_ok(
 select lives_ok(
   $test$
     select public.staff_queue_export_run(
-      (select id from public.export_definitions where code = 'public-catalogue'),
+      (select catalogue_definition_id from pg_temp.integration_test_ids),
       'Publish the current catalogue snapshot.',
       'e5000000-0000-0000-0000-000000000003'
     )
@@ -322,6 +330,8 @@ select lives_ok(
   'the current export lease can record successful delivery'
 );
 
+reset role;
+
 select is(
   (
     select status
@@ -332,7 +342,6 @@ select is(
   'the delivered export run retains its authoritative status metadata'
 );
 
-reset role;
 set local role authenticated;
 select set_config(
   'request.jwt.claims',
@@ -344,7 +353,7 @@ select lives_ok(
   $test$
     select *
     from public.staff_configure_integration_destination(
-      (select id from public.integration_destinations where code = 'staff-alerts'),
+      (select staff_alert_destination_id from pg_temp.integration_test_ids),
       1,
       '123456789012345678',
       true,
@@ -401,6 +410,8 @@ select lives_ok(
   'the current delivery lease can record a Discord message id'
 );
 
+reset role;
+
 select is(
   (
     select status
@@ -410,6 +421,8 @@ select is(
   'delivered',
   'all routed deliveries completing marks the source outbox event delivered'
 );
+
+set local role service_role;
 
 select is(
   (
