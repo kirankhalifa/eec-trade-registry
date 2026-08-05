@@ -411,6 +411,12 @@ select lives_ok(
   'operator can allocate the expiry fixture'
 );
 reset role;
+select set_config(
+  'test.expiry_reservation_id',
+  (select id::text from public.asset_reservations
+    where asset_id = current_setting('test.expiry_asset_id')::uuid and status = 'active'),
+  true
+);
 update public.asset_reservations
 set reserved_at = statement_timestamp() - interval '2 minutes',
   expires_at = statement_timestamp() - interval '1 minute'
@@ -421,11 +427,11 @@ select set_config('request.jwt.claims', '{"sub":"b7000000-0000-0000-0000-0000000
 select lives_ok(
   format(
     $test$select * from public.staff_release_asset_reservation(
-      (select id from public.asset_reservations where asset_id = %L::uuid),
+      %L::uuid,
       1, 'Finalize the elapsed asset allocation.',
       'f7000000-0000-0000-0000-000000000015'
     )$test$,
-    current_setting('test.expiry_asset_id')
+    current_setting('test.expiry_reservation_id')
   ),
   'controller can finalize an elapsed asset allocation'
 );
