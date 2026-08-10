@@ -18,7 +18,7 @@ describe("staff OAuth destinations", () => {
       "https://registry.example.test/auth/callback",
     );
     expect(getStaffOAuthSuccessUrl(productionEnvironment).toString()).toBe(
-      "https://registry.example.test/staff",
+      "https://registry.example.test/staff/dashboard",
     );
     expect(
       getStaffOAuthFailureUrl(

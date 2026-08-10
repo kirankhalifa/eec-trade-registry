@@ -724,3 +724,42 @@ No workflow-dependent implementation should guess these decisions. A decision re
 4. A high emergency or convenience resale price protects the ordinary player market. It is not calculated from the purchase offer in frontend code.
 5. When reserve is unavailable, an order may wait for replenishment; staff do not spawn stock to clear the queue.
 
+## 23. Launch command workflows
+
+### Assisted licensed-business order
+
+1. Staff selects a combined current dealer authorization and license for the ordering party.
+2. The secure command revalidates both and records channel `staff_assisted_business` plus the staff actor.
+3. Each line resolves party → license class → dealer type → jurisdiction → channel → audience price precedence and freezes the provenance.
+4. Submission creates demand only; reservation and fulfillment remain separate.
+
+### Direct individual order and quota
+
+1. Staff selects or creates a stable direct-customer party.
+2. The item policy must permit direct purchase.
+3. The price resolver applies the approved `30000` basis-point multiplier to the current public base.
+4. The command serializes customer/item/week consumption, rejects excess quantity, and creates a quota hold.
+5. Fulfillment consumes the hold; denial or cancellation releases it.
+
+### License application
+
+`submitted → under_review → issued | renewed | denied | withdrawn`
+
+Anonymous submission returns a one-time status token. Approval uses the existing issuance invariants or records an explicit new expiration. No default duration or grace period is inferred.
+
+### Consignment settlement
+
+`accepted report → pending settlement → paid | voided`
+
+The applicable effective-dated agreement term determines commission. Gross, commission, owner amount, price, and currency are snapshotted. Payment is evidence, not a treasury transfer.
+
+### Unique fulfillment
+
+`active asset reservation + approved unique line → consumed reservation + transferred custody + fulfilled line`
+
+All effects occur in one transaction. Expired or mismatched reservations and version conflicts fail closed.
+
+### Compliance effect and generated document
+
+A target-compatible sanction executes atomically only when an authorized reviewer approves it; exact previous/new state is immutable evidence. Official-document generation freezes an allowlisted source payload, version, checksum, actor, and reason before the portal renders a non-authoritative PDF.
+

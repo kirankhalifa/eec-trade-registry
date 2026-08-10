@@ -422,7 +422,7 @@ These may be useful later but are not assumed in the core roadmap:
 - Advanced analytics and forecasting
 - Multiple languages or non-standard calendars
 - External game-server enforcement
-- Public application intake for unauthenticated applicants
+- Additional application abuse controls beyond the constrained token-based public intake
 - Offline warehouse operation
 - Native mobile applications
 - Federation with other organizations' registries

@@ -15,7 +15,7 @@ export default async function StaffLoginPage({
   const { error } = await searchParams;
   const configured = Boolean(readPublicSupabaseEnvironment());
   if (configured && (await hasStaffSession())) {
-    redirect("/staff");
+    redirect("/staff/dashboard");
   }
 
   return (
