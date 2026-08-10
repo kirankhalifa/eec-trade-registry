@@ -78,7 +78,7 @@ select is((select status from public.personal_quota_entries),'released','cancell
 
 set local role anon;
 select lives_ok($test$
-  select * from public.public_submit_license_application('new','Solitude Tailor','tailor-discord','trade-general','harbor-district',null,
+  select * from public.public_submit_license_application('new','Solitude Tailor','tailor-discord','general-trade','harbor-district',null,
     array['tailoring-textiles'],'Operate a licensed tailoring business.','fb300000-0000-4000-8000-000000000004')
 $test$,'anonymous applicant can submit');
 reset role;
