@@ -16,6 +16,8 @@ docs/                     Product and engineering documentation
 
 Production security, incident, rotation, backup/restore, and remaining external launch gates are tracked in `docs/SECURITY_OPERATIONS.md`.
 
+The [complete user and operator guide](docs/USER_GUIDE.md) covers public, dealer, staff, integration, troubleshooting, and daily operations.
+
 ## Requirements
 
 - Node.js 20.9 or newer
