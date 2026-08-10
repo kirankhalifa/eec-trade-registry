@@ -1,6 +1,7 @@
 # East Empire Company Trade Registry — Complete User Guide
 
 Status: Production operator guide  
+Last revised and checked against the live portal: 2026-08-10  
 Production portal: <https://eec-trade-registry-portal.vercel.app>  
 Public registry Sheet: <https://docs.google.com/spreadsheets/d/13bJeSAUF52cQnudC_l0JNOlKmcYY0wRWIq8OVqiEdrc/edit>  
 Institutional time zone: `America/New_York`  
@@ -34,11 +35,12 @@ The portal reads and changes Supabase records through approved projections and s
 
 - Sections 2–4: architecture, core concepts, login, and roles
 - Sections 5–6: public catalogue and verification
-- Sections 7–9: catalogue, dealer, and licensing administration
-- Sections 10–18: orders, inventory, reservations, fulfillment, transfers, consignment, assets, and compliance
-- Sections 19–22: access administration, operations, Google Sheets, and Discord
-- Sections 23–27: daily routine, examples, troubleshooting, safety, and implementation boundaries
-- Section 28: governing product and engineering documents
+- Section 7: the complete field-by-field guide to adding items, stock, configuration, dealers, licenses, and staff access
+- Sections 8–10: catalogue, dealer, and licensing administration
+- Sections 11–19: orders, inventory, reservations, fulfillment, transfers, consignment, assets, and compliance
+- Sections 20–23: access administration, operations, Google Sheets, and Discord
+- Sections 24–28: daily routine, examples, troubleshooting, safety, and implementation boundaries
+- Section 29: governing product and engineering documents
 
 ## 2. System at a glance
 
@@ -147,13 +149,15 @@ Roles are composable. One person may hold several roles.
 
 | Role | Primary purpose |
 |---|---|
-| Platform administrator | Manage effective-dated staff assignments and inspect operational health |
-| Catalogue manager | Read and maintain canonical catalogue records |
+| Platform administrator | Manage effective-dated staff assignments, no-code reference configuration, and operational health |
+| Catalogue manager | Maintain canonical items, public presentations, and explicit price rules within granted permissions |
 | Dealer registry officer | Onboard dealers and manage authorization lifecycle |
 | Licensing officer | Issue licenses, change license status, and manage endorsements |
 | Order officer | Review, approve, price, await stock, deny, or cancel orders |
 | Warehouse operator | Receive stock, manage routine reservations and fulfillment, and perform scoped transfer work |
 | Inventory controller | Includes elevated reversals, transfer authorization, asset lifecycle, and broader custody controls |
+| Procurement officer | Register suppliers, receive player-sourced deliveries, and record payment evidence |
+| Economic steward | Configure supply policy, reserve thresholds, and guaranteed purchase offers; monitor economic pressure |
 | Compliance officer | Manage cases, inspections, evidence metadata, findings, record-only actions, and appeals |
 | Integration operator | Configure non-secret destinations, schedules, manual exports, and delivery replay |
 | Auditor | Read approved private history without mutation authority |
@@ -219,11 +223,430 @@ The demonstration references currently visible in the seeded environment are:
 
 They are fictional demonstration records and should be replaced or supplemented with approved operational data before a public launch announcement.
 
-## 7. Staff catalogue desk
+## 7. Complete guide to adding things
+
+This is the practical starting point for administrators. The word **add** has a different meaning depending on what is being added. Choosing the correct record and desk is what keeps the platform faster and more reliable than a large spreadsheet.
+
+### 7.1 First decide what you are adding
+
+| You want to add | Correct record | Where to do it | What it does not do |
+|---|---|---|---|
+| A kind of product, such as tailoring goods | Item category | `/staff/configuration` | Does not create an item, license rule, price, or stock |
+| A way of counting goods, such as garment, crate, or unit | Unit of measure | `/staff/configuration` | Does not add inventory |
+| A product or material players can refer to | Catalogue item plus supply policy | `/staff/configuration` | Does not necessarily publish, price, or stock it unless those options are selected |
+| More ordinary physical stock | Inventory receipt | Quick receipt on `/staff/configuration` or full `/staff/inventory` desk | Does not create a new item and does not edit a stock cell |
+| Player-produced keystone material | Supplier delivery | `/staff/economy` | Does not make the supplier a dealer or license holder |
+| One unique controlled object | Serialized asset | `/staff/assets` | Does not add a fungible quantity |
+| A business allowed to deal with EEC | Party plus dealer authorization | `/staff/dealers/new` | Does not issue a license or create login credentials |
+| A legal or commercial authority type | License type | `/staff/configuration` | Does not issue that license to anyone |
+| A modular permission carried by licenses | Endorsement definition | `/staff/configuration` | Does not grant the endorsement to a license |
+| An actual license held by a party | License record | `/staff/licensing/new` | Does not create dealer authority or staff access |
+| An endorsement on an existing license | Effective-dated endorsement grant | The license detail page | Does not rewrite the license class |
+| A public catalogue price | Effective-dated price rule | `/staff/configuration` | Does not settle an order price retroactively |
+| Access for an EEC operator | Staff assignment | `/staff/operations` | Does not come from a Discord server role |
+| A public or staff-facing status phrase | Availability profile | `/staff/configuration` | Does not calculate or change stock |
+| A risk and review behavior | Control profile | `/staff/configuration` | Does not automatically define a specific license or endorsement requirement |
+
+The most important distinction is:
+
+```text
+Item record != physical stock != public listing != price != license authority
+```
+
+Those records can be created together where the quick workflow supports it, but they remain separate facts with separate history.
+
+### 7.2 The 30-second ordinary item workflow
+
+Use this for routine fungible goods such as a normal garment, tool, component, food item, or ordinary warehouse material.
+
+Open <https://eec-trade-registry-portal.vercel.app/staff/configuration> and find **Quick-add an item or material**.
+
+For the shortest safe setup:
+
+1. Enter **Item name**.
+2. Select **Category**.
+3. Select **Unit**.
+4. Select **Supply workflow**.
+5. Leave **Publish to the public catalogue now** checked if the listing is ready.
+6. Select **Create complete item**.
+
+The system can generate:
+
+- A stable `ITM-####` item code
+- A unique public URL slug based on the name
+- A description based on the name
+- Default public purchase wording
+- A traceable audit reason
+- A receipt source reference if opening stock is entered
+- A unique request identifier that prevents retry duplication
+
+Use the generated values for ordinary work. Supply a custom code or slug only when staff have an approved naming convention that must be preserved.
+
+### 7.3 How to choose the supply workflow
+
+The supply workflow is a behavioral preset. It is not merely a public label.
+
+| Supply workflow | Use it when | Inventory type | Ordinary receipt allowed? | Important consequence |
+|---|---|---:|---:|---|
+| **Warehouse stocked** | EEC receives and holds ordinary quantities | Fungible | Yes | Stock exists only after a receipt posts |
+| **Player-sourced reserve** | EEC reserves must come from player suppliers | Fungible | No | Every accepted unit must name a supplier and current purchase offer through the Economy desk |
+| **Made to order** | Demand may be accepted before goods are produced | Fungible | Yes | The order can wait for stock; selecting this does not create infinite physical stock |
+| **Limited release** | EEC wants an auditable finite release | Fungible | Yes | Scarcity comes from real receipts and reservations, not a typed stock number |
+| **Serialized unique item** | Each object needs its own identity and custody history | Serialized | No | Register individual assets on `/staff/assets`; never receive it as a generic quantity |
+
+If the wrong workflow is chosen, do not work around it with a misleading receipt. Stop and use the approved correction path. Supply behavior controls which later commands are legal.
+
+### 7.4 Optional quick-item fields, in plain language
+
+Open **Optional price, opening stock, thresholds, and public wording** only when those values are already known.
+
+| Field | What the operator should enter | Practical rule |
+|---|---|---|
+| Description | Internal/default description of the good | Keep it factual; it becomes the public description when publishing through the quick form |
+| Item code | Stable staff and transaction reference | Leave blank for generated `ITM-####`; do not encode rules in the name |
+| Public URL slug | Human-readable catalogue URL segment | Leave blank unless an approved stable slug is required |
+| Control profile | Ordinary, restricted, unique, or another configured behavior | Choose based on review/custody needs, not lore or item name |
+| Availability wording | Public phrase such as normally available, reserve dependent, limited allocation, or made to order | This is communication, not a stock balance |
+| Public purchase requirements | What the public should do or possess | Explain the route clearly, such as contacting an authorized licensed business |
+| Public price schedule | The schedule under which the public number is published | A schedule is required if a price is entered |
+| Price | Whole Septims in the present zero-decimal `SEP` configuration | Blank means pending or unavailable, never free |
+| Opening location | Physical warehouse location receiving starting stock | Leave blank when there is no verified stock |
+| Opening quantity | Real quantity physically received at onboarding | Never use it to invent player-sourced reserves or serialized assets |
+| Receipt source | Shipment, count, donation, production batch, or approved source reference | Leave blank for a traceable generated onboarding reference |
+| Critical level | Point at which reserve pressure is critical | Must be no greater than minimum |
+| Minimum level | Lower operating boundary | Must be no greater than target |
+| Target level | Desired reserve position | Must be no greater than surplus |
+| Surplus level | Position above which stock is considered surplus | Use only after economic policy is approved |
+| Permit direct individual orders | Records whether a personal channel is permitted for this item | The current portal does not yet provide complete direct-customer order intake or automatically apply a premium |
+| Personal weekly limit | Configured intended cap for the personal channel | It is not a substitute for the still-unimplemented quota-consumption workflow |
+| Business bulk-review quantity | Quantity at which business demand should receive additional review | It records policy intent; staff still use the implemented order review path |
+| Audit note | Why this record is being created | A useful default is generated; add detail when the choice is exceptional |
+
+Thresholds must be ordered as:
+
+```text
+critical <= minimum <= target <= surplus
+```
+
+Any threshold may be left blank. Blank means no approved value has been configured.
+
+### 7.5 What happens when **Create complete item** succeeds
+
+One database transaction can create all selected parts:
+
+1. The canonical item.
+2. Its supply policy.
+3. Its public catalogue presentation when publication is selected.
+4. Its explicit price rule when a schedule and price are supplied.
+5. Its balanced opening-stock receipt when an allowed location and quantity are supplied.
+6. Audit evidence for each consequential part.
+7. An outbox event for projections and notifications.
+8. An idempotency receipt so a retry cannot create a second item.
+
+The operation is atomic. If the actor lacks one of the required permissions, a code is duplicated, a profile is invalid, a player-sourced item is given generic opening stock, or any other selected part fails, the entire onboarding rolls back.
+
+The button does **not**:
+
+- Issue a license
+- Decide which business may buy the item
+- Submit an order
+- Reserve inventory
+- Fulfill a sale
+- Create a player supplier
+- Create multiple serialized objects
+- Guarantee that a published price will be the final settled order price
+
+### 7.6 Worked setup: ordinary warehouse-stocked garment
+
+Example: add a new **Blue Evening Coat**.
+
+1. Open `/staff/configuration`.
+2. Enter `Blue Evening Coat` as the item name.
+3. Select `Tailoring goods`.
+4. Select `Garment`.
+5. Select `Warehouse stocked`.
+6. Leave publication checked if the public description is ready.
+7. Open the optional section only if staff know the public price or have real starting inventory.
+8. Choose the ordinary configured control and the desired availability wording.
+9. If 10 coats are physically present, select the real receiving location and enter `10`. Otherwise leave opening stock blank.
+10. Select **Create complete item**.
+
+The item now exists once. If 10 were received, the ledger shows a balanced receipt. If no quantity was entered, stock remains zero even though the catalogue item exists.
+
+### 7.7 Worked setup: player-sourced keystone material
+
+Example: add **Moonstone Ore** as an economic floor material.
+
+1. Add a suitable category or unit first if the required option does not already exist.
+2. In **Quick-add an item or material**, enter `Moonstone Ore`.
+3. Choose the raw-material category and material unit.
+4. Select **Player-sourced reserve**.
+5. Configure reserve thresholds only after the economic policy owner approves them.
+6. Publish public wording if ready, but do **not** enter opening stock.
+7. Create the item.
+8. Open `/staff/economy`.
+9. Publish an effective-dated guaranteed purchase offer after the floor rate is approved.
+10. Register each actual supplier when they first sell to EEC.
+11. Receive each inspected delivery against that supplier and the current offer.
+12. Record payment evidence only after the Septims were actually paid through the approved server process.
+
+The generic inventory receipt intentionally hides this item. This is what prevents an admin from quietly spawning the keystone reserve on the website.
+
+### 7.8 Worked setup: made-to-order good with no initial stock
+
+Example: a specialist dress may be ordered in any reasonable quantity but is produced after demand is accepted.
+
+1. Create it with **Made to order**.
+2. Publish it with `Made to order` or `Available by request` wording.
+3. Leave opening stock blank unless real finished units already exist.
+4. Allow the licensed business to submit an order even while stock is zero.
+5. Staff approve or mark the line awaiting stock according to the current decision.
+6. When production delivers finished units, post an ordinary receipt.
+7. Reserve the required quantity.
+8. Fulfill the order from the reservation.
+
+Made to order permits demand before stock. It does not authorize a negative ledger balance and does not mean that fulfillment happened merely because an admin can spawn the game item later.
+
+### 7.9 Worked setup: limited release or artificial scarcity
+
+Use **Limited release** only when the institution actually intends to control a finite release.
+
+1. Create the item with the limited-release supply workflow.
+2. Publish limited-allocation wording.
+3. Receive only the real approved release quantity.
+4. Let orders record demand even when the release is exhausted if the current order policy permits it.
+5. Reserve stock in approval order or under a later approved allocation policy.
+6. Do not increase the release by directly editing a balance; post a new documented receipt if more units are legitimately authorized.
+
+The site can support scarcity, but scarcity remains a policy choice backed by ledger evidence. It is not automatically desirable for every item.
+
+### 7.10 Worked setup: unique or individually controlled good
+
+1. Create the catalogue item with **Serialized unique item**.
+2. Choose a control profile requiring serialized tracking.
+3. Publish only the public description appropriate for a unique good.
+4. Do not enter opening quantity and do not use the ordinary receipt form.
+5. Open `/staff/assets`.
+6. Register each actual object separately so it receives an `EEC-AST` identity.
+7. Record its accepted custody, inspections, condition, allocation, and lifecycle through asset events.
+
+The catalogue item describes the type. Each asset record represents one real controlled object.
+
+### 7.11 Add ordinary inventory in three fields
+
+Use **Add ordinary inventory** on `/staff/configuration` when the item already exists and the receipt is routine.
+
+1. Start typing the exact item name or code.
+2. Select or enter the stable item code shown by the suggestion list.
+3. Enter a positive quantity.
+4. Select the physical receiving location.
+5. Optionally open **Optional receipt details** to enter a shipment/source reference and a more specific audit note.
+6. Select **Add to inventory** once.
+
+The system posts a balanced movement from an external source account into the selected warehouse account. The visible on-hand and available quantities are recalculated from the ledger and reservations.
+
+Use the full `/staff/inventory` desk when provenance is unusual, a prior transaction must be reversed, the location needs closer review, or the quick list correctly excludes the item.
+
+Never use an ordinary receipt for:
+
+- A player-sourced-only reserve
+- A serialized unique asset
+- A quantity that is not physically present
+- A correction to an earlier posted error
+- A future expected shipment
+
+Expected shipments and orders are not stock. Corrections use linked reversals and new corrective entries.
+
+### 7.12 Add a category
+
+Use the **No-code vocabulary** form on `/staff/configuration`.
+
+1. Select `Item category`.
+2. Enter a stable lowercase code such as `cooked-foods`.
+3. Enter the staff display name, such as `Cooked foods`.
+4. Enter a concise description.
+5. Choose a display order when ordering matters.
+6. Add an audit note if useful.
+7. Select **Add configuration option**.
+
+A category helps people find and organize items. It does not decide stock behavior, control level, license requirement, or price.
+
+### 7.13 Add a unit of measure
+
+1. Select `Unit of measure`.
+2. Enter a stable code such as `bottle`.
+3. Enter a display name such as `Bottle`.
+4. Enter the unit symbol if one is useful.
+5. Set decimal places:
+   - `0` for indivisible things such as garments or crates
+   - A positive scale only when fractional quantities are genuinely allowed
+6. Select **Add configuration option**.
+
+Changing the label does not convert existing quantities. Choose the unit carefully before transactions begin.
+
+### 7.14 Add a license type
+
+1. Select `License type`.
+2. Enter a stable code such as `artisan-trade`.
+3. Enter the staff and optional public display names.
+4. Describe the general authority represented by the class.
+5. Select **Add configuration option**.
+
+This creates a reusable definition. It does not issue the license, approve a dealer, automatically grant endorsements, or make any item purchasable.
+
+### 7.15 Add an endorsement
+
+1. Select `License endorsement`.
+2. Enter a stable code such as `tailoring-and-textiles`.
+3. Enter staff and public display names.
+4. Describe the modular authority.
+5. Select **Add configuration option**.
+
+After the definition exists, a licensing officer can grant it to an actual license on the license detail page. The definition and the grant are deliberately separate.
+
+### 7.16 Add availability wording
+
+1. Select `Availability wording`.
+2. Create a stable code and staff display name.
+3. Put the public-facing explanation in the description field.
+4. Set display order if needed.
+5. Save it.
+
+Availability wording is a deliberately coarse public communication layer. It must never be interpreted as an exact stock promise.
+
+### 7.17 Add a control profile
+
+Control profiles define generic behavior without hard-coding item names.
+
+1. Enter a stable lowercase code.
+2. Enter the staff display name.
+3. Write the public explanation.
+4. Select the relevant behavior flags:
+   - **Require staff review** means the transaction should not be treated as routine self-service.
+   - **Require transaction approval** means an authorized approval step is required.
+   - **Require serialized tracking** means individual asset identity and custody apply.
+5. Add an audit note when the behavior is not self-explanatory.
+6. Select **Add control profile**.
+
+A control profile does not by itself say “requires tailoring license” or “requires arcane endorsement.” Specific eligibility and policy-rule configuration remains a separate governed layer. Do not imply that the three checkboxes create a complete license matrix.
+
+### 7.18 Publish, unpublish, or change an item's public terms
+
+Scroll to **Edit publication and price** on `/staff/configuration`, then open the item card.
+
+1. Check or clear **Published publicly**.
+2. Confirm the public name and description.
+3. Select the control and availability profiles.
+4. Write plain-language purchase requirements.
+5. Set a positive bulk minimum when one exists.
+6. Set the order increment, such as `1` garment or `10` material units.
+7. Choose a price action:
+   - **Keep current price** leaves the current price rule unchanged.
+   - **Set or replace price** closes the prior effective rule for the selected schedule and creates a new one.
+   - **Clear price** closes the current selected-schedule price without treating it as zero.
+8. Enter the price schedule and whole-Septim price when setting a price.
+9. Enter a useful audit note when changing commercial terms.
+10. Select **Save public terms**.
+
+The previous public presentation and price remain in effective-dated history. Existing submitted order snapshots are not silently rewritten by a later catalogue edit.
+
+### 7.19 Add a dealer business
+
+Creating a business is not a configuration action.
+
+1. Open `/staff/dealers/new`.
+2. Create the party and initial dealer authorization together.
+3. Enter public information only in public fields.
+4. Keep internal operational commentary in private notes.
+5. Enable public disclosure only when the dealer is ready to be verified.
+6. Activate the authorization through the supported lifecycle when approved.
+
+The dealer receives an immutable public reference. That reference identifies the EEC dealer relationship; it is not a password, license number, staff identity, or supplier number.
+
+### 7.20 Add a license and endorsements to a business
+
+1. Confirm the holder party already exists.
+2. Open `/staff/licensing/new`.
+3. Select the holder, configured license class, and jurisdiction.
+4. Set the approved status and effective date.
+5. Leave expiration blank when no duration policy has been approved.
+6. Select initial endorsements if the form supports them.
+7. Separate public notes from private notes.
+8. Enable public verification only when appropriate.
+9. Submit with a meaningful reason.
+10. Use the license detail page for later status transitions or endorsement grants and revocations.
+
+A dealer authorization proves that the organization may deal with EEC. A license proves the scope of trade it is presently authorized to conduct. Many workflows require both.
+
+### 7.21 Add staff access
+
+Discord OAuth answers “Which Discord account signed in?” It does not answer “What may this person do?”
+
+1. Have the staff member sign in once through Discord so the identity can be resolved.
+2. Open `/staff/operations` as an authorized platform administrator.
+3. Select the exact actor profile, not a display-name guess.
+4. Grant the narrowest role needed.
+5. Set effective dates and warehouse, jurisdiction, or other supported scope.
+6. Enter a reason.
+7. Confirm the new operator can open only the intended desks.
+
+Changing a Discord server role does not create, expand, or revoke the database assignment. Revoke the exact staff assignment in the portal when authority ends.
+
+### 7.22 Identifier cheat sheet
+
+| Identifier | What it proves | What it does not prove |
+|---|---|---|
+| Item code | Which canonical good is being discussed | Stock, current price, or eligibility |
+| Dealer reference | Which organization has the recorded dealer relationship | A specific license scope or login identity |
+| License reference | Which effective-dated license record is being verified | Dealer status, stock, or a person's password |
+| Supplier reference | Who delivered player-sourced goods | Dealer or license authority |
+| Order reference | Which commercial requisition is being processed | Reservation or fulfillment by itself |
+| Reservation reference | Which quantity is temporarily claimed | Physical issue or delivery completion |
+| Inventory transaction reference | Which immutable stock movement posted | Commercial approval or payment |
+| Serialized asset reference | Which individual controlled object is involved | Ownership transfer merely because it was allocated |
+| Request/correlation identifier | Which command attempt produced the result | A public business reference |
+
+Always hand work off using the correct reference. “The dress order” or “that miner” is not enough for a safe administrative handoff.
+
+### 7.23 Common errors while adding records
+
+| Message or symptom | Meaning | Correct response |
+|---|---|---|
+| Access denied | The signed-in actor lacks one of the permissions required by the selected compound operation | Remove options outside the actor's role or ask an authorized operator to perform that part |
+| Duplicate | The stable code, slug, or another unique reference already exists | Search for the existing record; do not create a near-duplicate without a real business reason |
+| Invalid input | A required value is blank, malformed, out of order, or incompatible with the selected workflow | Recheck codes, positive quantities, schedule/price pairing, and threshold order |
+| Not found | The selected record is inactive, unavailable to the actor, excluded by supply policy, or entered with the wrong code | Use the suggestion list and confirm the correct desk |
+| Conflict | Another operator changed the effective record first | Refresh, read the new state, and resubmit intentionally |
+| Save failed | The command did not commit | Do not assume partial success; refresh and check the authoritative record before retrying |
+| Player-sourced item absent from quick receipts | Working as designed | Use supplier delivery on `/staff/economy` |
+| Serialized item absent from quick receipts | Working as designed | Register the object on `/staff/assets` |
+
+### 7.24 What “under 30 seconds” actually means
+
+The target applies to prepared routine work:
+
+- Creating an ordinary item when category, unit, control, availability, and supply choice are already known
+- Posting a normal receipt when the physical item, quantity, and location are known
+- Creating a simple category, unit, license definition, endorsement definition, or availability phrase
+- Replacing a known public price or publication setting
+
+It does not mean that an operator should rush through:
+
+- Restricted approval
+- Player-supplier inspection and payment evidence
+- Unique-asset custody
+- Dealer or license due diligence
+- Reversals and reconciliation
+- Compliance findings
+- An unresolved economic or legal policy decision
+
+The portal removes repetitive typing and duplicate spreadsheet maintenance. It does not remove the evidence that makes a consequential transaction trustworthy.
+
+## 8. Staff catalogue desk
 
 Open <https://eec-trade-registry-portal.vercel.app/staff>.
 
-### 7.1 Create an item
+### 8.1 Create an item
 
 1. Open the new-item form.
 2. Enter a stable item code.
@@ -234,7 +657,7 @@ Open <https://eec-trade-registry-portal.vercel.app/staff>.
 
 Creation makes one canonical item. It does not automatically create stock, a reservation, a license rule, or a dealer-specific copy.
 
-### 7.2 Edit an item
+### 8.2 Edit an item
 
 1. Open the item detail/edit page.
 2. Review the current version and status.
@@ -244,17 +667,17 @@ Creation makes one canonical item. It does not automatically create stock, a res
 
 A stale version is rejected. Item code and public slug remain stable under the current correction policy boundary.
 
-### 7.3 Archive or restore
+### 8.3 Archive or restore
 
 Archiving removes the item from current public use without deleting its history. Restoring is a separate reasoned command. Neither operation changes historical orders, ledger movements, or audits.
 
-## 8. Dealer registry desk
+## 9. Dealer registry desk
 
 Open <https://eec-trade-registry-portal.vercel.app/staff/dealers>.
 
 The queue lists dealer records, current status, type, jurisdiction, public/private visibility, premises, and latest update.
 
-### 8.1 Onboard a dealer
+### 9.1 Onboard a dealer
 
 1. Select **Onboard dealer**.
 2. Choose the party type. **Organization** is the production default.
@@ -269,7 +692,7 @@ The queue lists dealer records, current status, type, jurisdiction, public/priva
 
 The party and initial dealer authorization are created atomically. A failure creates neither record.
 
-### 8.2 Maintain a dealer
+### 9.2 Maintain a dealer
 
 Open **Review dealer** from the queue. Depending on current state and permission, staff can:
 
@@ -284,11 +707,11 @@ Every lifecycle command requires an allowed source state, a current version wher
 
 Dealer authorization and licensing are separate. A dealer may require both a current dealer authorization and an appropriate license for a particular transaction.
 
-## 9. Licensing office
+## 10. Licensing office
 
 Open <https://eec-trade-registry-portal.vercel.app/staff/licensing>.
 
-### 9.1 Issue a license
+### 10.1 Issue a license
 
 1. Open the new-license form.
 2. Select the existing holder party.
@@ -303,7 +726,7 @@ Open <https://eec-trade-registry-portal.vercel.app/staff/licensing>.
 
 The database allocates the immutable public reference and creates the license, initial status history, selected endorsements, audit evidence, and outbox event in one transaction.
 
-### 9.2 Manage license status
+### 10.2 Manage license status
 
 The implemented lifecycle supports reasoned, permission-checked operations including:
 
@@ -315,20 +738,20 @@ The implemented lifecycle supports reasoned, permission-checked operations inclu
 
 Revoked and surrendered states are terminal in the current model. Expiration behavior and grace periods remain policy-gated.
 
-### 9.3 Manage endorsements
+### 10.3 Manage endorsements
 
 Endorsements are modular grants attached to a license. Granting or revoking one creates effective-dated history; it does not rewrite the license class or erase prior authority.
 
 Applications, renewal review, automatic expiration, and condition-authoring workflows are not yet active. Staff must not represent direct issuance as an application decision when no application record exists.
 
-## 10. Dealer orders
+## 11. Dealer orders
 
 Dealer representatives use:
 
 - <https://eec-trade-registry-portal.vercel.app/dealer/orders>
 - <https://eec-trade-registry-portal.vercel.app/dealer/orders/new>
 
-### 10.1 Submit a requisition
+### 11.1 Submit a requisition
 
 1. Sign in as an authorized representative.
 2. Select the represented organization when more than one is available.
@@ -349,15 +772,15 @@ Submission deliberately does not:
 
 Orders may be submitted without stock on hand. Such demand can proceed to an awaiting-stock decision.
 
-### 10.2 Dealer cancellation
+### 11.2 Dealer cancellation
 
 A dealer with `order.cancel` scope may cancel an eligible order before reservation, ready, or fulfillment progress prevents cancellation. Fulfilled quantities are never retroactively cancelled.
 
-## 11. Staff order desk
+## 12. Staff order desk
 
 Open <https://eec-trade-registry-portal.vercel.app/staff/orders>.
 
-### 11.1 Review an order
+### 12.1 Review an order
 
 1. Open an order from the queue.
 2. Review the dealer, authorization, optional license, fulfillment request, item control snapshots, requested quantities, price state, and order history.
@@ -372,7 +795,7 @@ Open <https://eec-trade-registry-portal.vercel.app/staff/orders>.
 
 The command selects the required ordinary, restricted, or unique approval permission from the stored line control snapshot. The database derives the resulting line and header states; the browser does not.
 
-### 11.2 Important order rules
+### 12.2 Important order rules
 
 - Approval does not reduce warehouse stock.
 - Awaiting stock preserves commercial demand.
@@ -381,11 +804,11 @@ The command selects the required ordinary, restricted, or unique approval permis
 - A price override is a distinct authorized action, not a hidden browser calculation.
 - Reservation and fulfillment remain separate warehouse steps.
 
-## 12. Inventory desk
+## 13. Inventory desk
 
 Open <https://eec-trade-registry-portal.vercel.app/staff/inventory>.
 
-### 12.1 Understand the displayed quantities
+### 13.1 Understand the displayed quantities
 
 For fungible stock:
 
@@ -397,7 +820,7 @@ Posted physical on hand
 
 No operator directly edits a `current stock` field. The displayed position is derived from immutable ledger entries and current reservation records.
 
-### 12.2 Receive stock
+### 13.2 Receive stock
 
 1. Select the warehouse and stock location permitted by the assignment scope.
 2. Select a fungible item.
@@ -407,17 +830,17 @@ No operator directly edits a `current stock` field. The displayed position is de
 
 The command posts a balanced transaction from an external source account into the physical warehouse account. Negative physical balances are forbidden.
 
-### 12.3 Correct a posted receipt
+### 13.3 Correct a posted receipt
 
 Do not edit or delete it. An inventory controller posts one linked reversal with a reason. If needed, post a separate corrected receipt afterward.
 
 A reversal is rejected if it would make physical stock negative or reduce stock below effective reservations.
 
-## 13. Reservations
+## 14. Reservations
 
 Reservations are explicit time-bounded claims against approved order demand.
 
-### 13.1 Create a reservation
+### 14.1 Create a reservation
 
 1. Open the approved or awaiting-stock demand from the warehouse workflow.
 2. Select the permitted warehouse stock account.
@@ -426,15 +849,15 @@ Reservations are explicit time-bounded claims against approved order demand.
 
 The default initial term is 48 hours. The database locks or otherwise serializes the relevant stock scope so two operators cannot claim the same final units.
 
-### 13.2 Extend or release
+### 14.2 Extend or release
 
 Authorized staff may extend or release an active reservation with a reason. Expired reservations no longer reduce available stock. A consumed reservation remains historical and is never reactivated by a fulfillment reversal.
 
-## 14. Fulfillment desk
+## 15. Fulfillment desk
 
 Open <https://eec-trade-registry-portal.vercel.app/staff/fulfillment>.
 
-### 14.1 Fulfill reserved stock
+### 15.1 Fulfill reserved stock
 
 1. Locate an active, unexpired reservation.
 2. Confirm the order line, warehouse, item, quantity, and collecting or receiving context.
@@ -451,11 +874,11 @@ One transaction:
 - Writes audit and history
 - Emits `fulfillment.completed`
 
-### 14.2 Reverse a fulfillment
+### 15.2 Reverse a fulfillment
 
 An inventory controller may post a linked reversal. This restores ledger stock and reopens outstanding demand while preserving the original fulfillment and consumed reservation as historical evidence.
 
-## 15. Warehouse transfers
+## 16. Warehouse transfers
 
 Open <https://eec-trade-registry-portal.vercel.app/staff/transfers>.
 
@@ -468,25 +891,25 @@ requested -> authorized -> dispatched -> received
                  +-> cancelled before dispatch
 ```
 
-### 15.1 Request
+### 16.1 Request
 
 A warehouse operator selects source and destination warehouses, item, and full transfer quantity. The request creates no hidden destination stock.
 
-### 15.2 Authorize
+### 16.2 Authorize
 
 An inventory controller revalidates scope, stock, and current transfer version before authorization.
 
-### 15.3 Dispatch
+### 16.3 Dispatch
 
 Dispatch posts stock from the source physical account into an explicit in-transit custody account.
 
-### 15.4 Receive
+### 16.4 Receive
 
 Receipt posts the in-transit quantity into the destination physical account. A discrepancy remains explicitly in transit or disputed; it is not fabricated as received.
 
 A dispatched transfer cannot be cancelled. Use the supported receipt, dispute, return, or later resolution workflow.
 
-## 16. Consignment desk
+## 17. Consignment desk
 
 Staff use <https://eec-trade-registry-portal.vercel.app/staff/consignments>. Dealer representatives use <https://eec-trade-registry-portal.vercel.app/dealer/consignments>.
 
@@ -498,13 +921,13 @@ Custodian: Authorized dealer
 Stock state: Consigned
 ```
 
-### 16.1 Create and maintain an agreement
+### 17.1 Create and maintain an agreement
 
 Authorized staff can create an effective-dated agreement between the configured owner and a currently authorized dealer, then suspend, reactivate, or close it. Closing is blocked while ledger-backed custody remains outstanding.
 
 Free-text terms are descriptive only. They do not implement commissions, settlement calculations, or liability rules.
 
-### 16.2 Issue fungible stock
+### 17.2 Issue fungible stock
 
 1. Select the active agreement.
 2. Select an eligible item and available warehouse source account.
@@ -513,11 +936,11 @@ Free-text terms are descriptive only. They do not implement commissions, settlem
 
 The ledger moves custody from EEC physical stock to the dealer's consigned account while retaining the configured owner.
 
-### 16.3 Dealer report
+### 17.3 Dealer report
 
 The representative reports sold, returned, lost, damaged, and observed-on-hand quantities. This is a claim and does not change inventory when submitted.
 
-### 16.4 Staff acceptance
+### 17.4 Staff acceptance
 
 Ordinary acceptance requires exact reconciliation:
 
@@ -530,7 +953,7 @@ prior outstanding custody
 
 Accepted sales move custody to an external account. Accepted returns move custody to a matching authorized warehouse account. Loss or damage cannot be accepted through the ordinary path because exception, liability, and settlement policy is unresolved.
 
-## 17. Serialized assets
+## 18. Serialized assets
 
 Open <https://eec-trade-registry-portal.vercel.app/staff/assets>.
 
@@ -552,11 +975,11 @@ Ownership, custodian, warehouse, and location are separately represented. One as
 
 Allocation does not move custody and is not fulfillment. Unique-asset fulfillment remains gated by transaction-specific approval and title-transfer policy.
 
-## 18. Compliance desk
+## 19. Compliance desk
 
 Open <https://eec-trade-registry-portal.vercel.app/staff/compliance>.
 
-### 18.1 Open a case
+### 19.1 Open a case
 
 1. Choose the configured case type and confidentiality.
 2. Add the appropriate subject party and optional supported record link.
@@ -566,24 +989,24 @@ Open <https://eec-trade-registry-portal.vercel.app/staff/compliance>.
 
 Opening a case is not a finding of wrongdoing.
 
-### 18.2 Inspections, allegations, evidence, and findings
+### 19.2 Inspections, allegations, evidence, and findings
 
 - Inspections record planned or completed evidence-gathering work.
 - Allegations are separate immutable assertions.
 - Evidence metadata records classification and reference; it does not expose a file or credential.
 - Findings explicitly record `substantiated`, `not_substantiated`, or `inconclusive`.
 
-### 18.3 Actions and appeals
+### 19.3 Actions and appeals
 
 The current action model is record-only. Staff can recommend, approve, decline, or void a configured action record, but `effect_applied` remains false. Recording a recommended suspension does not silently suspend a license, dealer, order, reservation, asset, or stock position.
 
 An approved record-only action may receive one appeal. Staff can record an affirmed, varied, remanded, reversed, or withdrawn disposition. The appeal does not automatically stay or change another domain.
 
-## 19. Access administration and operations
+## 20. Access administration and operations
 
 Open <https://eec-trade-registry-portal.vercel.app/staff/operations>.
 
-### 19.1 Grant a role
+### 20.1 Grant a role
 
 1. Confirm the target actor identity. Never use a Discord display name as the identity key.
 2. Select the role.
@@ -591,11 +1014,11 @@ Open <https://eec-trade-registry-portal.vercel.app/staff/operations>.
 4. Enter a reason.
 5. Grant the assignment.
 
-### 19.2 Revoke a role
+### 20.2 Revoke a role
 
 Revoke the exact active assignment with a reason. Revocation is effective-dated and audited. The database prevents revocation of the final active platform-administrator assignment.
 
-### 19.3 Health review
+### 20.3 Health review
 
 The operations console summarizes conditions such as:
 
@@ -610,7 +1033,7 @@ The operations console summarizes conditions such as:
 
 The console identifies conditions; it does not silently rewrite authoritative records.
 
-## 20. Integration console
+## 21. Integration console
 
 Open <https://eec-trade-registry-portal.vercel.app/staff/integrations>.
 
@@ -626,7 +1049,7 @@ An integration operator can:
 
 An integration operator cannot query arbitrary tables, edit the export query from the browser, read service-account credentials, or change source business records.
 
-## 21. Is the Google Sheet linked to the platform?
+## 22. Is the Google Sheet linked to the platform?
 
 Yes. The production Sheet is actively linked as a one-way scheduled projection:
 
@@ -640,7 +1063,7 @@ It contains the managed tabs:
 
 The production connection was independently confirmed on 2026-08-10. The anonymous CSV endpoints returned HTTP 200, and all three tabs contained a new 07:30 UTC generation watermark.
 
-### 21.1 Exact data flow
+### 22.1 Exact data flow
 
 ```mermaid
 sequenceDiagram
@@ -659,7 +1082,7 @@ sequenceDiagram
 
 The worker currently refreshes every 15 minutes. Each run queries approved public projection functions, replaces the managed tab with raw values, and records the result.
 
-### 21.2 Direction of authority
+### 22.2 Direction of authority
 
 ```text
 Supabase -> Google Sheet
@@ -668,7 +1091,7 @@ Google Sheet -X-> Supabase
 
 The Sheet is not two-way. Manual cell edits are not imported and will normally be overwritten by a later full-tab replacement. Do not use the Sheet to approve, correct, or administer anything.
 
-### 21.3 What makes the connection secure
+### 22.3 What makes the connection secure
 
 - The database scheduler calls a protected worker route.
 - The route uses a server-only bearer secret.
@@ -678,7 +1101,7 @@ The Sheet is not two-way. Manual cell edits are not imported and will normally b
 - The worker can read only allowlisted public export projections through its integration path.
 - Export failures do not change business state.
 
-### 21.4 How to confirm that the Sheet is current
+### 22.4 How to confirm that the Sheet is current
 
 1. Open the Sheet.
 2. Check all three managed tabs.
@@ -688,7 +1111,7 @@ The Sheet is not two-way. Manual cell edits are not imported and will normally b
 
 Normal projection lag is up to the approved 15-minute cadence plus processing time.
 
-### 21.5 If the Sheet appears stale
+### 22.5 If the Sheet appears stale
 
 1. Open `/staff/integrations`.
 2. Confirm **Worker authority**, **Worker secret**, **Supabase 15-minute job**, and **Google Sheets** report ready.
@@ -701,7 +1124,7 @@ Normal projection lag is up to the approved 15-minute cadence plus processing ti
 
 Do not repair a stale projection by manually editing the Sheet.
 
-## 22. Discord status and behavior
+## 23. Discord status and behavior
 
 Staff Discord OAuth login is active.
 
@@ -709,7 +1132,7 @@ The application also contains signed public `/catalogue`, `/dealer`, and `/licen
 
 Bot delivery and command registration remain inactive until the server-side bot token is installed and a private numeric staff-alert channel is configured. Discord messages, reactions, edits, and deletions never change EEC business state.
 
-## 23. Recommended daily operating routine
+## 24. Recommended daily operating routine
 
 ### Opening review
 
@@ -737,9 +1160,99 @@ Bot delivery and command registration remain inactive until the server-side bot 
 3. Confirm scheduled public exports still advance.
 4. Hand off unresolved cases using source record references and request IDs, not screenshots as the authority.
 
-## 24. End-to-end examples
+## 25. End-to-end examples
 
-### 24.1 New dealer to fulfilled wholesale order
+### 25.1 Aurelion orders a Nocturnal Dress through a licensed business
+
+This is the complete ordinary customer-to-business-to-EEC workflow.
+
+#### Step 1: Aurelion browses
+
+Aurelion Earandil opens the public catalogue and finds the Nocturnal Dress. The listing tells him the public description, public price if one is configured, coarse availability wording, and purchase requirements.
+
+The listing does not promise exact stock or prove that Aurelion is personally eligible to use the wholesale channel.
+
+#### Step 2: Aurelion chooses a business
+
+Aurelion approaches a Solitude tailor that advertises EEC ordering service. Before paying a deposit, either party can use exact public references on `/verify` to check:
+
+- The business's current dealer authorization
+- The business's current license
+- Relevant public endorsements
+- Effective dates and jurisdiction
+
+The dealer number answers “Is this business recognized by EEC?” The license number answers “What trade is the business authorized to conduct?” They are separate because a business relationship and a trade authority are not the same fact.
+
+#### Step 3: The business agrees to serve the customer
+
+The tailor and Aurelion agree on their own retail terms. The business may add an approved commission or retail margin under server policy. The current EEC platform does not calculate or settle that private retail agreement.
+
+The business should record enough information in its own roleplay or Discord conversation to know what Aurelion wants, but Aurelion does not become the EEC wholesale ordering party.
+
+#### Step 4: The verified business representative submits the EEC order
+
+In the current live implementation, an individually authenticated representative signs into the dealer portal and submits:
+
+- The represented business
+- The exact catalogue item
+- The quantity
+- The supported fulfillment preference and context
+
+The system creates an `EEC-ORD` reference and snapshots the business, license/control context, item, quantity, and any current price state.
+
+The planned model permits an EEC agent to enter the same requisition on behalf of a verified business. That staff-assisted screen is not yet live. Until it exists, the business representative must submit through the dealer portal. Staff must not borrow the dealer password or create a misleading direct database row.
+
+#### Step 5: The EEC agent reviews the request
+
+The agent opens `/staff/orders`, finds the `EEC-ORD` reference, and checks:
+
+- The ordering business is the correct party
+- Dealer authorization is current
+- The license and endorsements satisfy the configured requirements
+- The requested quantity and item are correct
+- The control snapshot is ordinary, restricted, or unique
+- The price is explicit or intentionally pending
+- The decision is within the agent's permissions
+
+The agent approves, partially approves, marks awaiting stock, or denies with a useful reason.
+
+Approval records commercial authority. It does not remove a dress from inventory.
+
+#### Step 6: Stock is allocated
+
+If a dress is available, the warehouse creates a reservation for the approved order line. The reservation reduces **available** stock but does not yet reduce physical on-hand stock.
+
+If no dress is available, the order remains awaiting stock. This is valid. The platform records demand without inventing inventory or forcing a negative balance.
+
+For a made-to-order dress, finished stock can be received after production. For a limited release, the business waits until an actual unit is available under the approved allocation policy.
+
+#### Step 7: Warehouse fulfillment
+
+At collection or confirmed receipt, the warehouse operator opens `/staff/fulfillment` and confirms the active reservation, order, item, quantity, warehouse, and recipient context.
+
+Completion performs one coupled transaction:
+
+- Consumes the reservation
+- Posts the physical inventory issue
+- Increases fulfilled quantity
+- Derives the line and order status
+- Writes audit and history
+- Queues configured notifications
+
+The EEC wholesale transaction is now fulfilled to the licensed business.
+
+#### Step 8: The business completes the retail transaction
+
+The tailor gives or sells the dress to Aurelion under their separate agreement. The EEC history continues to show the licensed business as the ordering and receiving party. It does not pretend that Aurelion had a wholesale login or EEC license.
+
+#### Step 9: Corrections and cancellations
+
+- Before fulfillment progress, the authorized business may cancel an eligible order.
+- A reservation must be released through the supported workflow; deleting a Discord message does nothing.
+- A fulfilled stock mistake uses a linked reversal and corrected fulfillment, not history editing.
+- A retail refund between Aurelion and the tailor is outside the current EEC wholesale settlement model.
+
+### 25.2 New dealer to fulfilled wholesale order
 
 1. Dealer registry officer onboards the organization.
 2. The officer activates its dealer authorization when approved.
@@ -754,7 +1267,7 @@ Bot delivery and command registration remain inactive until the server-side bot 
 11. Ledger, order, reservation, audit, and outbox history commit together at each step.
 12. Public dealer/license projections appear in the next Sheet refresh when disclosure is enabled; private order and stock data do not.
 
-### 24.2 Order submitted before stock arrives
+### 25.3 Order submitted before stock arrives
 
 1. Dealer submits an order while available stock is zero.
 2. Order officer records `awaiting stock` rather than rejecting legitimate demand.
@@ -764,7 +1277,7 @@ Bot delivery and command registration remain inactive until the server-side bot 
 
 No negative stock or fictional reservation is created while waiting.
 
-### 24.3 Consignment sale report
+### 25.4 Consignment sale report
 
 1. Staff creates the agreement and issues 20 fungible units into dealer custody.
 2. Dealer reports 5 sold, 3 returned, and 12 observed on hand.
@@ -774,7 +1287,67 @@ No negative stock or fictional reservation is created while waiting.
 
 If the dealer instead reports loss or damage, the report is preserved but ordinary acceptance is blocked pending the approved exception policy.
 
-## 25. Error and troubleshooting guide
+### 25.5 Player miner sells iron ore into the economic reserve
+
+1. The economic steward confirms that Iron Ore is configured as a player-sourced reserve and publishes an approved effective-dated floor purchase offer.
+2. A miner brings 100 units to an EEC agent.
+3. A procurement officer finds or registers the miner as a supplier.
+4. The officer inspects the delivery, selects the current Iron Ore offer, records 100 accepted units, and chooses the actual receiving location.
+5. The database creates a procurement receipt, records the Company's obligation at the offer rate, and posts 100 units into the warehouse ledger.
+6. The officer pays the miner through the approved server method.
+7. Only after payment occurs, the officer records the voucher, ticket, Discord log, or other approved settlement reference.
+8. The economy dashboard now reflects real reserve stock and recorded settlement state.
+9. A smith may still trade directly with the miner. The EEC purchase floor exists as a guaranteed fallback, not a mandatory market price.
+
+The supplier reference does not turn the miner into a dealer. The receipt does not invent funds or function as a complete treasury ledger.
+
+### 25.6 Business needs a large quantity of keystone material
+
+1. The business submits demand through the licensed ordering channel.
+2. The order may be accepted even if current reserve stock is insufficient.
+3. Staff review the business quantity, control, and any configured bulk-review threshold.
+4. If enough stock exists, the warehouse reserves and fulfills it normally.
+5. If reserves are short, the line waits for stock while the economy dashboard exposes unmet demand.
+6. New player deliveries replenish the reserve through procurement, not generic admin receipts.
+7. Any high convenience or emergency resale price must be entered as approved price data; the current system does not assume “double price” automatically.
+
+This allows the EEC to stabilize material availability without pretending supply is infinite.
+
+### 25.7 Direct individual premium purchase
+
+The data model can record that a product permits direct individual ordering, an intended weekly limit, and a public or other schedule price. The Nocturnal Dress seed configuration demonstrates that policy direction.
+
+The complete direct-customer intake, automatic weekly quota consumption, and automatic `3x` premium calculation are **not** currently implemented. Until they are:
+
+- Do not submit an ordinary player as though they were a licensed dealer.
+- Do not borrow a business login.
+- Do not claim the checkbox automatically enforces the weekly limit.
+- Do not assume the premium multiplier; enter only an approved explicit price where the supported workflow allows it.
+- Prefer the live licensed-business path for production transactions.
+
+When direct individual ordering is implemented, it should become a separate verified channel that records the customer channel, applicable premium schedule, limit consumption, staff actor where assisted, and the same reservation/fulfillment evidence.
+
+### 25.8 Complete launch setup for a new trade line
+
+Suppose the server launches an alchemical trade line from nothing.
+
+1. Platform administration creates any missing `Alchemical goods` category, units, license type, endorsements, availability wording, and control profiles.
+2. Catalogue and economic staff agree which goods are warehouse stocked, player sourced, made to order, limited release, or serialized.
+3. Catalogue staff quick-create each item with supply policy and public terms.
+4. Economic staff configure reserve thresholds and floor offers only for player-sourced materials.
+5. Warehouse staff receive real ordinary stock; procurement staff receive real supplier deliveries.
+6. Dealer staff onboard approved alchemical businesses.
+7. Licensing staff issue the correct license class and alchemical endorsements.
+8. Administrators grant each operator only the required database role and scope.
+9. Dealer representatives submit real test requisitions through their own credentials.
+10. Order and warehouse staff exercise approval, awaiting-stock, reservation, fulfillment, reversal, and handoff procedures.
+11. Integration staff confirm public catalogue, dealer, and license projections refresh in Google Sheets.
+12. Discord admins publish public catalogue and verification instructions without treating Discord roles as EEC authority.
+13. Operations staff verify failed-work queues, audit history, and provider readiness before announcing launch.
+
+At no point is the Google Sheet used to create authoritative business state.
+
+## 26. Error and troubleshooting guide
 
 | Symptom | Likely cause | Correct response |
 |---|---|---|
@@ -787,10 +1360,10 @@ If the dealer instead reports loss or damage, the report is preserved but ordina
 | Transfer cannot be cancelled | It has already been dispatched | Receive, dispute, return, or resolve it; do not delete movement history |
 | Consignment report cannot be accepted | Reconciliation mismatch or reported loss/damage | Correct the claim or use a future approved exception path |
 | Public verification gives `not verifiable` | Reference is unknown, private, malformed, unpublished, or not currently disclosable | Confirm the authoritative record and disclosure setting privately |
-| Sheet timestamp is old | Scheduler, worker, destination, credential, or run failure | Follow section 21.5 and inspect Integrations |
+| Sheet timestamp is old | Scheduler, worker, destination, credential, or run failure | Follow section 22.5 and inspect Integrations |
 | Discord delivery stays pending | Staff destination inactive or bot token/channel unavailable | Configure the server token and approved channel; source business state is still committed |
 
-## 26. Safety rules
+## 27. Safety rules
 
 Never:
 
@@ -805,9 +1378,9 @@ Never:
 - Assume a compliance action record changes another domain when `effect_applied` is false
 - Guess unresolved institutional policy
 
-## 27. Implemented boundaries and remaining policy gates
+## 28. Implemented boundaries and remaining policy gates
 
-The operational foundation is active for catalogue management, dealer administration, direct license lifecycle, dealer order intake, staff review, ledger receipts, reservations, fungible fulfillment, warehouse transfers, consignment custody and reports, serialized-asset events, compliance casework, access administration, public projection exports, and operational monitoring.
+The operational foundation is active for rapid item and configuration creation, effective-dated publication and pricing, catalogue management, dealer administration, direct license lifecycle, dealer order intake, staff review, ledger receipts, player-sourced procurement, reservations, fungible fulfillment, warehouse transfers, consignment custody and reports, serialized-asset events, compliance casework, access administration, public projection exports, and operational monitoring.
 
 The following remain deliberately unimplemented or limited until policy is approved:
 
@@ -816,6 +1389,8 @@ The following remain deliberately unimplemented or limited until policy is appro
 - Exact endorsement prerequisites and class-specific eligibility
 - Regional factor authority and assignment operations
 - Quotas and circulation ceilings
+- Staff-assisted order entry on behalf of a verified licensed business
+- Direct-individual order intake, automatic personal-limit consumption, and automatic premium-channel pricing
 - Dealer-specific price schedules and financial settlement
 - Reconciliation adjustments and stock-count approval policy
 - Consignment commission, loss, damage, and exception settlement
@@ -827,7 +1402,7 @@ The following remain deliberately unimplemented or limited until policy is appro
 
 External production gates also include provider MFA, an isolated restore rehearsal with measured recovery targets, approved retention/redaction policy, formal accessibility and supported-browser validation, and final threat/permission review.
 
-## 28. Source documents
+## 29. Source documents
 
 This operator guide summarizes the implemented behavior. When resolving a policy or engineering question, consult the governing sources:
 
