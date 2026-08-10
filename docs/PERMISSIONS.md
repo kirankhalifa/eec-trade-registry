@@ -92,6 +92,7 @@ Scope names are provisional; they should become stable machine identifiers befor
 ### Orders and allocation
 
 - Dealer grant scopes: `order.create`, `order.read`, `order.cancel`
+- `order.create.assisted`
 - `order.private.read`
 - `order.review`
 - `order.approve.ordinary`
@@ -199,7 +200,7 @@ The implemented role receives `dealer.private.read`, `dealer.create`, `dealer.up
 
 Can review and approve orders within an assigned control level and value/quantity limit, manage routine reservations, and cancel eligible unfulfilled lines.
 
-The implemented initial role receives `order.private.read`, `order.review`, `order.approve.ordinary`, `order.approve.restricted`, `order.approve.unique`, `order.price.edit`, and `order.cancel`. Each approval command resolves the exact control permission from stored line snapshots. Assignment limits and reservation authority are not yet implemented.
+The implemented initial role receives `order.private.read`, `order.review`, `order.approve.ordinary`, `order.approve.restricted`, `order.approve.unique`, `order.price.edit`, and `order.cancel`. Each approval command resolves the exact control permission from stored line snapshots. ADR 0017 approves staff-assisted entry on behalf of a verified licensed business, but `order.create.assisted` is not yet granted because the matching authoritative command and staff screen do not exist. Assignment limits and reservation authority are not yet implemented.
 
 ### Warehouse operator
 

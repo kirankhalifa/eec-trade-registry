@@ -10,6 +10,8 @@ Configured currency: `SEP` (Septims, zero decimal places)
 
 This guide explains how to use the implemented East Empire Company trade registry as a public visitor, dealer representative, staff operator, or platform administrator. It also explains what each operation changes, what it deliberately does not change, how the public Google Sheet is connected, and how to diagnose routine problems.
 
+For a plain-language, roleplay-first explanation built around a public customer, licensed business, EEC agent, and warehouse handoff, start with the [Player and Discord Admin Handbook](PLAYER_ADMIN_HANDBOOK.md).
+
 The governing rule for every workflow is:
 
 > Supabase PostgreSQL is the only authoritative source of business data.
