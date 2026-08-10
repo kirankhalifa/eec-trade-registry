@@ -226,12 +226,18 @@ select is(
 select ok(
   (
     select bool_and(
-      line ->> 'pricing_status' = 'pending'
-      and line -> 'unit_price_minor' = 'null'::jsonb
+      (
+        line ->> 'pricing_status' = 'configured'
+        and line -> 'unit_price_minor' <> 'null'::jsonb
+        and (line ->> 'unit_price_minor')::bigint >= 0
+      ) or (
+        line ->> 'pricing_status' = 'pending'
+        and line -> 'unit_price_minor' = 'null'::jsonb
+      )
     )
     from public.get_dealer_orders(), lateral jsonb_array_elements(lines) as line
   ),
-  'all submitted lines preserve null price as pending rather than zero'
+  'submitted lines configure available prices and preserve unavailable prices as null pending values'
 );
 select ok(
   (

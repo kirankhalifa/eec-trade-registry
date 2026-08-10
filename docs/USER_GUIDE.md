@@ -1315,17 +1315,15 @@ This allows the EEC to stabilize material availability without pretending supply
 
 ### 25.7 Direct individual premium purchase
 
-The data model can record that a product permits direct individual ordering, an intended weekly limit, and a public or other schedule price. The Nocturnal Dress seed configuration demonstrates that policy direction.
+1. The EEC agent opens **Staff → Launch desk → Enter a customer order**.
+2. The agent chooses **Direct individual** and selects an existing customer or enters a new name, contact label, and region.
+3. The agent chooses up to five goods and quantities. Only items explicitly enabled for direct purchase are accepted.
+4. Supabase resolves the current public base price and applies the authoritative `3×` premium. The selected price schedule, rule, base amount, multiplier, final amount, and currency are frozen on the line.
+5. Supabase locks the customer/item/week, totals current held or consumed quantity, and rejects a request that would exceed the item’s configured weekly personal limit.
+6. Successful submission creates a quota **hold**. It becomes **consumed** when the line is fulfilled and **released** if the line is denied or cancelled.
+7. Stock is not required at submission. Staff review, reserve, and fulfill the order through the same later workflow as other orders.
 
-The complete direct-customer intake, automatic weekly quota consumption, and automatic `3x` premium calculation are **not** currently implemented. Until they are:
-
-- Do not submit an ordinary player as though they were a licensed dealer.
-- Do not borrow a business login.
-- Do not claim the checkbox automatically enforces the weekly limit.
-- Do not assume the premium multiplier; enter only an approved explicit price where the supported workflow allows it.
-- Prefer the live licensed-business path for production transactions.
-
-When direct individual ordering is implemented, it should become a separate verified channel that records the customer channel, applicable premium schedule, limit consumption, staff actor where assisted, and the same reservation/fulfillment evidence.
+Do not use a dealer identity for an individual purchase, manually multiply a price, or track the weekly limit in Discord. Those are now database rules.
 
 ### 25.8 Complete launch setup for a new trade line
 
@@ -1382,22 +1380,19 @@ Never:
 
 The operational foundation is active for rapid item and configuration creation, effective-dated publication and pricing, catalogue management, dealer administration, direct license lifecycle, dealer order intake, staff review, ledger receipts, player-sourced procurement, reservations, fungible fulfillment, warehouse transfers, consignment custody and reports, serialized-asset events, compliance casework, access administration, public projection exports, and operational monitoring.
 
-The following remain deliberately unimplemented or limited until policy is approved:
+The following launch capabilities are now implemented: public applications and renewals, assisted licensed-business orders, direct-individual intake, automatic `3×` pricing, automatic personal-limit holds/consumption/release, dealer-specific pricing precedence, consignment commission settlement, unique-asset delivery, configured cross-domain sanctions, generated official PDFs, and a cross-domain dashboard.
 
-- Public license applications and application review
-- Renewal terms, grace periods, and scheduled expiration
+The following remain policy decisions or intentionally bounded:
+
+- Default renewal terms, grace periods, and scheduled expiration automation
 - Exact endorsement prerequisites and class-specific eligibility
 - Regional factor authority and assignment operations
 - Quotas and circulation ceilings
-- Staff-assisted order entry on behalf of a verified licensed business
-- Direct-individual order intake, automatic personal-limit consumption, and automatic premium-channel pricing
-- Dealer-specific price schedules and financial settlement
 - Reconciliation adjustments and stock-count approval policy
-- Consignment commission, loss, damage, and exception settlement
-- Unique-asset fulfillment and transaction-specific approval
-- Cross-domain compliance enforcement effects
+- Consignment loss, damage, and exception settlement beyond ordinary accepted sales
+- Appeal stays, automated sanction reversal, and action-specific dual control
 - Evidence file storage and retention
-- Official generated documents, seals, and signatures
+- Cryptographic signatures and legally approved seal artwork beyond checksum-bearing official PDFs
 - Public endpoint edge rate limiting and formal abuse monitoring
 
 External production gates also include provider MFA, an isolated restore rehearsal with measured recovery targets, approved retention/redaction policy, formal accessibility and supported-browser validation, and final threat/permission review.
@@ -1415,3 +1410,113 @@ This operator guide summarizes the implemented behavior. When resolving a policy
 - [Architecture and policy decision records](adr/)
 
 If this guide conflicts with a governing decision record or the authoritative database behavior, stop the operation and have the documentation corrected. Do not improvise a conflicting business rule.
+
+## 30. Launch desk: complete everyday workflow
+
+### 30.1 Where to start
+
+After Discord sign-in, staff land on `/staff/dashboard`. This is the full overview:
+
+- **Orders** shows submitted, review, awaiting-stock, processing, and recent direct demand.
+- **Inventory and assets** shows critical reserves, expired reservations, and custody exceptions.
+- **Licensing** shows pending applications, active licenses, and licenses expiring within 30 days.
+- **Finance** shows unpaid consignment settlements and player-supplier payments.
+- **Compliance** shows open cases and recommended actions awaiting review.
+- **Integrations** shows failed outbox, Discord delivery, or public Sheet work.
+- **Documents** shows recent official source snapshots.
+
+The dashboard is a monitor. It never changes a record merely because a count is red or nonzero. Choose **Launch desk** for customer-facing commands, **Quick inventory & items** for routine stock/catalogue work, or a specialist desk for detailed processing.
+
+### 30.2 Aurelion orders a Nocturnal Dress through a licensed tailor
+
+Assume Aurelion Earandil asks the Solitude tailor for one Nocturnal Dress.
+
+1. The tailor confirms it is an EEC-authorized business and gives the EEC agent its dealer and license references.
+2. The EEC agent opens **Launch desk → Enter a customer order**.
+3. Choose **Staff-assisted verified business**.
+4. In **Licensed business and license**, select the single combined entry showing business name, dealer reference, license reference, and license class. This prevents accidentally combining one business with another business’s license.
+5. Select collection, delivery, or consignment; choose the dress; enter quantity `1`; add the in-character request and an audit reason.
+6. Choose **Price, quota-check, and submit order**.
+7. Supabase rechecks that the dealer and license currently confer authority, then resolves price by precedence: exact dealer party, license class, dealer type, region, business-channel default, then wholesale/dealer/public fallback.
+8. The line freezes the chosen price evidence. No stock is consumed and no reservation is created yet.
+9. Order staff review the line. Warehouse staff later reserve available stock or leave it awaiting replenishment.
+10. Fulfillment posts the actual ledger movement and handoff. The tailor charges only the commission allowed by server policy outside this registry unless that sale is a configured consignment settlement.
+
+The dealer reference identifies the business authority being used. The license identifies the licensed trade authority and endorsements. The EEC agent is the authenticated staff actor who entered the customer’s instruction. These are three different facts and all remain visible in audit history.
+
+### 30.3 Aurelion buys directly instead
+
+1. The player approaches an EEC agent instead of a licensed tailor.
+2. The agent chooses **Direct individual**.
+3. Select Aurelion’s existing direct-customer record or create it with name, Discord/contact label, and region.
+4. Select the dress and quantity.
+5. Submission succeeds only if the dress is enabled for direct sales, a current public base price exists, and the weekly limit is not exceeded.
+6. If the public price is `1,000 SEP`, the frozen direct price is `3,000 SEP`. Staff do not type or calculate the multiplier.
+7. The successful line holds one unit of the weekly allowance immediately. Denial/cancellation releases it; fulfillment consumes it.
+8. Inventory processing remains separate. A valid direct order may wait for stock or made-to-order production.
+
+This deliberate premium protects the licensed trade network while keeping a lawful direct path available.
+
+### 30.4 Public license application or renewal
+
+1. A player opens `/apply`; no login or email is required.
+2. They choose new application or renewal, enter a name and Discord/contact label, select configured class, region, and endorsements, and describe intended trade.
+3. Renewal requires the exact existing license reference.
+4. Submission returns an `EEC-LAP-*` reference and a private status token. The token is shown once; only its SHA-256 digest is stored.
+5. The player uses both values on the same page to check status. The public response does not reveal private review notes.
+6. A licensing officer sees the request in the Launch desk. For a new application, choose the canonical party record, effective date, optional expiration, and active/provisional status. For renewal, enter the approved new expiration.
+7. Approval issues or extends the license atomically and records the application link. Denial records the decision without authority.
+8. Generate a license certificate from **Official records** after issuance. The PDF is a projection of a frozen source snapshot.
+
+There is no guessed universal license duration or renewal grace period. Staff enter the approved term for that decision.
+
+### 30.5 Dealer-specific price precedence
+
+Use **Dealer-specific pricing** only after the price schedule and item rules exist in Configuration.
+
+1. Select the schedule.
+2. Select exactly one binding level and a matching target: party, license class, dealer type, or jurisdiction. For a channel default, leave target blank and choose the channel.
+3. Set effective dates and a tie priority. The binding does not rewrite old orders.
+4. New order lines resolve the most specific current binding. If two bindings are equally specific, higher binding/schedule priority wins.
+5. The selected schedule/rule and reason are frozen on the line so later configuration changes cannot rewrite the historical sale.
+
+### 30.6 Consignment commission and settlement
+
+1. Finance staff configure an effective-dated commission percentage for an active consignment agreement. The system does not assume a universal rate.
+2. Dealer staff submit a stock report; consignment staff accept a reconciled report.
+3. The accepted report appears as a settlement candidate when it includes sold quantity and has no existing settlement.
+4. Finance staff enter the actual per-unit customer sale price.
+5. Supabase freezes `gross = sold quantity × unit price`, calculates commission from the applicable term, and calculates the amount due to the owner.
+6. After in-game/server payment, staff record the approved voucher, Discord log, or other evidence reference. No second stock movement occurs.
+7. Generate a consignment statement when an official record is needed.
+
+This records what is owed and whether staff recorded payment. It does not mint Septims or replace a server treasury ledger.
+
+### 30.7 Unique asset order delivery
+
+1. The unique line must be approved for quantity `1` and an exact serialized asset must have an active, unexpired reservation.
+2. Open **Launch desk → Unique-asset fulfillment** and confirm the asset, order, customer, and reservation expiry.
+3. Enter handoff evidence and choose **Fulfill and transfer custody**.
+4. One transaction consumes the reservation, transfers custody from EEC/warehouse to the ordering party, removes warehouse location, fulfills the order line, derives order status, records the asset event, and creates an `EEC-UFL-*` source.
+5. Generate the unique fulfillment receipt if needed.
+
+Allocating an asset is not delivery. Only this command performs the final custody transfer.
+
+### 30.8 Automatic compliance sanctions
+
+1. Compliance staff investigate, record evidence and findings, then recommend a configured action against one exact related record.
+2. The action type must match the target: suspend license, suspend dealer authority, cancel order, or seize serialized asset.
+3. An authorized reviewer approves, declines, or voids the recommendation.
+4. Approval of an executable type applies the target change in the same transaction and records exact previous/new state. If the target is ineligible—for example a fulfilled order or an actively reserved asset—the entire review fails without partial sanction.
+5. Discord notification and audit evidence follow from the committed database event.
+
+The system does not infer guilt or issue sanctions from a Discord message. “Automatic” means an approved configured action cannot be recorded as applied while its target remains unchanged.
+
+### 30.9 Official PDF records
+
+1. Choose a current license, order, unique fulfillment, or consignment settlement in **Generate official records**.
+2. Supabase freezes an allowlisted JSON snapshot, source version, checksum, generator, time, reason, and `EEC-DOC-*` reference.
+3. `/staff/documents` lists the archive. Download generates the PDF from that snapshot at request time.
+4. The PDF footer shows document reference, source type/version, and SHA-256 checksum.
+
+Editing a PDF or losing a downloaded copy does not alter Supabase. Generate a new snapshot only after the source record has a new version; never edit an old official snapshot.

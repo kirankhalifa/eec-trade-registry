@@ -17,6 +17,14 @@ const notices: Record<string, string> = {
   role_granted: "The staff role was granted and its effective authority is now visible.",
   role_revoked: "The staff role was revoked without deleting its assignment history.",
   saved: "The catalogue record was saved.",
+  application_decided: "The application decision and resulting license change were recorded.",
+  asset_fulfilled: "The reservation was consumed and unique asset custody was transferred.",
+  generated: "The official document snapshot was generated and is ready to download.",
+  order_created: "The assisted order was priced, quota-checked, and submitted.",
+  price_binding_created: "The effective-dated price precedence rule was created.",
+  settlement_created: "The consignment gross, commission, and owner settlement were calculated and frozen.",
+  settlement_paid: "Payment evidence was recorded for the settlement.",
+  terms_configured: "The effective-dated consignment commission terms were configured.",
 };
 
 const errors: Record<string, string> = {
@@ -28,6 +36,8 @@ const errors: Record<string, string> = {
   last_administrator: "The last active platform administrator cannot be revoked.",
   not_found: "The requested authoritative record no longer exists.",
   save_failed: "The change could not be saved. No authoritative data was changed.",
+  price_missing: "No authoritative price applies to that direct order. Configure a public price first.",
+  weekly_limit: "That quantity would exceed the customer’s current weekly personal limit.",
 };
 
 export function StaffNotice({

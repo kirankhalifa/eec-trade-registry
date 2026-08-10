@@ -556,3 +556,19 @@ The implemented economic permissions intentionally separate policy from routine 
 
 The generic `inventory.receipt.post` permission cannot bypass a player-sourced-only policy. This is a database invariant, not a hidden UI convention.
 
+## 18. Launch command permissions
+
+| Permission | Authoritative capability |
+| --- | --- |
+| `dashboard.read` | Read cross-domain counts and safe recent work summaries. |
+| `order.assisted.create` | Create verified-business or direct-individual orders as a recorded EEC agent. |
+| `pricing.binding.manage` | Create effective-dated price precedence bindings. |
+| `license.application.review` | Decide public applications and issue or renew authority. |
+| `consignment.finance.manage` | Set commissions, calculate settlements, and record payment evidence. |
+| `asset.fulfill` | Consume an exact asset reservation and transfer custody. |
+| `compliance.effect.apply` | Apply a configured effect during action review. |
+| `document.generate` | Freeze an allowlisted official source snapshot. |
+| `document.private.read` | List snapshots and download private PDF projections. |
+
+Anonymous callers may execute only constrained application option, submission, and token-status functions and receive no direct table access. Discord authentication still grants identity only; every command re-resolves an effective database assignment.
+

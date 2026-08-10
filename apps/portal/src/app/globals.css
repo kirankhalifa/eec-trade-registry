@@ -2145,6 +2145,10 @@ button:focus-visible {
   }
 }
 
+input[aria-hidden="true"][name="website"] {
+  display: none;
+}
+
 @media (max-width: 640px) {
   .site-header,
   .section-heading,

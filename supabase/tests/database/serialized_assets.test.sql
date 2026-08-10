@@ -19,7 +19,7 @@ select ok((select relrowsecurity from pg_class where oid = 'public.asset_events'
 select ok(not has_table_privilege('authenticated', 'public.serialized_assets', 'select'), 'authenticated cannot read asset rows directly');
 select ok(not has_table_privilege('authenticated', 'public.asset_events', 'insert'), 'authenticated cannot forge asset events');
 select ok(not has_function_privilege('anon', 'public.staff_register_serialized_asset(uuid,uuid,text,text,text,text,uuid)', 'execute'), 'anonymous cannot register assets');
-select is((select count(*)::integer from public.permission_scopes where code like 'asset.%'), 6, 'six asset permissions are configured');
+select is((select count(*)::integer from public.permission_scopes where code like 'asset.%'), 7, 'seven asset permissions include unique fulfillment');
 select is((select count(*)::integer from public.notification_templates where event_type like 'asset.%'), 4, 'four asset notification templates are configured');
 select is((select count(*)::integer from public.integration_event_routes where event_type like 'asset.%'), 4, 'four asset notification routes are configured');
 select ok(
