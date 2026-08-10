@@ -172,6 +172,8 @@ Implementation note: the elevated configurable `compliance_officer` role receive
 
 Implementation note: the configurable elevated `platform_administrator` role receives the four implemented access, audit, and operational-health permissions. Grants and revocations are effective-dated, idempotent, audited, and emitted through the outbox. The final active platform-administrator assignment cannot be revoked. This role does not implicitly receive catalogue, licensing, order, inventory, integration, or compliance authority; those remain separately composable roles.
 
+Rapid-operations implementation note: `platform_administrator` additionally receives `configuration.read` and `configuration.manage` for reference-data administration. `catalogue_manager` receives `configuration.read`, `publication.manage`, and `pricing.manage`. A compound quick-item command still rechecks `catalogue.manage`, `procurement.policy.manage`, optional `publication.manage`, optional `pricing.manage`, and optional warehouse-scoped `inventory.receipt.post` separately. Configuration administration alone cannot post stock or create commercial authority.
+
 ## 4. Proposed staff roles
 
 Roles are composable bundles and may be narrowed by assignment scope.
@@ -185,6 +187,8 @@ Can read routine party, dealer, license, and order information; enter drafts; re
 Can manage items, categories, public presentation, price proposals, and control assignments. High-impact price or control changes may require approval by another role.
 
 The initial Slice 2 implementation grants the configurable `catalogue_manager` role only `catalogue.private.read` and `catalogue.manage`. Publication, pricing, control-policy, access-management, and approval permissions remain unassigned until their policy is approved.
+
+ADR 0019 supersedes the publication/pricing portion of that initial note: catalogue managers now receive effective-dated public publication and explicit-schedule price management. Price precedence across specialized future dealer schedules remains unresolved; the current command never guesses a schedule.
 
 ### Licensing officer
 

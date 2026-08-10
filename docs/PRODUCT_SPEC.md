@@ -23,6 +23,7 @@ Implementation proceeds through the policy-gated vertical slices in `ROADMAP.md`
 7. **Routine work is fast; exceptional work is explicit.** Ordinary transactions should be simple. Restricted or unique goods introduce review, approval, and custody controls in proportion to risk.
 8. **History is preserved.** Consequential actions are attributable and corrections use reversing or superseding records instead of destructive edits.
 9. **Keystone reserves come from production.** Configured baseline materials enter Company stock through accepted supplier deliveries, not administrative spawning. Guaranteed purchase floors and high reserve resale terms form an economic corridor without replacing player trade.
+10. **Routine administration beats spreadsheet work.** Once policy inputs exist, creating an ordinary item or posting an ordinary stock receipt should take no more than approximately 30 seconds without sacrificing permission checks, audit history, or ledger provenance.
 
 ## 3. Users and actors
 
@@ -85,6 +86,9 @@ The approved intermediated ordering model also permits a specifically authorized
 
 Authenticated staff receive a role-appropriate work queue rather than unrestricted table access. The console supports:
 
+- Rapid item onboarding that combines canonical data, supply policy, optional publication, optional explicit-schedule price, and permitted opening stock in one atomic command
+- Three-field ordinary inventory receipt entry with generated provenance defaults
+- No-code creation of categories, units, license classes, endorsements, availability language, and control profiles
 - Catalogue, price schedule, control profile, and publication management
 - Party, dealer, representative, and factor administration
 - Application review and license issuance, renewal, suspension, and revocation
@@ -275,6 +279,7 @@ Frontend code may display estimates for usability only when clearly labeled and 
 - A verification lookup returns a clear result without exposing whether a private, unpublished record exists.
 - A dealer sees why an item is unavailable or requires review in policy-safe language.
 - An ordinary staff order can be processed in approximately one minute once required data is present.
+- A prepared ordinary item can be onboarded and an ordinary inventory receipt can be posted in approximately 30 seconds through the rapid-operations workspace.
 - Work queues identify ownership, age, blocking reason, and next permitted actions.
 - The interface never presents raw Booleans, enum codes, or database identifiers when plain language is appropriate.
 - Dates, currency labels, organizational titles, and setting-specific vocabulary are configuration-driven.
@@ -360,6 +365,7 @@ The product owner approved the following initial deployment policy on 2026-08-04
 - Wholesale title transfers at confirmed collection or receipt. Consigned stock remains EEC-owned until an accepted sale or settlement event.
 - Public verification remains exact-reference-only with the existing field allowlists.
 - Public Sheets target a 15-minute one-way refresh. Discord begins with public catalogue/dealer/license lookups and private staff alerts; neither integration mutates business state.
+- Routine rapid operations preserve the same database authority as their detailed desks. Player-sourced-only material cannot use quick generic receipt entry, and serialized items cannot use fungible quantity receipts.
 
 ## 13. Unresolved policy decisions
 

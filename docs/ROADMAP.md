@@ -87,7 +87,7 @@ Anyone can browse a single, coherent public catalogue without logging in.
 
 ## 4. Slice 2 — Staff catalogue management
 
-Implementation status: The first policy-neutral increment provides Supabase Auth cookie sessions initiated by Discord OAuth, a fixed server-side PKCE callback, effective-dated catalogue role assignments, an authorized internal work queue, and audited create/edit/archive commands with optimistic concurrency. The staff portal has no email/password form, and provider authentication grants no database authority. Effective-dated publication and price writes remain gated by the unresolved decisions below.
+Implementation status: The first policy-neutral increment provides Supabase Auth cookie sessions initiated by Discord OAuth, a fixed server-side PKCE callback, effective-dated catalogue role assignments, an authorized internal work queue, and audited create/edit/archive commands with optimistic concurrency. ADR 0019 adds a rapid configuration workspace, atomic item/supply onboarding, effective-dated public presentation replacement, explicit-schedule price set/clear, no-code reference creation, and retry receipts. Provider authentication still grants no database authority. Specialized dealer price precedence remains gated.
 
 ### User outcome
 
@@ -191,7 +191,7 @@ An authenticated dealer can see applicable terms, submit a requisition, and trac
 
 ## 7. Slice 5 — Reservations and warehouse ledger
 
-Implementation status: the current increments configure the EEC warehouse and locations without inventing opening stock; add physical/external accounts, balanced immutable fungible receipts and issues, linked reversals, ledger-derived positions, warehouse-scoped staff roles, atomic 48-hour reservation management, and fungible reservation consumption coupled to fulfillment, order-line, and order state. ADR 0018 also adds configurable player-sourced-only supply policy, supplier registration, effective-dated guaranteed purchase offers, atomic delivery/receipt intake, settlement evidence, reserve targets, unmet-demand visibility, and an economy dashboard. Exact purchase rates and reserve targets are intentionally unset. Serialized receipt and custody, picking stages, returns, counts, adjustments, reconciliation, scheduled expiry execution, resale price schedules, and deeper low-stock automation remain future work.
+Implementation status: the current increments configure the EEC warehouse and locations without inventing opening stock; add physical/external accounts, balanced immutable fungible receipts and issues, linked reversals, ledger-derived positions, warehouse-scoped staff roles, atomic 48-hour reservation management, and fungible reservation consumption coupled to fulfillment, order-line, and order state. ADR 0018 also adds configurable player-sourced-only supply policy, supplier registration, effective-dated guaranteed purchase offers, atomic delivery/receipt intake, settlement evidence, reserve targets, unmet-demand visibility, and an economy dashboard. ADR 0019 adds a three-field ordinary receipt and optional balanced opening receipt inside atomic item onboarding, while preserving the player-source and serialized guards. Exact purchase rates and reserve targets remain unset until staff configure them. Serialized receipt and custody, picking stages, returns, counts, adjustments, reconciliation, scheduled expiry execution, resale price schedules, and deeper low-stock automation remain future work.
 
 ### User outcome
 
