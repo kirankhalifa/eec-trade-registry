@@ -68,6 +68,7 @@ export default async function IntegrationsPage({ searchParams }: IntegrationsPag
         <div className="staff-button-row">
           <Link className="button button-secondary" href="/staff">Catalogue desk</Link>
           <Link className="button button-secondary" href="/staff/orders">Order desk</Link>
+          <Link className="button button-secondary" href="/staff/operations">Operations</Link>
           <form action={signOutAction}>
             <button className="button button-secondary" type="submit">Sign out</button>
           </form>

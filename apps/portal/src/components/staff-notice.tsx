@@ -11,6 +11,8 @@ const notices: Record<string, string> = {
   export_queued: "A public projection snapshot was queued for the next worker cycle.",
   export_requeued: "The failed export was returned to the worker queue.",
   delivery_requeued: "The failed notification was returned to the worker queue.",
+  role_granted: "The staff role was granted and its effective authority is now visible.",
+  role_revoked: "The staff role was revoked without deleting its assignment history.",
   saved: "The catalogue record was saved.",
 };
 
@@ -20,6 +22,7 @@ const errors: Record<string, string> = {
     "Another staff member changed this record first. Review the current values before saving again.",
   duplicate: "That item code or public slug is already in use.",
   invalid_input: "Review the form fields and provide a clear audit reason.",
+  last_administrator: "The last active platform administrator cannot be revoked.",
   not_found: "The requested authoritative record no longer exists.",
   save_failed: "The change could not be saved. No authoritative data was changed.",
 };
