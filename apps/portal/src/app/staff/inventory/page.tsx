@@ -65,6 +65,7 @@ export default async function StaffInventoryPage({ searchParams }: StaffInventor
           <p>On-hand stock is derived from immutable balanced entries. Reservations are separate 48-hour claims and never overwrite a balance.</p>
         </div>
         <div className="staff-button-row">
+          <Link className="button button-primary" href="/staff/configuration">Quick add</Link>
           <Link className="button button-secondary" href="/staff/orders">Order desk</Link>
           <Link className="button button-secondary" href="/staff/economy">Economy desk</Link>
           <Link className="button button-secondary" href="/staff/fulfillment">Fulfillment</Link>

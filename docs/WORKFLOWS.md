@@ -71,11 +71,33 @@ Let specifically assigned catalogue staff maintain canonical item source records
 
 ### Deliberate exclusions
 
-- Effective-dated publication creation, withdrawal, backdating, or scheduling
-- Public or private price changes and approvals
+- Backdated or scheduled publication; effective-now public creation, replacement, and withdrawal are implemented in Quick operations
+- Specialized private/dealer price precedence and approval; explicit active-schedule public price set/clear is implemented
 - Item-code or slug corrections
-- Category, unit, control-profile, role, or assignment administration
+- Existing reference-record rename/archive and role administration; new category, unit, availability, license-class, endorsement, and control-profile creation is implemented
 - Recovery, MFA, and step-up policy beyond the approved Discord OAuth provider
+
+## 2.2 Rapid item onboarding and ordinary receipt
+
+### Quick item flow
+
+1. Authorized staff opens **Quick operations** and enters an item name, category, unit, and supply workflow.
+2. The server validates the form but does not calculate business authority.
+3. One database command re-resolves catalogue and supply-policy permissions, creates a stable code and slug when omitted, and creates the canonical item plus supply policy.
+4. If selected, the same transaction re-resolves publication permission and creates the current public presentation.
+5. If a price is supplied, the command re-resolves pricing permission and stores it only on the explicitly selected configured schedule. Blank remains unset, never zero.
+6. If permitted opening quantity is supplied, the command re-resolves warehouse scope and posts the same balanced receipt used by the detailed Inventory desk.
+7. Audit, idempotency receipt, and outbox event commit with the item. Any failure rolls back every selected effect.
+
+### Three-field receipt flow
+
+1. Staff searches by stable item code or display name, enters a positive quantity, and selects a receiving location.
+2. Optional source and audit text may be omitted; traceable request-based defaults are generated.
+3. Supabase resolves the item by code and rejects archived, serialized, player-sourced-only, or generic-receipt-disabled items.
+4. The existing warehouse-scoped receipt function creates the external-source and physical entries atomically.
+5. Retrying the request UUID returns the existing transaction rather than adding stock twice.
+
+The approximately 30-second target applies to prepared ordinary work. Player-sourced delivery, restricted review, unique custody, reversals, and reconciliation retain their additional evidence and permission steps.
 
 ## 3. Public license and dealer verification
 
