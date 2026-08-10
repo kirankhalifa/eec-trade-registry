@@ -191,6 +191,10 @@ Can review applications, issue or renew within assigned authority, grant ordinar
 
 The implemented initial role receives `license.private.read`, `license.issue`, `license.activate`, `license.suspend`, `license.reinstate`, `license.revoke`, `license.surrender.record`, and `endorsement.manage`. Each command resolves its exact permission at execution time. Renewal, conditions, application review, limits, and action-specific secondary approval are not yet granted.
 
+### Dealer registry officer
+
+The implemented role receives `dealer.private.read`, `dealer.create`, `dealer.update`, `dealer.activate`, `dealer.suspend`, `dealer.reinstate`, and `dealer.revoke`. Provider authentication alone grants none of these permissions; every write is reasoned, idempotent, version checked where applicable, audited, and emitted to the durable outbox.
+
 ### Order officer
 
 Can review and approve orders within an assigned control level and value/quantity limit, manage routine reservations, and cancel eligible unfulfilled lines.
