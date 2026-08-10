@@ -14,6 +14,8 @@ supabase/seed.sql         Fictional development catalogue data
 docs/                     Product and engineering documentation
 ```
 
+Production security, incident, rotation, backup/restore, and remaining external launch gates are tracked in `docs/SECURITY_OPERATIONS.md`.
+
 ## Requirements
 
 - Node.js 20.9 or newer
