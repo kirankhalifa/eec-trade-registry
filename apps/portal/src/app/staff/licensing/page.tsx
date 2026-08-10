@@ -76,6 +76,9 @@ export default async function StaffLicensingPage({
           <Link className="button button-secondary" href="/staff/compliance">
             Compliance
           </Link>
+          <Link className="button button-secondary" href="/staff/dealers">
+            Dealer registry
+          </Link>
           <Link className="button button-primary" href="/staff/licensing/new">
             Issue license
           </Link>
