@@ -226,7 +226,7 @@ Staff can receive, reserve, fulfill, transfer, and reconcile stock with a comple
 
 ## 8. Slice 6 — Transfers, consignment, and unique assets
 
-Implementation status: the custody increments add fungible warehouse transfer requests, explicit authorization, balanced source-to-transit dispatch, destination receipt, discrepancy recording, pre-dispatch cancellation, and a serialized-asset registry with stable identities, exclusive allocations, accepted custody events, inspections, and controlled loss/recovery/damage/seizure/retirement/destruction transitions. Both paths use scoped permissions, optimistic concurrency, idempotency, immutable history, audit evidence, outbox events, and staff consoles. Consignment agreements/reporting, transfer returns, partial discrepancy resolution, transaction-specific unique fulfillment, external custody acceptance, and formal asset correction remain future increments.
+Implementation status: the custody increments add fungible warehouse transfer requests, explicit authorization, balanced source-to-transit dispatch, destination receipt, discrepancy recording, pre-dispatch cancellation; a serialized-asset registry with stable identities, exclusive allocations, accepted custody events, inspections, and controlled lifecycle transitions; and fungible consignment agreements, retained-owner dealer custody, dealer observations, exact staff reconciliation, balanced sale/return settlement, and staff/dealer custody views. All paths use scoped permissions, optimistic concurrency, idempotency, immutable history, audit evidence, outbox events, and dedicated consoles. Transfer returns, partial discrepancy resolution, consignment finance and loss/damage exceptions, transaction-specific unique fulfillment, serialized consignment, external custody acceptance, and formal asset correction remain future increments.
 
 ### User outcome
 
@@ -245,7 +245,7 @@ The organization can control custody across warehouses, factors, and dealers; se
 ### Remaining decisions
 
 - Proof details for the approved wholesale title-transfer point
-- Consignment settlement, reporting, shrinkage, return, and loss policy beyond retained EEC ownership until accepted sale or settlement
+- Consignment pricing, financial settlement, reporting cadence, shrinkage tolerance, and loss/damage exception policy beyond retained ownership and exact unit reconciliation
 - Transfer acceptance and discrepancy procedure
 - Unique-asset approval authority, circulation rules, and inspection cadence
 - Serialized-asset public disclosure

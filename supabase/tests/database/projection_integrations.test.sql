@@ -285,13 +285,15 @@ select lives_ok(
 reset role;
 set local role service_role;
 
+select set_config('test.integration_schedule_at', statement_timestamp()::text, true);
+
 select is(
-  public.integration_queue_due_exports('2026-08-06T00:00:00Z'),
+  public.integration_queue_due_exports(current_setting('test.integration_schedule_at')::timestamptz),
   1,
   'the scheduler queues one due active export definition'
 );
 select is(
-  public.integration_queue_due_exports('2026-08-06T00:00:00Z'),
+  public.integration_queue_due_exports(current_setting('test.integration_schedule_at')::timestamptz),
   0,
   'running the same scheduler instant again is idempotent'
 );

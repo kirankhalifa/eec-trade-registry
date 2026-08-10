@@ -50,6 +50,9 @@ export default async function DealerOrdersPage({ searchParams }: DealerOrdersPag
           <Link className="button button-secondary" href="/dealer">
             Registry overview
           </Link>
+          <Link className="button button-secondary" href="/dealer/consignments">
+            Consigned stock
+          </Link>
           <Link className="button button-primary" href="/dealer/orders/new">
             New requisition
           </Link>
