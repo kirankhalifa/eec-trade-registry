@@ -282,7 +282,7 @@ begin
     'jurisdictions', coalesce((
       select jsonb_agg(jsonb_build_object('id', jurisdiction.id, 'display_name', jurisdiction.public_name)
         order by jurisdiction.public_name)
-      from public.jurisdictions as jurisdiction where jurisdiction.active
+      from public.jurisdictions as jurisdiction where jurisdiction.status = 'active'
     ), '[]'::jsonb),
     'source_accounts', coalesce((
       select jsonb_agg(jsonb_build_object(
@@ -430,7 +430,7 @@ begin
       and (dealer.effective_until is null or dealer.effective_until > statement_timestamp())
   ) then raise exception using errcode = '22023', message = 'consignment_consignee_invalid'; end if;
   if not exists (select 1 from public.jurisdictions as jurisdiction
-    where jurisdiction.id = p_jurisdiction_id and jurisdiction.active)
+    where jurisdiction.id = p_jurisdiction_id and jurisdiction.status = 'active')
   then raise exception using errcode = 'P0002', message = 'jurisdiction_not_found'; end if;
   created_reference := private.allocate_consignment_reference('consignment_agreement');
   insert into public.consignment_agreements (
