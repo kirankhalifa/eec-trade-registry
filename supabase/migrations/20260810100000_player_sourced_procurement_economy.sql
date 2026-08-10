@@ -809,8 +809,7 @@ insert into public.endorsement_definitions (
   ('cf000000-0000-0000-0000-000000000003', 'alchemical-goods', 'Alchemical goods', 'Alchemical goods', 'Authority for configured alchemical goods.'),
   ('cf000000-0000-0000-0000-000000000004', 'arcane-goods', 'Arcane goods', 'Arcane goods', 'Authority for configured arcane goods.'),
   ('cf000000-0000-0000-0000-000000000005', 'tailoring-textiles', 'Tailoring and textiles', 'Tailoring and textiles', 'Authority for configured garments, tailoring, and textiles.'),
-  ('cf000000-0000-0000-0000-000000000006', 'bulk-distribution', 'Bulk distribution', 'Bulk distribution', 'Additional authority for quantities at or above configured bulk thresholds.'),
-  ('cf000000-0000-0000-0000-000000000007', 'consignment', 'Consignment trade', 'Consignment trade', 'Authority to receive Company goods under an approved consignment arrangement.');
+  ('cf000000-0000-0000-0000-000000000006', 'bulk-distribution', 'Bulk distribution', 'Bulk distribution', 'Additional authority for quantities at or above configured bulk thresholds.');
 
 revoke all on public.item_supply_policies from anon, authenticated;
 revoke all on public.procurement_suppliers from anon, authenticated;
