@@ -62,24 +62,28 @@ values
   ('d9000000-0000-0000-0000-000000000001', 'c9000000-0000-0000-0000-000000000001', (select id from public.staff_roles where code = 'compliance_officer'), '2026-01-01T00:00:00Z', '{}'::jsonb),
   ('d9000000-0000-0000-0000-000000000002', 'c9000000-0000-0000-0000-000000000002', (select id from public.staff_roles where code = 'auditor'), '2026-01-01T00:00:00Z', '{}'::jsonb);
 
+select set_config('test.compliance_case_type_id', (select id::text from public.compliance_case_types where code = 'general-review'), true);
+select set_config('test.compliance_violation_type_id', (select id::text from public.compliance_violation_types where code = 'unclassified-matter'), true);
+select set_config('test.compliance_action_type_id', (select id::text from public.compliance_action_types where code = 'recorded-notice'), true);
+
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"b9000000-0000-0000-0000-000000000003","role":"authenticated"}', true);
 select throws_ok($test$select public.get_staff_compliance_workspace()$test$, '42501', 'staff_permission_denied', 'unassigned staff cannot open compliance casework');
 select set_config('request.jwt.claims', '{"sub":"b9000000-0000-0000-0000-000000000002","role":"authenticated"}', true);
 select lives_ok($test$select public.get_staff_compliance_workspace()$test$, 'auditor can read the case queue');
-select throws_ok($test$select * from public.staff_create_compliance_case((select id from public.compliance_case_types where code = 'general-review'), null, 'none', null, 'restricted', 'Read-only attempt.', null, 'Try opening case', 'f9000000-0000-0000-0000-000000000001')$test$, '42501', 'staff_permission_denied', 'auditor cannot open a case');
+select throws_ok($test$select * from public.staff_create_compliance_case(current_setting('test.compliance_case_type_id')::uuid, null, 'none', null, 'restricted', 'Read-only attempt.', null, 'Try opening case', 'f9000000-0000-0000-0000-000000000001')$test$, '42501', 'staff_permission_denied', 'auditor cannot open a case');
 
 select set_config('request.jwt.claims', '{"sub":"b9000000-0000-0000-0000-000000000001","role":"authenticated"}', true);
 select lives_ok($test$select public.get_staff_compliance_workspace()$test$, 'compliance officer can open casework');
-select throws_ok($test$select * from public.staff_create_compliance_case((select id from public.compliance_case_types where code = 'general-review'), null, 'license', '10000000-0000-0000-0000-000000000001', 'restricted', 'Invalid relation.', null, 'Reject invalid relation', 'f9000000-0000-0000-0000-000000000002')$test$, '22023', 'compliance_case_invalid', 'a nonexistent related record is rejected');
+select throws_ok($test$select * from public.staff_create_compliance_case(current_setting('test.compliance_case_type_id')::uuid, null, 'license', '10000000-0000-0000-0000-000000000001', 'restricted', 'Invalid relation.', null, 'Reject invalid relation', 'f9000000-0000-0000-0000-000000000002')$test$, '22023', 'compliance_case_invalid', 'a nonexistent related record is rejected');
 select lives_ok($test$select * from public.staff_create_compliance_case(
-  (select id from public.compliance_case_types where code = 'general-review'),
+  current_setting('test.compliance_case_type_id')::uuid,
   '92000000-0000-0000-0000-000000000001', 'license', '99000000-0000-0000-0000-000000000001',
   'restricted', 'Review a recorded matter without presuming an outcome.', 'c9000000-0000-0000-0000-000000000001',
   'Open for structured triage', 'f9000000-0000-0000-0000-000000000003'
 )$test$, 'officer can open a policy-neutral case');
 select lives_ok($test$select * from public.staff_create_compliance_case(
-  (select id from public.compliance_case_types where code = 'general-review'),
+  current_setting('test.compliance_case_type_id')::uuid,
   '92000000-0000-0000-0000-000000000001', 'license', '99000000-0000-0000-0000-000000000001',
   'restricted', 'Review a recorded matter without presuming an outcome.', 'c9000000-0000-0000-0000-000000000001',
   'Open for structured triage', 'f9000000-0000-0000-0000-000000000003'
@@ -106,7 +110,7 @@ select set_config('request.jwt.claims', '{"sub":"b9000000-0000-0000-0000-0000000
 select throws_ok(format($test$select * from public.staff_finish_compliance_inspection(%L::uuid, 1, 'completed', '', 'Missing observations', 'f9000000-0000-0000-0000-000000000005')$test$, current_setting('test.compliance_inspection_id')), '22023', 'compliance_inspection_transition_invalid', 'completed inspection requires observations');
 select lives_ok(format($test$select * from public.staff_finish_compliance_inspection(%L::uuid, 1, 'completed', 'Records were observed and preserved.', 'Complete inspection', 'f9000000-0000-0000-0000-000000000006')$test$, current_setting('test.compliance_inspection_id')), 'officer can complete an inspection');
 select lives_ok(format($test$select * from public.staff_finish_compliance_inspection(%L::uuid, 1, 'completed', 'Records were observed and preserved.', 'Complete inspection', 'f9000000-0000-0000-0000-000000000006')$test$, current_setting('test.compliance_inspection_id')), 'inspection completion is idempotent');
-select lives_ok(format($test$select * from public.staff_record_compliance_allegation(%L::uuid, (select id from public.compliance_violation_types where code = 'unclassified-matter'), 'A matter is alleged for investigation.', 'Record unproven allegation', 'f9000000-0000-0000-0000-000000000007')$test$, current_setting('test.compliance_case_id')), 'officer can record an allegation');
+select lives_ok(format($test$select * from public.staff_record_compliance_allegation(%L::uuid, current_setting('test.compliance_violation_type_id')::uuid, 'A matter is alleged for investigation.', 'Record unproven allegation', 'f9000000-0000-0000-0000-000000000007')$test$, current_setting('test.compliance_case_id')), 'officer can record an allegation');
 
 reset role;
 select set_config('test.compliance_allegation_id', (select id::text from public.compliance_allegations where source_request_id = 'f9000000-0000-0000-0000-000000000007'), true);
@@ -129,8 +133,8 @@ select throws_ok($test$update public.compliance_evidence set description = 'rewr
 
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"b9000000-0000-0000-0000-000000000001","role":"authenticated"}', true);
-select lives_ok(format($test$select * from public.staff_recommend_compliance_action(%L::uuid, (select id from public.compliance_action_types where code = 'recorded-notice'), '92000000-0000-0000-0000-000000000001', 'license', '99000000-0000-0000-0000-000000000001', 'Record a notice for review.', 'Recommend record-only action', 'f9000000-0000-0000-0000-000000000012')$test$, current_setting('test.compliance_case_id')), 'officer can recommend a record-only action');
-select lives_ok(format($test$select * from public.staff_recommend_compliance_action(%L::uuid, (select id from public.compliance_action_types where code = 'recorded-notice'), '92000000-0000-0000-0000-000000000001', 'license', '99000000-0000-0000-0000-000000000001', 'Record a notice for review.', 'Recommend record-only action', 'f9000000-0000-0000-0000-000000000012')$test$, current_setting('test.compliance_case_id')), 'action recommendation is idempotent');
+select lives_ok(format($test$select * from public.staff_recommend_compliance_action(%L::uuid, current_setting('test.compliance_action_type_id')::uuid, '92000000-0000-0000-0000-000000000001', 'license', '99000000-0000-0000-0000-000000000001', 'Record a notice for review.', 'Recommend record-only action', 'f9000000-0000-0000-0000-000000000012')$test$, current_setting('test.compliance_case_id')), 'officer can recommend a record-only action');
+select lives_ok(format($test$select * from public.staff_recommend_compliance_action(%L::uuid, current_setting('test.compliance_action_type_id')::uuid, '92000000-0000-0000-0000-000000000001', 'license', '99000000-0000-0000-0000-000000000001', 'Record a notice for review.', 'Recommend record-only action', 'f9000000-0000-0000-0000-000000000012')$test$, current_setting('test.compliance_case_id')), 'action recommendation is idempotent');
 
 reset role;
 select set_config('test.compliance_action_id', (select id::text from public.compliance_actions where source_request_id = 'f9000000-0000-0000-0000-000000000012'), true);
@@ -172,7 +176,7 @@ select lives_ok(format($test$select * from public.staff_transition_compliance_ca
 select throws_ok(format($test$select * from public.staff_transition_compliance_case(%L::uuid, 3, 'resolved', 'c9000000-0000-0000-0000-000000000001', null, 'Missing resolution', 'f9000000-0000-0000-0000-000000000018')$test$, current_setting('test.compliance_case_id')), '22023', 'compliance_resolution_required', 'resolution text is required');
 select lives_ok(format($test$select * from public.staff_transition_compliance_case(%L::uuid, 3, 'resolved', 'c9000000-0000-0000-0000-000000000001', 'Review completed with an inconclusive finding and recorded appeal outcome.', 'Resolve case', 'f9000000-0000-0000-0000-000000000019')$test$, current_setting('test.compliance_case_id')), 'case can be resolved with an explicit resolution');
 select lives_ok(format($test$select * from public.staff_transition_compliance_case(%L::uuid, 4, 'closed', 'c9000000-0000-0000-0000-000000000001', null, 'Close resolved case', 'f9000000-0000-0000-0000-000000000020')$test$, current_setting('test.compliance_case_id')), 'resolved case can close');
-select throws_ok(format($test$select * from public.staff_record_compliance_allegation(%L::uuid, (select id from public.compliance_violation_types where code = 'unclassified-matter'), 'Late allegation.', 'Reject closed mutation', 'f9000000-0000-0000-0000-000000000021')$test$, current_setting('test.compliance_case_id')), '22023', 'compliance_allegation_invalid', 'closed case rejects new allegations');
+select throws_ok(format($test$select * from public.staff_record_compliance_allegation(%L::uuid, current_setting('test.compliance_violation_type_id')::uuid, 'Late allegation.', 'Reject closed mutation', 'f9000000-0000-0000-0000-000000000021')$test$, current_setting('test.compliance_case_id')), '22023', 'compliance_allegation_invalid', 'closed case rejects new allegations');
 select lives_ok(format($test$select * from public.staff_transition_compliance_case(%L::uuid, 5, 'reopened', 'c9000000-0000-0000-0000-000000000001', null, 'Reopen with reason', 'f9000000-0000-0000-0000-000000000022')$test$, current_setting('test.compliance_case_id')), 'closed case can be reopened with authority and reason');
 
 reset role;

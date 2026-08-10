@@ -373,7 +373,7 @@ begin
         union all select 'dealer_authorization', dealer.id, dealer.public_reference from public.dealer_authorizations as dealer
         union all select 'order', order_record.id, order_record.public_reference from public.orders as order_record
         union all select 'stock_transfer', transfer.id, transfer.public_reference from public.stock_transfers as transfer
-        union all select 'serialized_asset', asset.id, asset.asset_code from public.serialized_assets as asset
+        union all select 'serialized_asset', asset.id, asset.public_reference from public.serialized_assets as asset
         union all select 'consignment_issue', issue.id, issue.public_reference from public.consignment_issues as issue
       ) as related), '[]'::jsonb),
     'cases', coalesce((select jsonb_agg(jsonb_build_object(
