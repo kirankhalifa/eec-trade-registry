@@ -1,6 +1,6 @@
 begin;
 
-select plan(47);
+select plan(51);
 
 select has_table('public', 'dealer_authorization_events', 'dealer authorization history table exists');
 select has_column('public', 'dealer_authorizations', 'source_request_id', 'dealer onboarding has an idempotency key');
@@ -18,6 +18,10 @@ select is((select count(*)::integer from public.permission_scopes where code lik
 select is((select count(*)::integer from public.staff_role_permissions as assignment join public.staff_roles as role on role.id = assignment.staff_role_id where role.code = 'dealer_registry_officer'), 7, 'dealer registry role has seven scoped permissions');
 select is((select count(*)::integer from public.dealer_status_definitions where code in ('suspended', 'revoked')), 2, 'suspended and revoked statuses are configured');
 select is((select count(*)::integer from public.reference_sequences where document_type = 'dealer_authorization'), 1, 'dealer references use a configurable sequence');
+select is((select count(*)::integer from public.notification_templates where event_type like 'dealer.authorization_%'), 3, 'three dealer notification templates exist');
+select is((select count(*)::integer from public.integration_event_routes where event_type like 'dealer.authorization_%'), 3, 'three dealer staff-alert routes exist');
+select is((select count(*)::integer from public.integration_event_routes as route join public.integration_destinations as destination on destination.id = route.destination_id where route.event_type like 'dealer.authorization_%' and destination.code = 'staff-alerts'), 3, 'dealer notifications target only the configured staff alert destination');
+select ok((select message_template from public.notification_templates where event_type = 'dealer.authorization_status_changed') like '%{{previous_status_code}}%{{status_code}}%', 'dealer status notification uses authoritative event payload fields');
 
 insert into auth.users (id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at)
 values
