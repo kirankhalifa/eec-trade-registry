@@ -13,6 +13,7 @@ const errors: Record<string, string> = {
   insufficient_stock: "The requested quantity is no longer available for reservation.",
   invalid_input: "Review the item, location, quantity, expiration, provenance, and audit reason.",
   not_found: "The requested inventory or reservation record is not available.",
+  player_source_required: "This keystone material can enter stock only through a registered supplier delivery on the economy desk.",
   save_failed: "The inventory command was rejected. No partial ledger state was accepted.",
 };
 
