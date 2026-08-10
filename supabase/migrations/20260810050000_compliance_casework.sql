@@ -266,7 +266,9 @@ values
   ('compliance.appeal.manage', 'Manage compliance appeals', 'Record and decide policy-neutral appeal records without automatic domain effects.');
 
 insert into public.staff_roles (code, display_name, description, is_elevated)
-values ('compliance_officer', 'Compliance officer', 'May manage private compliance casework under the policy-neutral recorded-action boundary.', true);
+values
+  ('compliance_officer', 'Compliance officer', 'May manage private compliance casework under the policy-neutral recorded-action boundary.', true),
+  ('auditor', 'Auditor', 'May read approved private casework without domain mutation permissions.', true);
 
 insert into public.staff_role_permissions (staff_role_id, permission_scope_id)
 select role.id, permission.id
