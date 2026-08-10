@@ -59,7 +59,7 @@ select lives_ok($test$
     'd4000000-0000-0000-0000-000000000001'
   )
 $test$, 'economic steward can configure reserve thresholds');
-select is((select version from public.item_supply_policies where item_id = 'ce000000-0000-0000-0000-000000000001'), 2::bigint, 'policy updates use optimistic versioning');
+select is((select (position ->> 'policy_version')::bigint from jsonb_array_elements(public.get_staff_economy_workspace() -> 'positions') position where position ->> 'item_code' = 'RM-IRON-ORE'), 2::bigint, 'secured projection exposes the incremented policy version');
 select lives_ok($test$
   select * from public.staff_create_procurement_offer(
     'ce000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',

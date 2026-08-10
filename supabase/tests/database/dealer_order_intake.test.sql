@@ -184,8 +184,8 @@ select set_config('request.jwt.claims', '{"sub":"b3000000-0000-0000-0000-0000000
 
 select is(
   (select jsonb_array_length(get_dealer_order_reference_data() -> 'items')),
-  4,
-  'dealer order catalogue exposes only the four currently published active items'
+  10,
+  'dealer order catalogue exposes all ten currently published active items'
 );
 select ok(
   not (get_dealer_order_reference_data() -> 'items')::text like '%Unpublished Prototype%',
