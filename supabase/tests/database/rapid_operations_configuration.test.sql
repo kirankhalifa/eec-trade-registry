@@ -38,13 +38,13 @@ select set_config('request.jwt.claims', '{"sub":"fa100000-0000-4000-8000-0000000
 select lives_ok($test$select public.get_staff_configuration_workspace()$test$, 'authorized administrator can read configuration');
 select lives_ok($test$
   select * from public.staff_create_configuration_reference(
-    'item_category', 'rapid-test', 'Rapid test goods', '', 'Created in a database test.', '', 0, 95,
+    'item_category', 'rapid-test', 'Rapid test goods', '', 'Created in a database test.', '', 0::smallint, 95,
     'Create a configurable category.', 'fa300000-0000-4000-8000-000000000001'
   )
 $test$, 'administrator can add a configuration option');
 select lives_ok($test$
   select * from public.staff_create_configuration_reference(
-    'item_category', 'rapid-test', 'Rapid test goods', '', 'Created in a database test.', '', 0, 95,
+    'item_category', 'rapid-test', 'Rapid test goods', '', 'Created in a database test.', '', 0::smallint, 95,
     'Create a configurable category.', 'fa300000-0000-4000-8000-000000000001'
   )
 $test$, 'configuration creation retry is idempotent');
