@@ -454,6 +454,8 @@ Implementation note: the initial asset-custody command records a single accepted
 4. Dispatch transfers custody to the consignee or in-transit account while retaining East Empire Company ownership.
 5. Consignment position is derived from ledger and asset events.
 
+Implementation note: the current issue path supports fungible goods from an available physical account. It revalidates the effective agreement, current dealer authorization, retained owner, warehouse scope, and stock remaining after active reservations, then posts a balanced physical-to-consigned custody movement. Serialized consignment, advance reservations, in-transit dealer dispatch, finance, and scheduled reporting are not implied.
+
 ### Dealer report
 
 1. Dealer submits sold-through, returned, damaged, lost, and observed-on-hand information.
@@ -462,12 +464,16 @@ Implementation note: the initial asset-custody command records a single accepted
 4. Acceptance posts authoritative ledger/custody changes and settlement obligations.
 5. Variances open an exception and possibly a compliance case.
 
+Implementation note: current dealer submissions require a live scoped representation and permit only one submitted report per issue. Staff ordinary acceptance requires observed-on-hand to equal the prior outstanding balance minus reported sold and returned quantities. Accepted sales move custody to an external account; accepted returns move it to an authorized matching warehouse account. Loss or damage cannot be accepted through this routine path, because the exception and compliance policy is unresolved. Rejection preserves the report and changes no inventory.
+
 ### Return or closeout
 
 1. Dealer requests return or agreement closeout.
 2. Physical transfer returns remaining stock.
 3. Staff reconciles accepted sales, returns, losses, and settlement.
 4. Agreement closes only when inventory, custody, disputes, and financial obligations meet policy.
+
+Implementation note: the current agreement command permits suspension, reactivation, and close with optimistic concurrency. Close is blocked while ledger-backed custody is outstanding. Because settlement obligations and disputes are not yet modeled, operators must not treat closure as proof of financial settlement.
 
 ## 14. Unique asset lifecycle
 

@@ -219,6 +219,8 @@ Wholesale transfers title and custody according to the selected commercial polic
 
 Consignment inventory must never be represented as an untracked decrement from EEC stock.
 
+Implementation status: staff can create effective-dated agreements for an active warehouse owner and currently authorized dealer, then issue fungible available stock into a `consigned` custody account while retaining the configured owner. Dealers with current representation can view only their parties' custody positions and submit observations. Reports are non-authoritative claims until staff accept them; acceptance requires exact reconciliation, posts balanced sale/return ledger entries, and closes an issue only at zero outstanding custody. Loss or damage is recorded but ordinary acceptance is blocked pending an approved exception policy. Pricing, settlement amounts, reporting cadence, shrinkage tolerance, and serialized consignment are not inferred.
+
 ### 5.9 Unique assets
 
 Individually controlled goods receive stable asset identifiers. Each asset has an immutable event history covering registration, custody, condition, inspection, authorization, transfer, loss, seizure, retirement, or destruction as applicable.
