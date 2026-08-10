@@ -298,6 +298,8 @@ Frontend code may display estimates for usability only when clearly labeled and 
 - Failed projections do not roll back an already committed business transaction.
 - Export and notification delivery state is observable and retryable.
 - Backups, point-in-time recovery, migration rollback strategy, and incident procedures are launch prerequisites.
+- Staff authority must be administered through audited effective-dated commands; the system must prevent removal of the final active platform administrator.
+- Operational health views may identify stale or failed work but must not silently correct or mutate authoritative business state.
 - Time is stored in UTC. A configured institutional time zone and calendar presentation determine display and policy cutoffs.
 - Generated references are unique and immutable; human-friendly formats are configurable.
 
