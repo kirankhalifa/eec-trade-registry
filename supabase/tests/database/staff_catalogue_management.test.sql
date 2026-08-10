@@ -209,7 +209,7 @@ select set_config(
 
 select is(
   (select count(*)::integer from public.get_staff_catalogue_items(null)),
-  5,
+  11,
   'an active catalogue manager sees the internal work queue'
 );
 

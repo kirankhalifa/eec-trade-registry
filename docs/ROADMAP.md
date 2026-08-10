@@ -191,7 +191,7 @@ An authenticated dealer can see applicable terms, submit a requisition, and trac
 
 ## 7. Slice 5 — Reservations and warehouse ledger
 
-Implementation status: the current increments configure the EEC warehouse and locations without inventing opening stock; add physical/external accounts, balanced immutable fungible receipts and issues, linked reversals, ledger-derived positions, warehouse-scoped staff roles, atomic 48-hour reservation management, and fungible reservation consumption coupled to fulfillment, order-line, and order state. Serialized receipt and custody, picking stages, returns, counts, adjustments, reconciliation, scheduled expiry execution, and low-stock projections remain future work.
+Implementation status: the current increments configure the EEC warehouse and locations without inventing opening stock; add physical/external accounts, balanced immutable fungible receipts and issues, linked reversals, ledger-derived positions, warehouse-scoped staff roles, atomic 48-hour reservation management, and fungible reservation consumption coupled to fulfillment, order-line, and order state. ADR 0018 also adds configurable player-sourced-only supply policy, supplier registration, effective-dated guaranteed purchase offers, atomic delivery/receipt intake, settlement evidence, reserve targets, unmet-demand visibility, and an economy dashboard. Exact purchase rates and reserve targets are intentionally unset. Serialized receipt and custody, picking stages, returns, counts, adjustments, reconciliation, scheduled expiry execution, resale price schedules, and deeper low-stock automation remain future work.
 
 ### User outcome
 

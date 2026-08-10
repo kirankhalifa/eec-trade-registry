@@ -535,3 +535,20 @@ Break-glass access does not permit secret disclosure, audit deletion, or untrack
 
 These decisions are launch blockers for their affected surfaces and must be recorded before permission migrations are written.
 
+## 17. Procurement and economic stewardship
+
+The implemented economic permissions intentionally separate policy from routine intake:
+
+| Permission | Purpose |
+| --- | --- |
+| `economy.dashboard.read` | Read reserve coverage, unmet approved demand, purchase obligations, and settlement indicators. |
+| `procurement.supplier.manage` | Register supplier counterparties. |
+| `procurement.policy.manage` | Configure supply mode, reserve thresholds, and channel limits. |
+| `procurement.offer.manage` | Publish effective-dated guaranteed purchase offers. |
+| `procurement.delivery.receive` | Accept a delivery and create its balanced receipt in an assigned warehouse. |
+| `procurement.delivery.settle` | Record external payment evidence against an accepted delivery. |
+
+`procurement_officer` receives routine supplier, delivery, settlement, dashboard, and inventory-read powers. `economic_steward` receives policy, offer, supplier, and dashboard powers. Warehouse scope is still enforced when receiving. Neither role receives dealer, licensing, compliance, platform-administration, or unrestricted inventory-correction authority merely because it can operate the economy desk.
+
+The generic `inventory.receipt.post` permission cannot bypass a player-sourced-only policy. This is a database invariant, not a hidden UI convention.
+

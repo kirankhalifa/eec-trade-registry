@@ -66,6 +66,7 @@ export default async function StaffInventoryPage({ searchParams }: StaffInventor
         </div>
         <div className="staff-button-row">
           <Link className="button button-secondary" href="/staff/orders">Order desk</Link>
+          <Link className="button button-secondary" href="/staff/economy">Economy desk</Link>
           <Link className="button button-secondary" href="/staff/fulfillment">Fulfillment</Link>
           <Link className="button button-secondary" href="/staff/transfers">Transfers</Link>
           <Link className="button button-secondary" href="/staff/assets">Serialized assets</Link>
@@ -86,7 +87,7 @@ export default async function StaffInventoryPage({ searchParams }: StaffInventor
 
       <div className="inventory-command-grid">
         <section className="staff-form inventory-command-card">
-          <div><p className="eyebrow">Immutable receipt</p><h2>Receive fungible stock</h2><p>Posting creates balanced external-source and physical ledger entries.</p></div>
+          <div><p className="eyebrow">Immutable receipt</p><h2>Receive fungible stock</h2><p>Use only for goods whose supply policy permits generic receipts. Player-sourced keystone materials must use the economy desk.</p></div>
           <form action={postInventoryReceiptAction} className="inventory-command-form">
             <label className="field"><span>Warehouse location</span><select name="stock_location_id" required>{workspace.warehouses.flatMap((warehouse) => warehouse.locations.map((location) => <option key={location.id} value={location.id}>{warehouse.display_name} · {location.display_name}</option>))}</select></label>
             <label className="field"><span>Fungible item</span><select name="item_id" required>{fungibleItems.map((item) => <option key={item.id} value={item.id}>{item.item_code} · {item.display_name} ({item.unit_code})</option>)}</select></label>

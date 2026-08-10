@@ -665,3 +665,40 @@ Rotate the secret, revoke affected sessions or principal, inspect audit/delivery
 
 No workflow-dependent implementation should guess these decisions. A decision record and updated transition tests are required first.
 
+## 22. Keystone-material procurement workflow
+
+### Establish policy
+
+1. An economic steward selects a canonical material.
+2. Staff configure the player-sourced reserve mode and ordered critical, minimum, target, and surplus thresholds.
+3. Staff publish an effective-dated guaranteed purchase offer after the actual floor rate is approved.
+4. The offer becomes visible on the internal economy desk. Publishing it does not create stock.
+
+### Register a producer
+
+1. An EEC agent identifies the player character or organization selling material.
+2. A procurement officer creates a private supplier record and receives an `EEC-SUP-*` reference.
+3. The supplier remains distinct from licensed dealers. Selling material to the Company grants no authority to buy wholesale goods.
+
+### Accept a delivery
+
+1. The supplier brings gathered material to an authorized EEC agent or warehouse interaction.
+2. The agent selects the supplier, current offer, receiving location, and inspected accepted quantity.
+3. Supabase revalidates the current offer, minimum, supply policy, supplier standing, fungible item, warehouse scope, and request ID.
+4. One transaction creates the `EEC-PRC-*` delivery, snapshotted payment obligation, balanced external-to-physical ledger receipt, audit record, and outbox event.
+5. The reserve quantity becomes visible from ledger-derived stock. The delivery remains `pending` for settlement.
+
+### Record payment
+
+1. Staff perform the in-character or administrative Septim payment through the server's approved mechanism.
+2. A procurement officer records its voucher, log, or payment reference and an audit reason.
+3. The delivery becomes paid. No second stock movement occurs.
+
+### Supply pressure and resale
+
+1. The economy dashboard compares available reserve with configured thresholds and approved unfulfilled demand.
+2. Low reserve can prompt a new or changed future offer; it never changes an existing accepted delivery rate.
+3. Licensed businesses may order reserve stock under separately approved wholesale schedules.
+4. A high emergency or convenience resale price protects the ordinary player market. It is not calculated from the purchase offer in frontend code.
+5. When reserve is unavailable, an order may wait for replenishment; staff do not spawn stock to clear the queue.
+

@@ -761,3 +761,36 @@ When the roleplay conversation, Discord message, Google Sheet, and portal appear
 > Stop and check the authoritative Supabase-backed portal record.
 
 Do not solve a disagreement by editing the Sheet, changing a Discord role, deleting a message, sharing credentials, or inventing an approval. Use the correct EEC workflow and leave an auditable reason.
+## 27. Live workflow: miners, keystone materials, and Company reserves
+
+This is the ordinary player-facing story for iron ore, stone, leather rolls, lumber, cloth, and any later material configured the same way.
+
+1. A miner, hunter, lumber worker, or supplier gathers goods through normal server play.
+2. An EEC agent can always offer the currently approved Company floor price. The floor is intentionally a safe fallback, not the best possible market price.
+3. If the player accepts, the agent registers them as a supplier if necessary. This does not make the player a licensed EEC dealer.
+4. The agent inspects and accepts the quantity on the Economy desk. The website creates an `EEC-PRC-*` receipt, adds the actual goods to warehouse reserve, and records exactly how many Septims the Company owes.
+5. After paying the player through the approved server method, the agent records the payment or voucher reference. Warehouse stock is unchanged by this second step because the goods already arrived.
+6. Smiths and other businesses can still buy directly from players at negotiated prices. If they need a large quantity immediately, they may seek Company reserve stock at the separately configured high convenience price.
+
+The intended result is a corridor:
+
+```text
+guaranteed EEC buy floor
+        < ordinary player-to-player market
+        < expensive EEC emergency reserve sale
+```
+
+If reserves run low, the dashboard says so and approved orders can wait for material. Agents must not create keystone inventory with the generic receipt form just to clear an order.
+
+### Economy desk quick procedure for admins
+
+Open `/staff/economy`.
+
+- **Reserve positions** shows real ledger stock, active reservations, approved unmet demand, recent buying, and the configured target band.
+- **Register supplier** creates the stable identity used on future deliveries. Use the character or organization actually supplying the goods.
+- **Publish purchase offer** sets a guaranteed per-unit rate for a defined effective period. Confirm the rate with the economic policy owner first.
+- **Receive supplier delivery** is the physical handoff. Choose the supplier, current offer, receiving location, and accepted quantity.
+- **Record paid** is used only after the Septim payment happened elsewhere. Enter a Discord log, voucher, ticket, or other approved reference.
+- **Edit policy** changes sourcing mode, reserve thresholds, personal channel availability, and review limits. Threshold changes do not alter stock.
+
+Do not use a supplier reference as a dealer reference, license number, or login. Those identifiers prove different relationships.

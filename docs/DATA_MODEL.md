@@ -1000,3 +1000,33 @@ Suggested flow:
 
 These decisions must be captured in an approved decision record before the corresponding migrations are implemented.
 
+## 19. Player-sourced procurement and reserve economy
+
+ADR 0018 adds an economic-provenance layer above the existing immutable inventory ledger.
+
+### `item_supply_policies`
+
+One configurable current policy per canonical item. It records the supply mode, whether procurement is enabled, whether player sourcing is mandatory, whether generic receipts are allowed, reserve thresholds, direct-personal-order policy, personal weekly limit, and business bulk-review threshold. Numeric thresholds may remain null until policy approves them. They are comparison values, never balances.
+
+### `procurement_suppliers`
+
+Links a supplier registry record to one party and assigns a stable `EEC-SUP-*` reference. Supplier standing is independent of dealer authorization, licenses, representative access, and staff identity. A miner can sell ore without becoming an authorized wholesaler.
+
+### `procurement_offers`
+
+An effective-dated guaranteed purchase offer for one item and currency. It snapshots the amount per item unit, minimum accepted delivery, optional staff-review quantity, notes, and author. Overlapping active offers for the same item and currency are rejected. An offer creates neither stock nor debt by itself.
+
+### `procurement_deliveries`
+
+Evidence that a registered supplier delivered an accepted quantity against a current offer. It snapshots the item, quantity, rate, rounded total, currency, warehouse/location, receiving actor, and immutable inventory transaction. Settlement status is pending until staff records an external payment or voucher reference. This operational status is not a treasury balance.
+
+### Coupled invariants
+
+1. Player-sourced-only goods reject positive physical ledger entries posted by the generic receipt permission.
+2. Receiving a procurement delivery and its balanced ledger receipt succeeds or fails as one transaction.
+3. The delivery item and rate come from the current effective offer, not browser calculations.
+4. Supplier, offer, policy, location, warehouse scope, minimum quantity, and actor permission are revalidated inside the command.
+5. Retrying with the same request ID returns the existing logical result.
+6. Settlement changes only the versioned delivery settlement fields and appends audit/outbox evidence; it does not move stock.
+7. Dashboard reserve positions derive from ledger entries and live reservations. Approved unfulfilled demand is shown separately as back-order pressure.
+
