@@ -16,8 +16,6 @@ set active = (code = 'public-catalogue'),
     end
 where destination_id = (select id from public.integration_destinations where code = 'public-registry-sheet');
 
-set local role service_role;
-
 select is(
   public.integration_queue_due_exports('2030-01-01T00:00:00Z'),
   1,
