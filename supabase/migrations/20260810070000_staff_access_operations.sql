@@ -138,11 +138,11 @@ begin
         select audit.id, audit.action, audit.record_type, audit.record_id,
           audit.actor_id, actor.display_name as actor_name,
           audit.previous_state, audit.new_state, audit.reason,
-          audit.request_id, audit.source_surface, audit.created_at
+          audit.request_id, audit.source_surface, audit.occurred_at as created_at
         from public.audit_log as audit
         left join public.actor_profiles as actor on actor.id = audit.actor_id
         where audit.record_type in ('public.staff_assignments', 'public.actor_profiles', 'public.staff_roles', 'public.staff_role_permissions')
-        order by audit.created_at desc, audit.id desc
+        order by audit.occurred_at desc, audit.id desc
         limit 100
       ) as entry
     ), '[]'::jsonb) else '[]'::jsonb end

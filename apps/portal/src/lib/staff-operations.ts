@@ -35,7 +35,7 @@ const auditSchema = z.object({
   actor_id: z.guid().nullable(),
   actor_name: z.string().nullable(),
   created_at: z.string(),
-  id: z.guid(),
+  id: z.number().int().nonnegative().safe(),
   new_state: z.unknown().nullable(),
   previous_state: z.unknown().nullable(),
   reason: z.string().nullable(),
