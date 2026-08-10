@@ -536,7 +536,7 @@ Remaining quota is derived. Repeated requests must not create duplicate entries.
 
 ## 8. Orders and reservations
 
-Implementation status: order intake implements dealer requisition headers and lines, nullable price snapshots, control snapshots, append-only header/line events, version-checked staff review and price commands, dealer/staff cancellation, represented-party audit context, and durable outbox events. Submission deliberately creates no reservation or movement. A later warehouse command may reserve approved fungible demand, and the fulfillment command consumes exactly one current reservation into an issue and fulfilled quantity. Dealer-specific price schedules, eligibility rules, drafts, assignments, overrides, quotas, and serialized fulfillment remain future work.
+Implementation status: order intake implements dealer requisition headers and lines, nullable price snapshots, control snapshots, append-only header/line events, version-checked staff review and price commands, dealer/staff cancellation, represented-party audit context, and durable outbox events. Submission deliberately creates no reservation or movement. A later warehouse command may reserve approved fungible demand, and the fulfillment command consumes exactly one current reservation into an issue and fulfilled quantity. ADR 0017 approves an equivalent future staff-assisted entry path in which the staff actor enters a requisition on behalf of the verified licensed business while the business remains `ordering_party_id`; the command and UI are not yet implemented. Dealer-specific price schedules, eligibility rules, drafts, assignments, overrides, quotas, and serialized fulfillment remain future work.
 
 ### `orders`
 
@@ -552,6 +552,7 @@ Key fields:
 - `status`
 - configured `currency_code` snapshot
 - `submitted_at`, `requested_by_actor_id`
+- staff-assisted source and verified request context when created on behalf of a business
 - `assigned_to_actor_id`
 - `requested_fulfillment_at`
 - `version` for optimistic concurrency where appropriate
