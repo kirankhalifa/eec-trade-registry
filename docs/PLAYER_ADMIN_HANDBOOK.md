@@ -6,6 +6,8 @@ Production portal: <https://eec-trade-registry-portal.vercel.app>
 Public registry: <https://eec-trade-registry-portal.vercel.app/verify>  
 Public Sheet: <https://docs.google.com/spreadsheets/d/13bJeSAUF52cQnudC_l0JNOlKmcYY0wRWIq8OVqiEdrc/edit>
 
+Administrators who need exact field-by-field instructions for adding items, stock, categories, units, supply workflows, license types, endorsements, prices, dealers, licenses, or staff access should use [Section 7 of the Complete User Guide](USER_GUIDE.md#7-complete-guide-to-adding-things).
+
 ## 1. The short version
 
 An ordinary member of the public does not order wholesale goods directly from the East Empire Company.
