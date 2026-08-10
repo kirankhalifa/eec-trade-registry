@@ -1,7 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
-const nullableNumber = z.union([z.coerce.number(), z.null()]);
+// Null must be attempted before coercion because Number(null) is zero.
+const nullableNumber = z.union([z.null(), z.coerce.number()]);
 
 const positionSchema = z.object({
   admin_receipt_allowed: z.boolean(),
