@@ -1,0 +1,31 @@
+import Link from "next/link";
+import { signOutAction } from "@/app/staff/actions";
+import { createComplianceCaseAction } from "@/app/staff/compliance/actions";
+import { ComplianceNotice } from "@/components/compliance-notice";
+import { StaffAccessDenied } from "@/components/staff-access-denied";
+import { getStaffComplianceWorkspace } from "@/lib/compliance";
+import { getDefaultLocale } from "@/lib/env";
+import { requireStaffSession } from "@/lib/staff-auth";
+
+interface Props { searchParams: Promise<{ error?: string; notice?: string }> }
+export default async function StaffCompliancePage({ searchParams }: Props) {
+  const parameters = await searchParams; const { client } = await requireStaffSession(); const result = await getStaffComplianceWorkspace(client);
+  if (!result.ok && result.code === "access_denied") return <main className="staff-main"><StaffAccessDenied /></main>;
+  if (!result.ok) return <main className="staff-main"><section className="notice-panel"><h1>Compliance workspace unavailable</h1><p>No external case record or message was substituted.</p></section></main>;
+  const workspace = result.data; const locale = getDefaultLocale(); const active = workspace.cases.filter((item) => !["resolved", "no_action", "closed"].includes(item.status));
+  return <main className="staff-main">
+    <header className="staff-page-header"><div><p className="eyebrow">Authenticated staff - due process</p><h1>Compliance casework</h1><p>Record inspections, allegations, evidence metadata, explicit findings, record-only actions, and appeals without treating a case opening as guilt.</p></div><div className="staff-button-row"><Link className="button button-secondary" href="/staff/licensing">Licensing</Link><Link className="button button-secondary" href="/staff/assets">Assets</Link><Link className="button button-secondary" href="/staff/consignments">Consignments</Link><form action={signOutAction}><button className="button button-primary" type="submit">Sign out</button></form></div></header>
+    <ComplianceNotice error={parameters.error} notice={parameters.notice} />
+    <section className="inventory-summary" aria-label="Compliance totals"><article><span>Open workload</span><strong>{active.length}</strong></article><article><span>Awaiting response</span><strong>{workspace.cases.filter((item) => item.status === "awaiting_response").length}</strong></article><article><span>Actions awaiting review</span><strong>{workspace.cases.reduce((sum, item) => sum + item.pending_action_count, 0)}</strong></article><article><span>Appeals awaiting decision</span><strong>{workspace.cases.reduce((sum, item) => sum + item.open_appeal_count, 0)}</strong></article></section>
+    {workspace.capabilities.can_manage_cases && <section className="inventory-section"><div className="inventory-section-heading"><div><p className="eyebrow">No finding implied</p><h2>Open case</h2></div><p>The case container records scope and triage only. It does not change standing or inventory.</p></div><form action={createComplianceCaseAction} className="inventory-command-form inventory-receipt-form">
+      <label className="field"><span>Case type</span><select name="case_type_id" required><option value="">Choose type</option>{workspace.case_types.map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}</select></label>
+      <label className="field"><span>Subject party (optional)</span><select name="subject_party_id"><option value="">No party selected</option>{workspace.parties.map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}</select></label>
+      <label className="field"><span>Related authoritative record (optional)</span><select defaultValue="none" name="related"><option value="none">No related record</option>{workspace.related_records.map((item) => <option key={`${item.record_type}:${item.id}`} value={`${item.record_type}:${item.id}`}>{item.record_type.replaceAll("_", " ")} - {item.label}</option>)}</select></label>
+      <label className="field"><span>Confidentiality</span><select defaultValue="restricted" name="confidentiality_level"><option value="internal">Internal</option><option value="restricted">Restricted</option></select></label>
+      <label className="field"><span>Assign to (optional)</span><select name="assigned_actor_id"><option value="">Unassigned</option>{workspace.staff_actors.map((item) => <option key={item.id} value={item.id}>{item.display_name}</option>)}</select></label>
+      <label className="field"><span>Case summary</span><textarea maxLength={4000} name="summary" required rows={4} /></label><label className="field"><span>Opening reason</span><textarea maxLength={500} name="reason" required rows={3} /></label><button className="button button-primary" type="submit">Open case for triage</button>
+    </form></section>}
+    <section className="inventory-section"><div className="inventory-section-heading"><div><p className="eyebrow">Private work queue</p><h2>Case register</h2></div><p>Allegations, findings, actions, and appeals remain distinct in every case.</p></div><div className="inventory-transaction-list">{workspace.cases.map((item) => <article className="inventory-transaction-card" key={item.id}><div><span className={`order-status order-status-${item.status}`}>{item.status.replaceAll("_", " ")}</span><h3>{item.public_reference}</h3><p>{item.case_type}{item.subject_name ? ` - ${item.subject_name}` : ""}</p><p>{item.summary}</p><small>Opened {new Date(item.opened_at).toLocaleString(locale)} - assigned {item.assigned_actor_name ?? "unassigned"} - {item.confidentiality_level}</small><small>Allegations {item.allegation_count} - findings {item.finding_count} - pending actions {item.pending_action_count} - open appeals {item.open_appeal_count}</small></div><Link className="button button-secondary" href={`/staff/compliance/${item.id}`}>Open case file</Link></article>)}</div>{workspace.cases.length === 0 && <p className="empty-state">No compliance case has been opened.</p>}</section>
+    <aside className="dealer-policy-note"><strong>Record-only enforcement boundary</strong><p>Current action approval and appeal outcomes preserve due-process history but intentionally have no automatic effect on licenses, authorizations, orders, quotas, stock, or assets until those policies are approved.</p></aside>
+  </main>;
+}

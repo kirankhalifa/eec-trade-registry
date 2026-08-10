@@ -142,14 +142,18 @@ Implementation note: `inventory_controller` receives every current consignment p
 
 ### Compliance and audit
 
-- `compliance.case.read`
+- `compliance.private.read`
 - `compliance.case.manage`
-- `compliance.evidence.read`
+- `compliance.inspection.manage`
+- `compliance.evidence.manage`
+- `compliance.finding.record`
 - `compliance.action.recommend`
 - `compliance.action.approve`
-- `appeal.review`
+- `compliance.appeal.manage`
 - `audit.read`
 - `audit.export`
+
+Implementation note: the elevated configurable `compliance_officer` role receives all eight implemented compliance permissions. `auditor` receives private read only. Direct table access remains denied, evidence metadata does not grant object-storage access, and every command re-resolves the current assignment. The initial role may both recommend and approve because ADR 0005 rejects an inferred universal two-person rule; a future configured independence policy may narrow that authority for specific action types.
 
 ### Administration and integrations
 
