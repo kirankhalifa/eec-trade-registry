@@ -40,7 +40,7 @@ select ok(not has_table_privilege('authenticated', 'public.compliance_evidence',
 select ok(not has_table_privilege('authenticated', 'public.compliance_events', 'insert'), 'authenticated cannot forge history');
 select ok(not has_function_privilege('anon', 'public.staff_create_compliance_case(uuid,uuid,text,uuid,text,text,uuid,text,uuid)', 'execute'), 'anonymous cannot open cases');
 select ok(not has_function_privilege('anon', 'public.staff_review_compliance_action(uuid,bigint,text,text,uuid)', 'execute'), 'anonymous cannot review actions');
-select is((select count(*)::integer from public.permission_scopes where code like 'compliance.%'), 8, 'eight compliance permissions exist');
+select is((select count(*)::integer from public.permission_scopes where code like 'compliance.%'), 9, 'nine compliance permissions exist including executable-effect authority');
 select is((select count(*)::integer from public.staff_roles where code = 'compliance_officer'), 1, 'compliance officer role exists');
 select is((select count(*)::integer from public.notification_templates where event_type like 'compliance.%'), 3, 'three compliance templates exist');
 select is((select count(*)::integer from public.integration_event_routes where event_type like 'compliance.%'), 3, 'three compliance routes exist');

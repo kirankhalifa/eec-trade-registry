@@ -9,7 +9,7 @@ export function getStaffOAuthCallbackUrl(
 export function getStaffOAuthSuccessUrl(
   environment: NodeJS.ProcessEnv = process.env,
 ): URL {
-  return new URL("/staff", getSiteOrigin(environment));
+  return new URL("/staff/dashboard", getSiteOrigin(environment));
 }
 
 export function getStaffOAuthFailureUrl(

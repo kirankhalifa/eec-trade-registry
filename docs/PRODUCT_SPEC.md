@@ -414,3 +414,9 @@ The product owner must resolve these before the affected feature is implemented:
 
 Until these decisions are recorded, implementations must preserve configurability and must not silently promote an assumption into policy.
 
+## Launch command suite acceptance
+
+The implemented launch suite adds a full authenticated overview dashboard; rapid staff entry for licensed businesses and direct individuals; database-enforced `3×` direct pricing and weekly limits; deterministic dealer price precedence; public applications and renewals; consignment commission settlement; atomic unique-asset delivery; reviewed configured sanctions; and official license, order, fulfillment, and settlement PDFs from immutable snapshots.
+
+The suite does not make Sheets, Discord, or PDFs authoritative; calculate stock in frontend code; impose a universal license duration or commission; create stock because an order exists; or provide a general accounting ledger.
+

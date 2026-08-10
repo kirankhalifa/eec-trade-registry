@@ -1042,3 +1042,16 @@ Evidence that a registered supplier delivered an accepted quantity against a cur
 
 `staff_set_item_public_terms` closes the previous current public presentation before inserting its successor. When staff choose an explicit price action, it independently closes and replaces or clears the current rule for the selected schedule. Both commands are idempotent, audited, and emit durable projection events.
 
+## 21. Launch command model additions
+
+- `commercial_channel_policies`: multiplier and weekly-window policy; direct individual is approved at `30000` basis points.
+- `price_schedule_bindings`: effective-dated deterministic dealer pricing precedence.
+- `direct_customer_profiles` and `personal_quota_entries`: stable customer identity plus held/consumed/released weekly quantity.
+- `license_applications`, requested endorsements, and `license_renewal_events`: public intake and reviewed authority changes.
+- `consignment_finance_terms` and `consignment_settlements`: configurable commission and frozen settlement evidence.
+- `unique_fulfillments`: immutable reservation, asset, line, recipient, actor, and handoff link.
+- `compliance_effect_executions`: exact previous/new target state for approved configured sanctions.
+- `generated_documents`: immutable source payload, version, checksum, actor, reason, and reference.
+
+Orders now identify dealer, assisted-business, or direct-individual channel. Lines freeze schedule/rule IDs, price source, base price, multiplier, and final amount so later configuration cannot rewrite historical obligations.
+
