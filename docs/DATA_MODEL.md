@@ -218,6 +218,10 @@ Key fields:
 
 Business records should store the policy or rule version used when reproducibility matters.
 
+### `staff_command_receipts`
+
+Restricted idempotency evidence for compound staff commands. A receipt stores the request UUID, stable operation code, actor, result identifier, result version, and a small safe result object. It is not a business-state cache and grants no read or write authority. Rapid item onboarding, configuration creation, and public-term replacement serialize on the request UUID and return the recorded result on retry.
+
 ## 5. Parties, dealers, and factors
 
 Implementation status: the public-verification increment implements jurisdictions, party types, protected party source records, dealer types, configurable dealer statuses, and effective-dated dealer authorizations. Contacts, external identities, representatives, factors, standing, and staff mutation commands remain future policy-gated work.
@@ -675,6 +679,8 @@ For a fungible item, each posted transaction must balance across appropriate sou
 
 The implemented receipt command creates one negative external-source entry and one positive physical entry in a single statement. Constraint triggers require a zero transaction sum, prevent negative physical balances, and prevent a ledger reversal from reducing on-hand below current effective reservations. Inventory accounts contain classification and custody dimensions but no editable quantity.
 
+The rapid ordinary receipt resolves an active fungible item by stable item code and then invokes the same warehouse-scoped receipt command. It supplies generated source and audit text only when staff omit those optional fields. Items configured as player-sourced-only or serialized are excluded before posting and remain protected by the underlying database invariants.
+
 The fulfillment command creates the inverse balanced issue after marking its reservation consumed in the same transaction. `order_fulfillments` links the reservation, order line, warehouse, quantity, actor, and issue transaction. A reversal adds inverse ledger entries, marks the fulfillment reversed, and reopens demand; it never reactivates the consumed reservation.
 
 `stock_transfers` records the source and destination physical accounts, unchanged owner, quantity, explicit lifecycle, responsible actors, optimistic version, and dispatch/receipt transaction evidence. Dispatch moves quantity from the source physical account to an `in_transit` custody account; receipt clears transit into the destination physical account. `stock_transfer_events` is immutable. A dispatched transfer cannot be cancelled, and a discrepancy keeps its quantity in transit until an authorized receipt or later return/resolution workflow.
@@ -1029,4 +1035,10 @@ Evidence that a registered supplier delivered an accepted quantity against a cur
 5. Retrying with the same request ID returns the existing logical result.
 6. Settlement changes only the versioned delivery settlement fields and appends audit/outbox evidence; it does not move stock.
 7. Dashboard reserve positions derive from ledger entries and live reservations. Approved unfulfilled demand is shown separately as back-order pressure.
+
+## 20. Rapid configuration transaction
+
+`staff_quick_create_item` composes existing domain boundaries in one database transaction. It requires catalogue and supply-policy authority for every call, plus publication, pricing, and warehouse-receipt authority only when those optional effects are requested. It creates no partial item if any selected effect fails. Supply-mode behavior is selected from constrained machine codes and is never inferred from an item name or category label.
+
+`staff_set_item_public_terms` closes the previous current public presentation before inserting its successor. When staff choose an explicit price action, it independently closes and replaces or clears the current rule for the selected schedule. Both commands are idempotent, audited, and emit durable projection events.
 

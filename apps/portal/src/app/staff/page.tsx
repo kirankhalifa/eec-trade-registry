@@ -65,11 +65,14 @@ export default async function StaffCataloguePage({
           <p className="eyebrow">Authenticated staff · catalogue management</p>
           <h1>Canonical item work queue</h1>
           <p>
-            Maintain internal source records. Publication and price changes are
-            visible for context but remain read-only until their policies are approved.
+            Maintain internal source records, or use Quick operations to create a
+            complete supplied and published item in one workflow.
           </p>
         </div>
         <div className="staff-button-row">
+          <Link className="button button-primary" href="/staff/configuration">
+            Quick operations
+          </Link>
           <Link className="button button-secondary" href="/staff/orders">
             Order desk
           </Link>
@@ -106,7 +109,7 @@ export default async function StaffCataloguePage({
           <Link className="button button-secondary" href="/staff/operations">
             Operations
           </Link>
-          <Link className="button button-primary" href="/staff/items/new">
+          <Link className="button button-secondary" href="/staff/items/new">
             New canonical item
           </Link>
           <form action={signOutAction}>

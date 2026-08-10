@@ -10,6 +10,18 @@ Configured currency: `SEP` (Septims, zero decimal places)
 
 This guide explains how to use the implemented East Empire Company trade registry as a public visitor, dealer representative, staff operator, or platform administrator. It also explains what each operation changes, what it deliberately does not change, how the public Google Sheet is connected, and how to diagnose routine problems.
 
+## Fastest routine administration
+
+Open `/staff/configuration` and use **Quick operations** for the two most common setup tasks.
+
+To add a normal item, enter its name, category, unit, and supply workflow, then select **Create complete item**. The system can generate the item code, public URL slug, audit wording, and receipt reference. Open the optional section only when you need a starting price, opening quantity, reserve thresholds, or custom public wording. The item and supply policy are always created together; selected publication, price, and permitted opening stock either all commit or all roll back.
+
+To add ordinary stock, search for an item, enter the quantity, select its location, and choose **Add to inventory**. Source and audit text are optional because the portal can generate traceable defaults. This still creates a balanced immutable ledger transaction. It does not overwrite a stock cell.
+
+Player-sourced reserves such as configured keystone materials intentionally do not appear in the quick-receipt list. Receive those on the Economy desk against a registered supplier and current purchase offer. Serialized items use the Serialized assets desk. Those additional steps are evidence, not avoidable form friction.
+
+The same Configuration studio can add categories, units, license types, endorsements, availability wording, and control profiles without a code deployment. Public presentation and price can be replaced from each item card; previous effective versions remain in history.
+
 For a plain-language, roleplay-first explanation built around a public customer, licensed business, EEC agent, and warehouse handoff, start with the [Player and Discord Admin Handbook](PLAYER_ADMIN_HANDBOOK.md).
 
 The governing rule for every workflow is:
