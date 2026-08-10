@@ -125,8 +125,8 @@ select is(
 );
 select is(
   (select count(*)::integer from public.get_public_catalogue_export()),
-  4,
-  'the public catalogue export contains only the four published fixtures'
+  10,
+  'the public catalogue export contains all ten published fixtures'
 );
 select is(
   (select count(*)::integer from public.get_public_dealer_export()),

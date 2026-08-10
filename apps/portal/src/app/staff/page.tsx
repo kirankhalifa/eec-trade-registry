@@ -76,6 +76,9 @@ export default async function StaffCataloguePage({
           <Link className="button button-secondary" href="/staff/inventory">
             Inventory desk
           </Link>
+          <Link className="button button-secondary" href="/staff/economy">
+            Economy desk
+          </Link>
           <Link className="button button-secondary" href="/staff/fulfillment">
             Fulfillment
           </Link>

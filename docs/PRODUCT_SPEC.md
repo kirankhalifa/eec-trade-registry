@@ -22,6 +22,7 @@ Implementation proceeds through the policy-gated vertical slices in `ROADMAP.md`
 6. **Public access is deliberately narrow.** Public catalogue and verification features require no login, but expose only approved projection fields.
 7. **Routine work is fast; exceptional work is explicit.** Ordinary transactions should be simple. Restricted or unique goods introduce review, approval, and custody controls in proportion to risk.
 8. **History is preserved.** Consequential actions are attributable and corrections use reversing or superseding records instead of destructive edits.
+9. **Keystone reserves come from production.** Configured baseline materials enter Company stock through accepted supplier deliveries, not administrative spawning. Guaranteed purchase floors and high reserve resale terms form an economic corridor without replacing player trade.
 
 ## 3. Users and actors
 

@@ -37,6 +37,9 @@ function errorPath(error: { code?: string; message: string }) {
   ) {
     return destination("error", "insufficient_stock");
   }
+  if (error.message.includes("player_sourced_procurement_required")) {
+    return destination("error", "player_source_required");
+  }
   if (error.code === "P0002") return destination("error", "not_found");
   if (error.code === "22023" || error.code === "23514") {
     return destination("error", "invalid_input");
