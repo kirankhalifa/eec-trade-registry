@@ -192,7 +192,7 @@ export async function runIntegrationCycle(
   const rawExportClaims = await rpcOrThrow<unknown>(
     client,
     "integration_claim_export_runs",
-    { p_batch_size: 3, p_lease_seconds: 300, p_worker_id: workerId },
+    { p_batch_size: 10, p_lease_seconds: 300, p_worker_id: workerId },
   );
   const exportClaims = z.array(exportClaimSchema).parse(rawExportClaims ?? []);
   const rawDeliveryClaims = await rpcOrThrow<unknown>(

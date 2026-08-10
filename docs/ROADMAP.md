@@ -408,6 +408,7 @@ Every implementation issue should identify:
 - Threat model and privacy review complete
 - Critical policy decisions resolved
 - Incident, backup, restore, and secret-rotation exercises complete
+- Production response-security headers validated and external rate limits/abuse monitoring evidenced
 - Audit retention and compliance evidence policy approved
 - No open critical or high-severity security defects without explicit owner acceptance
 
