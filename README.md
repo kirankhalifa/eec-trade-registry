@@ -16,7 +16,7 @@ docs/                     Product and engineering documentation
 
 Production security, incident, rotation, backup/restore, and remaining external launch gates are tracked in `docs/SECURITY_OPERATIONS.md`.
 
-The [complete user and operator guide](docs/USER_GUIDE.md) covers public, dealer, staff, integration, troubleshooting, and daily operations.
+Start with the [player and Discord admin handbook](docs/PLAYER_ADMIN_HANDBOOK.md) for the plain-language customer → licensed business → EEC agent workflow and complete roleplay scenarios. The [technical user and operator guide](docs/USER_GUIDE.md) covers every portal desk, integration, troubleshooting path, and daily operation in greater system detail.
 
 ## Requirements
 

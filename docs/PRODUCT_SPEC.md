@@ -78,6 +78,8 @@ Authorized dealer representatives can:
 
 A dealer cannot edit authoritative eligibility, pricing, stock, quota, license, compliance, or custody state.
 
+The approved intermediated ordering model also permits a specifically authorized EEC staff agent to enter the same requisition on behalf of a verified licensed business. The licensed business remains the ordering party; the public customer is not converted into an EEC wholesale account. Dealer self-service and staff-assisted entry must share the same authoritative validation and downstream order workflow. ADR 0017 records this decision; the staff-assisted entry command and screen are not yet implemented.
+
 ### 4.3 Staff console
 
 Authenticated staff receive a role-appropriate work queue rather than unrestricted table access. The console supports:
@@ -352,6 +354,7 @@ The product owner approved the following initial deployment policy on 2026-08-04
 - Prices are editable but may be unset. An unset price is pending/unavailable, not zero.
 - Ordinary, restricted, and unique are the initial configurable control behaviors; restricted and unique paths require stronger review in line with ADR 0005.
 - Partial approval and fulfillment are supported. Orders may be submitted without stock and may wait for stock.
+- Public customers normally obtain goods through a currently authorized and appropriately licensed business. A verified business representative may submit, or an explicitly authorized EEC agent may enter the requisition on behalf of that business. The business remains the EEC ordering party and staff never impersonate it. ADR 0017 defines the assisted-entry boundary.
 - Stock cannot be posted below zero. Reservations default to 48 hours once created and may be extended by an authorized actor with a reason.
 - Wholesale title transfers at confirmed collection or receipt. Consigned stock remains EEC-owned until an accepted sale or settlement event.
 - Public verification remains exact-reference-only with the existing field allowlists.

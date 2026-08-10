@@ -292,6 +292,17 @@ Submission does not create physical inventory movement or a stock reservation. O
 
 Implementation note: `dealer_submit_order` currently validates active scoped representation, current dealer authorization, an optional current license, published items, positive quantities, and configured control snapshots. It creates every line as `review_required`, keeps the configured currency and price as a nullable snapshot, allocates an `EEC-ORD` reference from sequence data, and writes audit/history/outbox records atomically. Exact endorsement prerequisites, dealer-specific price schedules, increments, quotas, and circulation rules remain unresolved and therefore are not represented as passed checks.
 
+### Staff-assisted business order flow
+
+1. A public customer asks a licensed business to source an EEC item. The public customer does not become the EEC wholesale ordering party.
+2. A verified representative of the business presents the item, quantity, fulfillment preference, and relevant context to an authorized EEC agent through an approved channel.
+3. The agent selects the business from a secured staff projection and the command revalidates representative authority, current dealer authorization, relevant license, item publication, control requirements, and current policy.
+4. The agent records an on-behalf-of reason and approved request context. The staff actor is the command actor and the licensed business is the ordering party.
+5. The command creates the same order, line snapshots, history, audit, and outbox work as dealer submission and enters the normal staff-review queue.
+6. No entry action creates a reservation, inventory movement, title transfer, quota consumption, or guaranteed settled price.
+
+Implementation note: ADR 0017 approves this operating model, but the authoritative assisted-entry command and `/staff/orders/new` surface are not yet implemented. Until then, the representative must use the dealer submission flow. Staff must not impersonate the business, borrow dealer credentials, insert rows directly, or treat a Discord message as an order.
+
 ### Staff review flow
 
 1. Order queue shows age, dealer, requested mode, blocking reasons, stock position, licensing result, quota result, and required approval level.
