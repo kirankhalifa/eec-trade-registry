@@ -137,9 +137,9 @@ begin
 
   return query
   select
-    authorization.id,
+    dealer_record.id,
     party.id,
-    authorization.public_reference,
+    dealer_record.public_reference,
     party.legal_name,
     party.display_name,
     party.public_display_name,
@@ -151,26 +151,26 @@ begin
     jurisdiction.public_name,
     status.code,
     status.display_name,
-    authorization.approved_premises_public,
-    authorization.public_notes,
-    authorization.private_notes,
-    authorization.effective_from,
-    authorization.effective_until,
-    authorization.public_disclosure_enabled,
-    authorization.version,
-    authorization.updated_at
-  from public.dealer_authorizations as authorization
-  join public.parties as party on party.id = authorization.dealer_party_id
+    dealer_record.approved_premises_public,
+    dealer_record.public_notes,
+    dealer_record.private_notes,
+    dealer_record.effective_from,
+    dealer_record.effective_until,
+    dealer_record.public_disclosure_enabled,
+    dealer_record.version,
+    dealer_record.updated_at
+  from public.dealer_authorizations as dealer_record
+  join public.parties as party on party.id = dealer_record.dealer_party_id
   join public.party_types as party_type on party_type.id = party.party_type_id
-  join public.dealer_types as dealer_type on dealer_type.id = authorization.dealer_type_id
-  join public.jurisdictions as jurisdiction on jurisdiction.id = authorization.jurisdiction_id
-  join public.dealer_status_definitions as status on status.id = authorization.status_definition_id
+  join public.dealer_types as dealer_type on dealer_type.id = dealer_record.dealer_type_id
+  join public.jurisdictions as jurisdiction on jurisdiction.id = dealer_record.jurisdiction_id
+  join public.dealer_status_definitions as status on status.id = dealer_record.status_definition_id
   where p_search is null
     or btrim(p_search) = ''
-    or authorization.public_reference ilike '%' || btrim(p_search) || '%'
+    or dealer_record.public_reference ilike '%' || btrim(p_search) || '%'
     or party.display_name ilike '%' || btrim(p_search) || '%'
     or party.legal_name ilike '%' || btrim(p_search) || '%'
-  order by authorization.updated_at desc, authorization.public_reference;
+  order by dealer_record.updated_at desc, dealer_record.public_reference;
 end;
 $$;
 
@@ -276,10 +276,10 @@ declare
 begin
   actor_id := private.set_staff_audit_context('dealer.create', p_reason, p_request_id, 'staff_portal');
 
-  select authorization.id, authorization.dealer_party_id, authorization.public_reference, authorization.version
+  select dealer_record.id, dealer_record.dealer_party_id, dealer_record.public_reference, dealer_record.version
   into existing_record
-  from public.dealer_authorizations as authorization
-  where authorization.source_request_id = p_request_id;
+  from public.dealer_authorizations as dealer_record
+  where dealer_record.source_request_id = p_request_id;
   if found then
     return query select existing_record.id, existing_record.dealer_party_id, existing_record.public_reference, existing_record.version;
     return;
@@ -383,16 +383,16 @@ begin
     if existing_event.dealer_authorization_id <> p_dealer_authorization_id then
       raise exception using errcode = '22023', message = 'request_id_reused';
     end if;
-    return query select authorization.id, authorization.version
-    from public.dealer_authorizations as authorization where authorization.id = p_dealer_authorization_id;
+    return query select dealer_record.id, dealer_record.version
+    from public.dealer_authorizations as dealer_record where dealer_record.id = p_dealer_authorization_id;
     return;
   end if;
 
-  select authorization.id, authorization.dealer_party_id, authorization.version
+  select dealer_record.id, dealer_record.dealer_party_id, dealer_record.version
   into authorization_record
-  from public.dealer_authorizations as authorization
-  where authorization.id = p_dealer_authorization_id
-  for update of authorization;
+  from public.dealer_authorizations as dealer_record
+  where dealer_record.id = p_dealer_authorization_id
+  for update of dealer_record;
   if not found then raise exception using errcode = 'P0002', message = 'dealer_authorization_not_found'; end if;
   if authorization_record.version <> p_expected_version then
     raise exception using errcode = '40001', message = 'dealer_authorization_version_conflict';
@@ -412,14 +412,14 @@ begin
       version = party.version + 1
   where party.id = authorization_record.dealer_party_id;
 
-  update public.dealer_authorizations as authorization
+  update public.dealer_authorizations as dealer_record
   set approved_premises_public = nullif(btrim(coalesce(p_approved_premises_public, '')), ''),
       public_notes = btrim(coalesce(p_public_notes, '')),
       private_notes = btrim(coalesce(p_private_notes, '')),
       public_disclosure_enabled = disclose,
-      version = authorization.version + 1
-  where authorization.id = p_dealer_authorization_id
-  returning authorization.version into next_version;
+      version = dealer_record.version + 1
+  where dealer_record.id = p_dealer_authorization_id
+  returning dealer_record.version into next_version;
 
   insert into public.dealer_authorization_events (
     dealer_authorization_id, event_type, changed_by, reason, request_id
@@ -466,20 +466,20 @@ begin
       raise exception using errcode = '22023', message = 'request_id_reused';
     end if;
     return query
-    select authorization.id, authorization.version, status.code
-    from public.dealer_authorizations as authorization
-    join public.dealer_status_definitions as status on status.id = authorization.status_definition_id
-    where authorization.id = p_dealer_authorization_id;
+    select dealer_record.id, dealer_record.version, status.code
+    from public.dealer_authorizations as dealer_record
+    join public.dealer_status_definitions as status on status.id = dealer_record.status_definition_id
+    where dealer_record.id = p_dealer_authorization_id;
     return;
   end if;
 
-  select authorization.id, authorization.version, authorization.effective_until,
+  select dealer_record.id, dealer_record.version, dealer_record.effective_until,
          status.id as status_id, status.code as status_code
   into authorization_record
-  from public.dealer_authorizations as authorization
-  join public.dealer_status_definitions as status on status.id = authorization.status_definition_id
-  where authorization.id = p_dealer_authorization_id
-  for update of authorization;
+  from public.dealer_authorizations as dealer_record
+  join public.dealer_status_definitions as status on status.id = dealer_record.status_definition_id
+  where dealer_record.id = p_dealer_authorization_id
+  for update of dealer_record;
   if not found then raise exception using errcode = 'P0002', message = 'dealer_authorization_not_found'; end if;
   if authorization_record.version <> p_expected_version then
     raise exception using errcode = '40001', message = 'dealer_authorization_version_conflict';
@@ -512,13 +512,13 @@ begin
   end;
   actor_id := private.set_staff_audit_context(permission_code, p_reason, p_request_id, 'staff_portal');
 
-  update public.dealer_authorizations as authorization
+  update public.dealer_authorizations as dealer_record
   set status_definition_id = target_status.id,
-      approved_by = case when target_status.code = 'active' then actor_id else authorization.approved_by end,
-      approved_at = case when target_status.code = 'active' then statement_timestamp() else authorization.approved_at end,
-      version = authorization.version + 1
-  where authorization.id = p_dealer_authorization_id
-  returning authorization.version into next_version;
+      approved_by = case when target_status.code = 'active' then actor_id else dealer_record.approved_by end,
+      approved_at = case when target_status.code = 'active' then statement_timestamp() else dealer_record.approved_at end,
+      version = dealer_record.version + 1
+  where dealer_record.id = p_dealer_authorization_id
+  returning dealer_record.version into next_version;
 
   insert into public.dealer_authorization_events (
     dealer_authorization_id, event_type, previous_status_definition_id,
