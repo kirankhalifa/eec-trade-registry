@@ -233,6 +233,8 @@ The compliance module supports inspections, cases, alleged violations, findings,
 
 The platform must distinguish allegations from findings and temporary restrictions from final actions. Retention, notice, appeal, and automatic-restoration policies are unresolved.
 
+Implementation status: authorized compliance staff can open and assign private cases, plan and complete inspections, record immutable allegations and restricted evidence metadata, record explicit substantiated/not-substantiated/inconclusive findings, review configured record-only action recommendations, and record appeals and their outcomes. The current seeded taxonomy is deliberately generic and configurable. Action approval and appeal disposition always retain `effect_applied = false`; no command silently changes another domain. Evidence files, public notices, enforcement effects, deadlines, independence requirements, automatic stays/restoration, and retention remain gated.
+
 ### 5.11 Audit and history
 
 Every consequential staff or service action records:

@@ -538,6 +538,10 @@ closed -> reopened (authorized, reason required)
 
 The system must never equate opening a case with guilt or finding.
 
+Implementation note: the current staff console implements the case graph through secure, version-checked functions. Allegations, evidence metadata, and findings are separate immutable records. The generic taxonomy is configuration, not lore or law. A written resolution is required before `resolved` or `no_action`; a closed case can be reopened only through a reasoned transition that clears the current resolution projection while preserving its prior event.
+
+Staff can record one filed appeal per approved record-only action and record an affirmed, varied, remanded, reversed, or withdrawn disposition. The disposition appends history but deliberately applies no domain change or stay. Filing windows, standing, independence, automatic stays, notices, and restoration remain policy gates.
+
 ## 16. Google Sheets export
 
 ### Flow

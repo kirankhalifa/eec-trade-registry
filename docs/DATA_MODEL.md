@@ -776,13 +776,19 @@ Key fields:
 - `confidentiality_level`
 - `summary`, `closed_at`, `resolution`
 
+Implementation status: the case register uses configured case types, an optional subject party, a validated optional link to an existing license, dealer authorization, order, stock transfer, serialized asset, or consignment issue, explicit confidentiality, assignment, optimistic version, request idempotency, and immutable events. The implemented transition graph preserves resolve/no-action/close/reopen history and requires a written resolution before a resolved or no-action state.
+
 ### `inspections`
 
 Scheduled or completed compliance activity with scope, participants, observations, and evidence references.
 
+The implemented inspection record is planned, completed, or cancelled. Completion requires observations. An inspection is evidence-gathering activity and never creates a finding by itself.
+
 ### `allegations` and `findings`
 
 Separate tables or explicitly separated record types. A finding must not be inferred merely because an allegation exists.
+
+Implemented allegations, findings, and evidence metadata are append-only. Findings use explicit `substantiated`, `not_substantiated`, or `inconclusive` outcomes and may reference an allegation without modifying it. Evidence records store an approved reference, description, type, classification, and collection time; they do not store secrets or grant access to an underlying file.
 
 ### `enforcement_actions`
 
@@ -799,9 +805,13 @@ Key fields:
 
 If an action changes another domain's state, one function must post both the enforcement action and the domain transition atomically.
 
+The current action type constraint permits `record_only` effects only. Recommendations may be approved, declined, or voided, but `effect_applied` is constrained false. This creates reviewable case history without inventing a license, dealer, inventory, order, quota, or asset effect.
+
 ### `appeals`
 
 Links appellant, challenged action, filing date, status, reviewer, decision, and effective outcome. Whether an appeal stays an action is policy-controlled.
+
+The implemented appeal register permits one filed appeal per approved record-only action and records an explicit affirmed, varied, remanded, or reversed outcome (or withdrawal). It does not infer standing, deadlines, independence, stays, notice, or cross-domain restoration.
 
 ## 12. Audit, integrations, and projections
 

@@ -294,6 +294,8 @@ Approved public data reaches Google Sheets and users receive timely Discord look
 
 ## 10. Slice 8 — Compliance, appeals, and operational hardening
 
+Implementation status: the policy-neutral casework increment adds configurable case, allegation, and record-only action types; private case assignment and state transitions; planned/completed inspections; immutable allegations, evidence metadata, and explicit findings; record-only action recommendation/review; appeal filing and outcome history; scoped staff permissions; audit/outbox behavior; and a staff case console. It deliberately applies no cross-domain enforcement effect and does not infer filing deadlines, standing, notice, independence, stays, evidence retention, or restoration. Operational hardening remains in progress.
+
 ### User outcome
 
 Staff can investigate and resolve compliance matters with due process, while operators can run and recover the platform safely.

@@ -51,6 +51,7 @@ export default async function StaffAssetsPage({ searchParams }: StaffAssetsPageP
           <Link className="button button-secondary" href="/staff/inventory">Inventory</Link>
           <Link className="button button-secondary" href="/staff/transfers">Transfers</Link>
           <Link className="button button-secondary" href="/staff/consignments">Consignments</Link>
+          <Link className="button button-secondary" href="/staff/compliance">Compliance</Link>
           <Link className="button button-secondary" href="/staff/orders">Orders</Link>
           <form action={signOutAction}><button className="button button-primary" type="submit">Sign out</button></form>
         </div>
