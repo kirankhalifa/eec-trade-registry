@@ -116,6 +116,7 @@ Additional requirements:
 - Staff access is scoped by active role, jurisdiction, warehouse, portfolio, state, and approval limit.
 - UI visibility is not authorization.
 - Never trust caller-supplied actor, party, role, price, region, warehouse, or permission claims.
+- Administer staff role grants and revocations through audited effective-dated functions, and never remove the final active platform administrator.
 - Store only strong digests of private-link tokens; prefer single-use, short-lived exchange for scoped sessions.
 - Keep service-role credentials server-side. RLS bypass does not replace authorization inside server operations.
 - Give each integration a distinct, purpose-limited principal and secret.

@@ -159,12 +159,17 @@ Implementation note: the elevated configurable `compliance_officer` role receive
 
 - `configuration.read`
 - `configuration.manage`
-- `access.manage`
+- `access.private.read`
+- `access.assignment.manage`
+- `audit.private.read`
+- `operations.health.read`
 - `integration.private.read`
 - `integration.manage`
 - `integration.replay`
 - `document.generate`
 - `system.health.read`
+
+Implementation note: the configurable elevated `platform_administrator` role receives the four implemented access, audit, and operational-health permissions. Grants and revocations are effective-dated, idempotent, audited, and emitted through the outbox. The final active platform-administrator assignment cannot be revoked. This role does not implicitly receive catalogue, licensing, order, inventory, integration, or compliance authority; those remain separately composable roles.
 
 ## 4. Proposed staff roles
 
