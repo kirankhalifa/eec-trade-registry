@@ -23,7 +23,7 @@ select ok(not has_table_privilege('authenticated', 'public.consignment_reports',
 select ok(not has_table_privilege('authenticated', 'public.consignment_events', 'insert'), 'authenticated cannot forge history');
 select ok(not has_function_privilege('anon', 'public.staff_issue_consignment_stock(uuid,uuid,numeric,text,uuid)', 'execute'), 'anonymous cannot issue stock');
 select ok(not has_function_privilege('anon', 'public.dealer_submit_consignment_report(uuid,numeric,numeric,numeric,numeric,numeric,text,text,uuid)', 'execute'), 'anonymous cannot report custody');
-select is((select count(*)::integer from public.permission_scopes where code like 'consignment.%'), 5, 'five consignment permissions exist');
+select is((select count(*)::integer from public.permission_scopes where code like 'consignment.%'), 6, 'six consignment permissions exist including finance authority');
 select is((select count(*)::integer from public.notification_templates where event_type like 'consignment.%'), 4, 'four consignment notification templates exist');
 select is((select count(*)::integer from public.integration_event_routes where event_type like 'consignment.%'), 4, 'four consignment notification routes exist');
 select ok((select default_scope ?& array['consignment.read','consignment.report'] from public.representative_role_definitions where code = 'portal-representative'), 'dealer role advertises custody scopes');

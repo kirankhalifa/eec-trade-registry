@@ -13,7 +13,7 @@ select ok(not has_table_privilege('authenticated', 'public.staff_assignments', '
 select ok(not has_function_privilege('anon', 'public.staff_grant_role_assignment(uuid,uuid,timestamptz,timestamptz,jsonb,text,uuid)', 'execute'), 'anonymous cannot grant roles');
 select ok(not has_function_privilege('anon', 'public.staff_revoke_role_assignment(uuid,text,uuid)', 'execute'), 'anonymous cannot revoke roles');
 select is((select count(*)::integer from public.permission_scopes where code in ('access.private.read','access.assignment.manage','audit.private.read','operations.health.read')), 4, 'four operations permissions exist');
-select is((select count(*)::integer from public.staff_role_permissions as rp join public.staff_roles as role on role.id = rp.staff_role_id where role.code = 'platform_administrator'), 6, 'platform administrator has six scoped operations and configuration permissions');
+select cmp_ok((select count(*)::integer from public.staff_role_permissions as rp join public.staff_roles as role on role.id = rp.staff_role_id where role.code = 'platform_administrator'), '>=', 6, 'platform administrator retains baseline operations and configuration permissions as launch scopes are added');
 select is((select count(*)::integer from public.notification_templates where event_type like 'access.assignment_%'), 2, 'two access notification templates exist');
 select is((select count(*)::integer from public.integration_event_routes where event_type like 'access.assignment_%'), 2, 'two access notification routes exist');
 

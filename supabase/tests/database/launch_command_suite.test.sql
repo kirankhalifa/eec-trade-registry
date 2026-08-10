@@ -58,6 +58,8 @@ select is((select unit_price_minor_snapshot from public.order_lines line join pu
 select is((select price_multiplier_basis_points_snapshot from public.order_lines line join public.orders order_item on order_item.id=line.order_id where order_item.source_request_id='fb300000-0000-4000-8000-000000000001'),30000,'line freezes multiplier provenance');
 select is((select status from public.personal_quota_entries),'held','submission holds weekly quota');
 select is((select quantity from public.personal_quota_entries),1::numeric,'quota holds requested quantity');
+select set_config('test.direct_party_id',(select party_id::text from public.direct_customer_profiles limit 1),true);
+select set_config('test.direct_order_id',(select id::text from public.orders where source_request_id='fb300000-0000-4000-8000-000000000001'),true);
 
 set local role authenticated;
 select set_config('request.jwt.claims','{"sub":"fb100000-0000-4000-8000-000000000001","role":"authenticated"}',true);
@@ -68,9 +70,9 @@ select throws_ok(format($test$
     '[{"item_id":"ce000000-0000-0000-0000-000000000006","quantity":1}]'::jsonb,
     'Attempt another request.','fb300000-0000-4000-8000-000000000002'
   )
-$test$,(select party_id from public.direct_customer_profiles limit 1)),'22023','direct_weekly_limit_exceeded','second same-week quantity is rejected');
+$test$,current_setting('test.direct_party_id')),'22023','direct_weekly_limit_exceeded','second same-week quantity is rejected');
 select lives_ok(format($test$select * from public.staff_cancel_order(%L::uuid,1,'Customer cancelled.','fb300000-0000-4000-8000-000000000003')$test$,
-  (select id from public.orders where source_request_id='fb300000-0000-4000-8000-000000000001')),'staff can cancel the direct order');
+  current_setting('test.direct_order_id')),'staff can cancel the direct order');
 reset role;
 select is((select status from public.personal_quota_entries),'released','cancellation releases quota');
 
