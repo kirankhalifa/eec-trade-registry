@@ -1,6 +1,6 @@
 begin;
 
-select plan(6);
+select plan(7);
 
 select has_function('public', 'integration_queue_due_exports', array['timestamp with time zone'], 'schedule queue function exists');
 
