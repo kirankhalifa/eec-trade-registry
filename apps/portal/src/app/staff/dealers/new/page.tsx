@@ -21,7 +21,7 @@ export default async function NewDealerPage({ searchParams }: { searchParams: Pr
     <StaffNotice error={parameters.error} />
     <form action={createDealerAction} className="staff-form">
       <section className="form-section"><div><p className="eyebrow">Party identity</p><h2>Counterparty</h2></div><div className="form-grid">
-        <label className="field"><span>Party type</span><select name="party_type_code" required>{references.party_types.map((option) => <option key={option.code} value={option.code}>{option.display_name}</option>)}</select></label>
+        <label className="field"><span>Party type</span><select defaultValue="organization" name="party_type_code" required>{references.party_types.map((option) => <option key={option.code} value={option.code}>{option.display_name}</option>)}</select></label>
         <label className="field"><span>Legal name</span><input maxLength={200} name="legal_name" required /></label>
         <label className="field"><span>Internal display name</span><input maxLength={200} name="display_name" required /></label>
         <label className="field"><span>Public display name</span><input maxLength={200} name="public_display_name" /></label>
