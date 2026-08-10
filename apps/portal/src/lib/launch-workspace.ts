@@ -2,6 +2,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
 const option = z.object({ id: z.guid(), label: z.string() });
+const partyOptions = z.array(z.object({ id: z.guid(), name: z.string() })).transform((parties) =>
+  parties.map(({ id, name }) => ({ id, label: name })),
+);
 const launchWorkspaceSchema = z.object({
   applications: z.array(z.object({
     applicant_name: z.string(), class_name: z.string(), contact_label: z.string(),
@@ -30,7 +33,7 @@ const launchWorkspaceSchema = z.object({
     id: z.guid(), name: z.string(), unit: z.string(),
   })),
   jurisdictions: z.array(z.object({ code: z.string(), id: z.guid(), label: z.string() })),
-  parties: z.array(option),
+  parties: partyOptions,
   price_schedules: z.array(z.object({ audience: z.string(), id: z.guid(), label: z.string() })),
   price_targets: z.object({
     dealer_types: z.array(option).default([]), jurisdictions: z.array(option).default([]),
@@ -53,13 +56,17 @@ const launchWorkspaceSchema = z.object({
 
 export type LaunchWorkspace = z.infer<typeof launchWorkspaceSchema>;
 
+export function parseLaunchWorkspace(data: unknown) {
+  return launchWorkspaceSchema.safeParse(data);
+}
+
 export async function getLaunchWorkspace(client: SupabaseClient) {
   const { data, error } = await client.rpc("get_staff_launch_workspace");
   if (error) {
     console.error(`[launch-workspace] ${error.message}`);
     return { ok: false as const, denied: error.message.includes("permission_denied") };
   }
-  const parsed = launchWorkspaceSchema.safeParse(data);
+  const parsed = parseLaunchWorkspace(data);
   if (!parsed.success) {
     console.error("[launch-workspace] Unexpected authoritative response.", parsed.error.issues);
     return { ok: false as const, denied: false };
