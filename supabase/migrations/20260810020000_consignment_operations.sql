@@ -783,7 +783,7 @@ as $$
 declare actor_id uuid; report_record record; issue_record record; agreement_record record;
   return_account record; external_account_id uuid; transaction_id uuid;
   consigned_on_hand numeric(18,3); expected_observed numeric(18,3);
-  next_issue_status text; next_issue_version bigint; line_number integer := 1;
+  next_issue_status text; next_issue_version bigint;
 begin
   actor_id := private.set_staff_audit_context('consignment.report.accept', p_reason, p_request_id);
   select report.* into report_record from public.consignment_reports as report
@@ -864,28 +864,24 @@ begin
     ) returning id into transaction_id;
     insert into public.inventory_ledger_entries (
       inventory_transaction_id, line_number, inventory_account_id, item_id, quantity_delta
-    ) values (
-      transaction_id, line_number, issue_record.consigned_inventory_account_id,
-      issue_record.item_id, -(report_record.quantity_sold + report_record.quantity_returned)
-    );
-    line_number := line_number + 1;
-    if report_record.quantity_sold > 0 then
-      insert into public.inventory_ledger_entries (
-        inventory_transaction_id, line_number, inventory_account_id, item_id, quantity_delta
-      ) values (
-        transaction_id, line_number, external_account_id,
-        issue_record.item_id, report_record.quantity_sold
-      );
-      line_number := line_number + 1;
-    end if;
-    if report_record.quantity_returned > 0 then
-      insert into public.inventory_ledger_entries (
-        inventory_transaction_id, line_number, inventory_account_id, item_id, quantity_delta
-      ) values (
-        transaction_id, line_number, p_return_inventory_account_id,
-        issue_record.item_id, report_record.quantity_returned
-      );
-    end if;
+    )
+    select
+      transaction_id,
+      movement.line_number,
+      movement.inventory_account_id,
+      issue_record.item_id,
+      movement.quantity_delta
+    from (
+      values
+        (
+          1,
+          issue_record.consigned_inventory_account_id,
+          -(report_record.quantity_sold + report_record.quantity_returned)
+        ),
+        (2, external_account_id, report_record.quantity_sold),
+        (3, p_return_inventory_account_id, report_record.quantity_returned)
+    ) as movement(line_number, inventory_account_id, quantity_delta)
+    where movement.quantity_delta <> 0;
   end if;
   next_issue_status := case when expected_observed = 0 then 'closed' else 'active' end;
   update public.consignment_reports as report set
