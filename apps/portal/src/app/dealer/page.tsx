@@ -66,6 +66,9 @@ export default async function DealerPortalPage() {
           <Link className="button button-primary" href="/dealer/orders">
             Wholesale orders
           </Link>
+          <Link className="button button-secondary" href="/dealer/consignments">
+            Consigned stock
+          </Link>
           <Link className="button button-secondary" href="/">
             Public catalogue
           </Link>

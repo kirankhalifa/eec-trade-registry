@@ -128,13 +128,17 @@ Implementation note: `warehouse_operator` receives private read, registration, a
 
 ### Consignment and finance
 
-- `consignment.own.report`
-- `consignment.manage`
+- `consignment.private.read`
+- `consignment.agreement.manage`
+- `consignment.issue`
 - `consignment.report.accept`
+- `consignment.return`
 - `commercial_terms.read`
 - `commercial_terms.manage`
 - `settlement.read`
 - `settlement.manage`
+
+Implementation note: `inventory_controller` receives every current consignment permission. `warehouse_operator` receives private read, warehouse-scoped issue, and warehouse-scoped return. `order_officer` receives private read, agreement management, and report review. Current portal representatives receive `consignment.read` and `consignment.report` dealer scopes, including a migration backfill for existing grants. Dealer functions still resolve an active representation for the exact consignee; no role label, Discord role, or direct table grant creates authority. Commercial and settlement permissions remain proposed and ungranted.
 
 ### Compliance and audit
 

@@ -704,9 +704,17 @@ Item quantities or serialized asset references. Dispatch posts movement to an in
 
 Effective-dated commercial terms linking owner, consignee, jurisdiction, price/settlement policy, reporting frequency, loss terms, and allowed items.
 
+The implemented foundation stores owner, consignee, jurisdiction, effective dates, status, free-text terms, optimistic version, request keys, and responsible actors. Closing is prohibited while an issue has outstanding custody. Commercial schedules and executable terms remain separate future configuration rather than free-text business logic.
+
+### `consignment_issues`
+
+One fungible issue links an agreement, item, source warehouse/account, retained-owner consigned custody account, quantity, responsible actor, and balanced issue transaction. Accepted sold and returned totals are versioned projections; outstanding custody is derived as issued minus accepted sold and returned quantities.
+
 ### `consignment_reports`
 
 Dealer-reported sales, returns, losses, and on-hand observations. Reports are claims until accepted through an authoritative reconciliation or settlement function.
+
+At most one submitted report exists per issue. Acceptance locks the report, issue, agreement, and involved accounts; validates the observed balance; rejects loss or damage from the ordinary path; and posts one balanced settlement transaction for accepted sold/returned quantities. Rejection records history without an inventory effect. `consignment_events` is immutable, and every command is audited, idempotent, and emits durable outbox work where external notice is useful.
 
 ## 10. Serialized assets and custody
 
