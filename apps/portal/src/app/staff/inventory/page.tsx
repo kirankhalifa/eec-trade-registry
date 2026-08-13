@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { signOutAction } from "@/app/staff/actions";
 import {
   createReservationAction,
   expireReservationAction,
@@ -66,14 +65,8 @@ export default async function StaffInventoryPage({ searchParams }: StaffInventor
         </div>
         <div className="staff-button-row">
           <Link className="button button-primary" href="/staff/configuration">Quick add</Link>
-          <Link className="button button-secondary" href="/staff/orders">Order desk</Link>
-          <Link className="button button-secondary" href="/staff/economy">Economy desk</Link>
           <Link className="button button-secondary" href="/staff/fulfillment">Fulfillment</Link>
           <Link className="button button-secondary" href="/staff/transfers">Transfers</Link>
-          <Link className="button button-secondary" href="/staff/assets">Serialized assets</Link>
-          <Link className="button button-secondary" href="/staff/consignments">Consignments</Link>
-          <Link className="button button-secondary" href="/staff">Catalogue desk</Link>
-          <form action={signOutAction}><button className="button button-primary" type="submit">Sign out</button></form>
         </div>
       </header>
 

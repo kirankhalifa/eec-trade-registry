@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { signOutAction } from "@/app/staff/actions";
 import { StaffAccessDenied } from "@/components/staff-access-denied";
 import { StaffNotice } from "@/components/staff-notice";
 import { getDefaultLocale, readPublicSupabaseEnvironment } from "@/lib/env";
@@ -70,65 +69,12 @@ export default async function StaffCataloguePage({
           </p>
         </div>
         <div className="staff-button-row">
-          <Link className="button button-primary" href="/staff/dashboard">
-            Full dashboard
-          </Link>
-          <Link className="button button-primary" href="/staff/launch">
-            Launch desk
-          </Link>
-          <Link className="button button-primary" href="/staff/applications">
-            Review applications
-          </Link>
-          <Link className="button button-primary" href="/staff/access">
-            Staff approvals
-          </Link>
           <Link className="button button-primary" href="/staff/configuration">
-            Quick operations
-          </Link>
-          <Link className="button button-secondary" href="/staff/orders">
-            Order desk
-          </Link>
-          <Link className="button button-secondary" href="/staff/inventory">
-            Inventory desk
-          </Link>
-          <Link className="button button-secondary" href="/staff/economy">
-            Economy desk
-          </Link>
-          <Link className="button button-secondary" href="/staff/fulfillment">
-            Fulfillment
-          </Link>
-          <Link className="button button-secondary" href="/staff/transfers">
-            Transfers
-          </Link>
-          <Link className="button button-secondary" href="/staff/consignments">
-            Consignments
-          </Link>
-          <Link className="button button-secondary" href="/staff/compliance">
-            Compliance
-          </Link>
-          <Link className="button button-secondary" href="/staff/assets">
-            Serialized assets
-          </Link>
-          <Link className="button button-secondary" href="/staff/licensing">
-            Licensing office
-          </Link>
-          <Link className="button button-secondary" href="/staff/dealers">
-            Dealer registry
-          </Link>
-          <Link className="button button-secondary" href="/staff/integrations">
-            Integrations
-          </Link>
-          <Link className="button button-secondary" href="/staff/operations">
-            System health
+            Quick add
           </Link>
           <Link className="button button-secondary" href="/staff/items/new">
-            New canonical item
+            Advanced item setup
           </Link>
-          <form action={signOutAction}>
-            <button className="button button-secondary" type="submit">
-              Sign out
-            </button>
-          </form>
         </div>
       </header>
 

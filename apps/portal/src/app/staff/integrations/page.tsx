@@ -7,7 +7,6 @@ import {
   replayIntegrationDeliveryAction,
   setExportDefinitionStatusAction,
 } from "@/app/staff/integrations/actions";
-import { signOutAction } from "@/app/staff/actions";
 import { StaffAccessDenied } from "@/components/staff-access-denied";
 import { StaffNotice } from "@/components/staff-notice";
 import { getDefaultLocale } from "@/lib/env";
@@ -66,12 +65,7 @@ export default async function IntegrationsPage({ searchParams }: IntegrationsPag
           </p>
         </div>
         <div className="staff-button-row">
-          <Link className="button button-secondary" href="/staff">Catalogue desk</Link>
-          <Link className="button button-secondary" href="/staff/orders">Order desk</Link>
-          <Link className="button button-secondary" href="/staff/operations">Operations</Link>
-          <form action={signOutAction}>
-            <button className="button button-secondary" type="submit">Sign out</button>
-          </form>
+          <Link className="button button-secondary" href="/staff/operations">System health</Link>
         </div>
       </header>
 

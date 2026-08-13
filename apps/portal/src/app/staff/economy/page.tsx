@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { signOutAction } from "@/app/staff/actions";
 import {
   createOfferAction, recordDeliveryAction, registerSupplierAction,
   saveSupplyPolicyAction, settleDeliveryAction,
@@ -33,7 +32,7 @@ export default async function EconomyPage({ searchParams }: PageProps) {
   }), { backordered: 0, committed: 0, onHand: 0, paid: 0 });
 
   return <main className="staff-main">
-    <header className="staff-page-header"><div><p className="eyebrow">Authenticated staff · economic operations</p><h1>Reserve economy and procurement</h1><p>Purchase floors support producers; accepted deliveries create real stock. Offers, warehouse custody, and payment evidence remain separate records.</p></div><div className="staff-button-row"><Link className="button button-primary" href="/staff/configuration">Quick operations</Link><Link className="button button-secondary" href="/staff/inventory">Inventory</Link><Link className="button button-secondary" href="/staff/orders">Orders</Link><Link className="button button-secondary" href="/staff/licensing">Licensing</Link><Link className="button button-secondary" href="/staff">Catalogue</Link><form action={signOutAction}><button className="button button-primary">Sign out</button></form></div></header>
+    <header className="staff-page-header"><div><p className="eyebrow">Economic operations</p><h1>Reserve economy</h1><p>Manage guaranteed purchase floors, accept real supplier deliveries, and record external settlement evidence.</p></div><div className="staff-button-row"><Link className="button button-primary" href="/staff/configuration">Quick add item</Link><Link className="button button-secondary" href="/staff/inventory">View inventory</Link></div></header>
     <EconomyNotice error={parameters.error} notice={parameters.notice} />
 
     <section className="inventory-summary" aria-label="Economy totals">

@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { signOutAction } from "@/app/staff/actions";
 import { StaffAccessDenied } from "@/components/staff-access-denied";
 import { StaffNotice } from "@/components/staff-notice";
 import { getDefaultLocale, readPublicSupabaseEnvironment } from "@/lib/env";
@@ -70,23 +69,10 @@ export default async function StaffLicensingPage({
           </p>
         </div>
         <div className="staff-button-row">
-          <Link className="button button-secondary" href="/staff">
-            Catalogue desk
-          </Link>
-          <Link className="button button-secondary" href="/staff/compliance">
-            Compliance
-          </Link>
-          <Link className="button button-secondary" href="/staff/dealers">
-            Dealer registry
-          </Link>
+          <Link className="button button-secondary" href="/staff/applications">Review applications</Link>
           <Link className="button button-primary" href="/staff/licensing/new">
             Issue license
           </Link>
-          <form action={signOutAction}>
-            <button className="button button-secondary" type="submit">
-              Sign out
-            </button>
-          </form>
         </div>
       </header>
 
