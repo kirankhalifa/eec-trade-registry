@@ -1,6 +1,6 @@
 begin;
 
-select plan(45);
+select plan(46);
 
 select has_table('public', 'staff_access_requests', 'Discord access requests are stored authoritatively');
 select is((select count(*)::integer from public.staff_roles where code = 'owner'), 1, 'one user-facing Owner role exists');
@@ -77,6 +77,17 @@ select set_config('request.jwt.claims', '{"sub":"fc100000-0000-4000-8000-0000000
 select lives_ok($test$select public.get_owner_access_workspace()$test$, 'Owner can read access workspace');
 select ok(public.get_owner_access_workspace() -> 'requests' @> '[{"display_name":"Prospective Agent","status":"pending"}]'::jsonb, 'owner queue identifies the pending Discord user');
 select is((public.get_staff_command_dashboard() #>> '{access,requests_pending}')::integer, 1, 'owner dashboard shows pending access count');
+reset role;
+
+insert into public.audit_log (actor_id, action, record_type, record_id, occurred_at, source_surface)
+values (null, 'update', 'public.export_runs', 'fc400000-0000-4000-8000-000000000001', statement_timestamp() + interval '1 second', 'export_worker');
+
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"fc100000-0000-4000-8000-000000000001","role":"authenticated"}', true);
+select ok(
+  not (public.get_staff_command_dashboard() -> 'recent_audit' @> '[{"record_type":"public.export_runs"}]'::jsonb),
+  'dashboard staff activity excludes projection-worker audit noise'
+);
 
 select lives_ok(
   $test$select * from public.owner_review_staff_access_request(

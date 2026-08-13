@@ -1,9 +1,9 @@
 import Link from "next/link";
 
+import { RelativeTime } from "@/components/relative-time";
 import { StaffAccessDenied } from "@/components/staff-access-denied";
 import { type IconName, UiIcon } from "@/components/ui-icon";
 import { type CommandDashboard, getCommandDashboard } from "@/lib/command-dashboard";
-import { getDefaultLocale } from "@/lib/env";
 import { requireStaffSession } from "@/lib/staff-auth";
 
 export const dynamic = "force-dynamic";
@@ -11,17 +11,6 @@ export const dynamic = "force-dynamic";
 type CounterGroup = CommandDashboard["orders"];
 type PriorityCard = { href: string; icon: IconName; label: string; value: number; tone?: "urgent" | "warning" };
 type AttentionItem = { description: string; href: string; icon: IconName; label: string; value: number };
-
-const workspaces: Array<{ description: string; href: string; icon: IconName; label: string }> = [
-  { href: "/staff/orders", icon: "clipboard", label: "Order desk", description: "Review and progress demand" },
-  { href: "/staff/inventory", icon: "box", label: "Inventory", description: "Receive, reserve, and inspect stock" },
-  { href: "/staff/economy", icon: "coins", label: "Economy", description: "Procurement and reserve floors" },
-  { href: "/staff/fulfillment", icon: "package", label: "Fulfillment", description: "Complete approved handoffs" },
-  { href: "/staff/applications", icon: "document", label: "Applications", description: "Review public licensing intake" },
-  { href: "/staff/licensing", icon: "license", label: "Licenses", description: "Issue and maintain authority" },
-  { href: "/staff/dealers", icon: "building", label: "Businesses", description: "Onboard authorized dealers" },
-  { href: "/staff/configuration", icon: "gear", label: "Configuration", description: "Items, prices, and reference data" },
-];
 
 function value(group: CounterGroup, key: string) { return group[key] ?? 0; }
 
@@ -37,7 +26,6 @@ export default async function DashboardPage() {
   if (!result.ok) return <main className="staff-main"><section className="notice-panel"><h1>Dashboard unavailable</h1><p>The authoritative registry could not be reached. No fallback data is shown.</p></section></main>;
 
   const dashboard = result.data;
-  const locale = getDefaultLocale();
   const priorityCards: PriorityCard[] = [
     { href: "/staff/applications", icon: "document", label: "Applications waiting", value: value(dashboard.licensing,"applications_pending"), tone: value(dashboard.licensing,"applications_pending") > 0 ? "urgent" : undefined },
     { href: "/staff/orders", icon: "clipboard", label: "Orders to review", value: value(dashboard.orders,"under_review"), tone: value(dashboard.orders,"under_review") > 0 ? "urgent" : undefined },
@@ -55,19 +43,17 @@ export default async function DashboardPage() {
   const attention = attentionCandidates.filter((item) => item.value > 0);
 
   return <main className="staff-main">
-    <header className="dashboard-header"><div><p className="eyebrow">Today at a glance</p><h1>Command dashboard</h1><p>Start with what needs attention, then move directly into the right operational workspace.</p></div><div className="dashboard-actions"><Link className="button button-primary" href="/staff/launch"><UiIcon name="spark"/>Quick action</Link><Link className="button button-secondary" href="/staff/configuration"><UiIcon name="box"/>Add item or stock</Link></div></header>
-    <p className="dashboard-meta">Live from Supabase · refreshed {new Date(dashboard.generated_at).toLocaleString(locale)}</p>
+    <header className="dashboard-header"><div><p className="eyebrow">Today at a glance</p><h1>Command dashboard</h1><p>Handle exceptions here. Use “Find or do anything” whenever you already know what you need.</p></div><div className="dashboard-actions"><Link className="button button-primary" href="/staff/launch#enter-order"><UiIcon name="clipboard"/>Create order</Link><Link className="button button-secondary" href="/staff/configuration"><UiIcon name="box"/>Add item or stock</Link></div></header>
+    <p className="dashboard-meta">Live from Supabase · refreshed <RelativeTime value={dashboard.generated_at}/></p>
 
     <section className="dashboard-priority-grid" aria-label="Priority counts">{priorityCards.map((card)=><Priority card={card} key={card.label}/>)}</section>
 
     <div className="dashboard-layout"><div>
-      <section className="dashboard-panel"><header className="dashboard-panel-header"><div><h2>Workspaces</h2><p>Everything you need, organized by task.</p></div></header><div className="dashboard-workspaces">{workspaces.map((workspace)=><Link className="dashboard-workspace-link" href={workspace.href} key={workspace.href}><span className="dashboard-workspace-icon"><UiIcon name={workspace.icon}/></span><span><strong>{workspace.label}</strong><small>{workspace.description}</small></span><UiIcon name="arrow" size={16}/></Link>)}</div></section>
-
-      <section className="dashboard-panel"><header className="dashboard-panel-header"><div><h2>Recent orders</h2><p>The newest recorded demand across channels.</p></div><Link href="/staff/orders">View all</Link></header>{dashboard.recent_orders.length > 0 ? <ul className="dashboard-activity-list">{dashboard.recent_orders.map((order)=><li key={order.id}><Link className="dashboard-activity-item" href={`/staff/orders/${order.id}`}><span className="dashboard-activity-mark"/><span><strong>{order.reference} · {order.customer}</strong><small>{order.status.replaceAll("_"," ")} · {order.channel.replaceAll("_"," ")} · {new Date(order.submitted_at).toLocaleString(locale)}</small></span></Link></li>)}</ul> : <p className="dashboard-empty">No orders have been submitted yet.</p>}</section>
+      <section className="dashboard-panel"><header className="dashboard-panel-header"><div><h2>Recent orders</h2><p>Open an order once and keep working there until handoff.</p></div><Link href="/staff/orders">View all</Link></header>{dashboard.recent_orders.length > 0 ? <ul className="dashboard-activity-list">{dashboard.recent_orders.map((order)=><li key={order.id}><Link className="dashboard-activity-item" href={`/staff/orders/${order.id}`}><span className="dashboard-activity-mark"/><span><strong>{order.reference} · {order.customer}</strong><small>{order.status.replaceAll("_"," ")} · {order.channel.replaceAll("_"," ")} · <RelativeTime value={order.submitted_at}/></small></span></Link></li>)}</ul> : <div className="dashboard-empty dashboard-empty-action"><p>No orders have been submitted yet.</p><Link className="button button-primary button-compact" href="/staff/launch#enter-order">Create the first order</Link></div>}</section>
     </div><aside>
       <section className="dashboard-panel"><header className="dashboard-panel-header"><div><h2>Needs attention</h2><p>Exceptions and decisions, not routine noise.</p></div></header>{attention.length > 0 ? <ul className="dashboard-attention-list">{attention.map((item)=><li key={item.label}><Link className="dashboard-attention-item" href={item.href}><span><UiIcon name={item.icon} size={16}/></span><span><strong>{item.value} {item.label}{item.value === 1 ? "" : "s"}</strong><small>{item.description}</small></span><UiIcon name="arrow" size={15}/></Link></li>)}</ul> : <p className="dashboard-empty">Nothing needs immediate attention. Routine operations are ready.</p>}</section>
 
-      <section className="dashboard-panel"><header className="dashboard-panel-header"><div><h2>Recent audit</h2><p>Latest authoritative changes.</p></div><Link href="/staff/operations">System health</Link></header>{dashboard.recent_audit.length > 0 ? <ul className="dashboard-activity-list">{dashboard.recent_audit.slice(0,6).map((entry)=><li className="dashboard-activity-item" key={entry.id}><span className="dashboard-activity-mark"/><span><strong>{entry.action} · {entry.record_type.replace("public.","").replaceAll("_"," ")}</strong><small>{new Date(entry.occurred_at).toLocaleString(locale)}{entry.reason ? ` · ${entry.reason}` : ""}</small></span></li>)}</ul> : <p className="dashboard-empty">No recent audit events.</p>}</section>
+      <section className="dashboard-panel"><header className="dashboard-panel-header"><div><h2>Recent staff activity</h2><p>Human decisions and authoritative changes.</p></div><Link href="/staff/operations">System health</Link></header>{dashboard.recent_audit.length > 0 ? <ul className="dashboard-activity-list">{dashboard.recent_audit.slice(0,6).map((entry)=><li className="dashboard-activity-item" key={entry.id}><span className="dashboard-activity-mark"/><span><strong>{entry.action} · {entry.record_type.replace("public.","").replaceAll("_"," ")}</strong><small><RelativeTime value={entry.occurred_at}/>{entry.reason ? ` · ${entry.reason}` : ""}</small></span></li>)}</ul> : <p className="dashboard-empty">No recent staff actions.</p>}</section>
     </aside></div>
   </main>;
 }

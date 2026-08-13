@@ -9,6 +9,8 @@ import {
   readPriceOrderLineForm,
   readReviewOrderLineForm,
 } from "@/lib/order-form";
+import { readCreateReservationForm } from "@/lib/inventory-form";
+import { readFulfillReservationForm } from "@/lib/fulfillment-form";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 function destination(path: string, key: "error" | "notice", value: string) {
@@ -34,8 +36,25 @@ function errorPath(path: string, error: { code?: string; message: string }) {
     return destination(path, "error", "access_denied");
   }
   if (error.code === "P0002") return destination(path, "error", "not_found");
+  if (
+    error.message.includes("available_insufficient") ||
+    error.message.includes("stock_insufficient") ||
+    error.message.includes("negative_stock") ||
+    error.message.includes("reserved_stock")
+  ) {
+    return destination(path, "error", "insufficient_stock");
+  }
   if (error.code === "22023") return destination(path, "error", "invalid_input");
   return destination(path, "error", "save_failed");
+}
+
+function refreshOrderWorkflow(path: string) {
+  revalidatePath("/staff/orders");
+  revalidatePath(path);
+  revalidatePath("/staff/inventory");
+  revalidatePath("/staff/fulfillment");
+  revalidatePath("/staff/dashboard");
+  revalidatePath("/dealer/orders");
 }
 
 async function verifiedClient() {
@@ -56,7 +75,7 @@ export async function reviewOrderLineAction(formData: FormData) {
     p_decision: input.decision,
     p_expected_order_version: input.expectedOrderVersion,
     p_order_line_id: input.orderLineId,
-    p_quantity_approved: input.approvedQuantity,
+    p_quantity_approved: input.decision === "deny" ? null : input.approvedQuantity,
     p_reason: input.reason,
     p_request_id: crypto.randomUUID(),
     p_unit_price_minor: input.unitPriceMinor,
@@ -112,4 +131,41 @@ export async function cancelStaffOrderAction(formData: FormData) {
   revalidatePath(path);
   revalidatePath("/dealer/orders");
   redirect(destination(path, "notice", "cancelled"));
+}
+
+export async function reserveOrderLineAction(formData: FormData) {
+  const path = orderPath(formData.get("order_id"));
+  const parsed = readCreateReservationForm(formData);
+  if (!parsed.success) redirect(destination(path, "error", "invalid_input"));
+  const client = await verifiedClient();
+  if (!client) redirect("/staff/login");
+  const input = parsed.data;
+  const { error } = await client.rpc("staff_create_reservation", {
+    p_inventory_account_id: input.inventoryAccountId,
+    p_order_line_id: input.orderLineId,
+    p_quantity: input.quantity,
+    p_reason: input.reason,
+    p_request_id: crypto.randomUUID(),
+  });
+  if (error) redirect(errorPath(path, error));
+  refreshOrderWorkflow(path);
+  redirect(destination(path, "notice", "reservation_created"));
+}
+
+export async function fulfillOrderReservationAction(formData: FormData) {
+  const path = orderPath(formData.get("order_id"));
+  const parsed = readFulfillReservationForm(formData);
+  if (!parsed.success) redirect(destination(path, "error", "invalid_input"));
+  const client = await verifiedClient();
+  if (!client) redirect("/staff/login");
+  const input = parsed.data;
+  const { error } = await client.rpc("staff_fulfill_reservation", {
+    p_expected_version: input.expectedVersion,
+    p_reason: input.reason,
+    p_request_id: crypto.randomUUID(),
+    p_reservation_id: input.reservationId,
+  });
+  if (error) redirect(errorPath(path, error));
+  refreshOrderWorkflow(path);
+  redirect(destination(path, "notice", "fulfilled"));
 }

@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
+
 import { ApplicationForms } from "@/app/apply/application-forms";
 import { getApplicationOptions } from "@/lib/license-application";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Apply or renew",
+  description: "Apply for configured East Empire Company trade authority or request renewal of an existing license.",
+};
 
 export default async function ApplyPage() {
   const options = await getApplicationOptions(await createServerSupabaseClient());

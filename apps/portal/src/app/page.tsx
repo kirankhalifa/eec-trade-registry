@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { CatalogueCard } from "@/components/catalogue-card";
@@ -12,6 +13,10 @@ import { getDefaultLocale, getInstitutionName } from "@/lib/env";
 import { parseCatalogueQuery } from "@/lib/query";
 
 export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Trade catalogue",
+  description: "Browse the East Empire Company's official public catalogue, current purchasing terms, and controlled-trade requirements.",
+};
 
 interface CataloguePageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
