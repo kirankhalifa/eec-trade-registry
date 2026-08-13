@@ -4,13 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { signOutAction } from "@/app/staff/actions";
+import { CommandPaletteButton, StaffCommandPalette } from "@/components/staff-command-palette";
 import { type IconName, UiIcon } from "@/components/ui-icon";
 
 type NavigationItem = { href: string; icon: IconName; label: string; exact?: boolean; ownerOnly?: boolean };
 const groups: Array<{ label: string; items: NavigationItem[] }> = [
   { label: "Overview", items: [
     { href: "/staff/dashboard", icon: "dashboard", label: "Dashboard", exact: true },
-    { href: "/staff/launch", icon: "spark", label: "Quick actions" },
   ] },
   { label: "Trade", items: [
     { href: "/staff/orders", icon: "clipboard", label: "Orders" },
@@ -57,7 +57,8 @@ export function StaffShell({ accessClass, children, displayName, institutionName
   if (pathname === "/staff/login" || pathname === "/staff/access/pending") return <>{children}</>;
   const isOwner = accessClass === "owner";
   return <div className="app-shell">
-    <aside className="app-sidebar"><Link className="app-brand" href="/staff/dashboard"><span className="app-brand-mark">EEC</span><span><strong>{institutionName}</strong><small>Operations console</small></span></Link><Navigation isOwner={isOwner} pathname={pathname}/><div className="app-sidebar-footer">{displayName&&<div className="app-user"><span>{displayName.slice(0,1).toUpperCase()}</span><div><strong>{displayName}</strong><small>{isOwner ? "Owner" : "Agent"}</small></div></div>}<Link href="/" target="_blank"><UiIcon name="external"/>Public site</Link><form action={signOutAction}><button type="submit"><UiIcon name="logout"/>Sign out</button></form></div></aside>
-    <div className="app-workspace"><header className="app-mobile-bar"><Link className="app-brand" href="/staff/dashboard"><span className="app-brand-mark">EEC</span><span><strong>Staff console</strong><small>{displayName ?? institutionName}</small></span></Link><details><summary><UiIcon name="menu"/><span>Menu</span></summary><div className="app-mobile-menu"><Navigation isOwner={isOwner} mobile pathname={pathname}/><form action={signOutAction}><button className="button button-secondary" type="submit"><UiIcon name="logout"/>Sign out</button></form></div></details></header>{children}</div>
+    <aside className="app-sidebar"><Link className="app-brand" href="/staff/dashboard"><span className="app-brand-mark">EEC</span><span><strong>{institutionName}</strong><small>Operations console</small></span></Link><div className="app-sidebar-main"><CommandPaletteButton/><Navigation isOwner={isOwner} pathname={pathname}/></div><div className="app-sidebar-footer">{displayName&&<div className="app-user"><span>{displayName.slice(0,1).toUpperCase()}</span><div><strong>{displayName}</strong><small>{isOwner ? "Owner" : "Agent"}</small></div></div>}<Link href="/" target="_blank"><UiIcon name="external"/>Public site</Link><form action={signOutAction}><button type="submit"><UiIcon name="logout"/>Sign out</button></form></div></aside>
+    <div className="app-workspace"><header className="app-mobile-bar"><Link className="app-brand" href="/staff/dashboard"><span className="app-brand-mark">EEC</span><span><strong>Staff console</strong><small>{displayName ?? institutionName}</small></span></Link><CommandPaletteButton compact/><details><summary><UiIcon name="menu"/><span>Menu</span></summary><div className="app-mobile-menu"><Navigation isOwner={isOwner} mobile pathname={pathname}/><form action={signOutAction}><button className="button button-secondary" type="submit"><UiIcon name="logout"/>Sign out</button></form></div></details></header>{children}</div>
+    <StaffCommandPalette isOwner={isOwner}/>
   </div>;
 }

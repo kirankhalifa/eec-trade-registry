@@ -1433,22 +1433,25 @@ After Discord sign-in, staff land on `/staff/dashboard`. This is the full overvi
 - **Integrations** shows failed outbox, Discord delivery, or public Sheet work.
 - **Documents** shows recent official source snapshots.
 
-The dashboard is a monitor. It never changes a record merely because a count is red or nonzero. Choose **Approve staff access** for people, **Review applications** for public licensing intake, **Launch desk** for customer-facing commands, **Quick inventory & items** for routine stock/catalogue work, or a specialist desk for detailed processing.
+The dashboard is a monitor. It never changes a record merely because a count is red or nonzero. Use **Find or do anything** in the left sidebar (or press `Ctrl+K` / `⌘K`) and type what you mean: “order”, “stock”, “license”, “business”, or “access”. The launcher is the fastest route to everyday work; specialist desks remain available for queue-wide and exceptional processing.
+
+For an existing order, open it once. Its page shows the requested lines, current progress, and exactly one sensible next step: review, reserve stock, assign a unique asset, or confirm handoff. An action you are not permitted to perform is not offered. You do not copy the order reference between desks.
 
 ### 30.2 Aurelion orders a Nocturnal Dress through a licensed tailor
 
 Assume Aurelion Earandil asks the Solitude tailor for one Nocturnal Dress.
 
 1. The tailor confirms it is an EEC-authorized business and gives the EEC agent its dealer and license references.
-2. The EEC agent opens **Launch desk → Enter a customer order**.
+2. The EEC agent opens **Find or do anything → Create an order**.
 3. Choose **Staff-assisted verified business**.
 4. In **Licensed business and license**, select the single combined entry showing business name, dealer reference, license reference, and license class. This prevents accidentally combining one business with another business’s license.
 5. Select collection, delivery, or consignment; choose the dress; enter quantity `1`; add the in-character request and an audit reason.
 6. Choose **Price, quota-check, and submit order**.
 7. Supabase rechecks that the dealer and license currently confer authority, then resolves price by precedence: exact dealer party, license class, dealer type, region, business-channel default, then wholesale/dealer/public fallback.
 8. The line freezes the chosen price evidence. No stock is consumed and no reservation is created yet.
-9. Order staff review the line. Warehouse staff later reserve available stock or leave it awaiting replenishment.
-10. Fulfillment posts the actual ledger movement and handoff. The tailor charges only the commission allowed by server policy outside this registry unless that sale is a configured consignment settlement.
+9. Open the submitted order. Choose the review decision and quantity. The requested quantity is already filled in; price and notes are under the optional disclosure.
+10. After approval, the same page shows **Reserve stock**. When there is only one valid source, it is selected automatically; otherwise choose the correct source.
+11. After reservation, the same page shows **Confirm handoff**. That command posts the actual ledger movement and completes the line. The tailor charges only the commission allowed by server policy outside this registry unless that sale is a configured consignment settlement.
 
 The dealer reference identifies the business authority being used. The license identifies the licensed trade authority and endorsements. The EEC agent is the authenticated staff actor who entered the customer’s instruction. These are three different facts and all remain visible in audit history.
 

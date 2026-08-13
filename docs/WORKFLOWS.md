@@ -337,6 +337,8 @@ Implementation note: ADR 0017 approves this operating model, but the authoritati
 
 Implementation note: the current staff command selects the required ordinary, restricted, or unique approval permission from snapshotted control flags. It supports full or partial approval, denial, and awaiting-stock decisions with optimistic order versions. Price may be set or remain explicitly pending. Header status is derived transactionally from all line outcomes; no browser code decides it.
 
+Interface note: the staff order detail is the canonical object workspace. After review, the same line reveals the permission-filtered reservation action; after reservation, it reveals the handoff action. These remain separate secure database transactions even though the agent does not change pages or copy a reference. Queue-wide inventory and fulfillment desks remain available for exception work.
+
 ### Cancellation and denial
 
 - Cancelling or denying a line releases active stock reservations and quota holds in the same transaction.
@@ -363,6 +365,8 @@ Implementation note: dealers with `order.cancel` scope and staff with `order.can
 Requires an authorized actor, reason, and permitted state. The initial term is 48 hours. Extension updates the reservation's expiration with an audit record; maximum cumulative duration remains a configurable policy gate.
 
 Implementation note: `staff_create_reservation` locks the physical inventory account and order line, re-derives ledger on-hand and non-elapsed active claims, enforces approved remaining quantity, and creates a 48-hour claim atomically. Full claims move a line to `reserved`; partial claims remain explicitly `partially_awaiting_stock`. Extension is version-checked and cannot revive an elapsed claim.
+
+The ordinary order workspace derives a single available source when only one assigned stock account can cover the item. If several sources are available, the agent must choose. If none are available, the order stays approved or awaiting stock and links to inventory intake without inventing a balance.
 
 ### Consume reservation
 

@@ -80,7 +80,7 @@ export default async function ConfigurationPage({ searchParams }: PageProps) {
       </section>
 
       <div className="configuration-quick-grid">
-        <section className="staff-form configuration-primary-card">
+        <section className="staff-form configuration-primary-card" id="quick-add-item">
           <div>
             <p className="eyebrow">One atomic onboarding command</p>
             <h2>Quick-add an item or material</h2>
