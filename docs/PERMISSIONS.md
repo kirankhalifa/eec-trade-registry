@@ -34,6 +34,8 @@ Human actor or appointed party with a time-bounded authority profile for specifi
 
 Authenticated human with one or more effective staff role assignments. Scope may be global or limited by jurisdiction, warehouse, and portfolio.
 
+The ordinary server-facing staff classes are **Owner** and **Agent** under ADR 0021. Owner administers access and audit; Agent performs approved day-to-day EEC operations. Fine-grained scopes remain the database enforcement mechanism. Business is not a staff class: an authenticated business representative is authorized only for the exact represented party/dealer relationship.
+
 ### Auditor
 
 Staff role with read-only access to approved business and audit history. Sensitive evidence access is a separate permission.
@@ -173,6 +175,8 @@ Implementation note: the elevated configurable `compliance_officer` role receive
 Implementation note: the configurable elevated `platform_administrator` role receives the four implemented access, audit, and operational-health permissions. Grants and revocations are effective-dated, idempotent, audited, and emitted through the outbox. The final active platform-administrator assignment cannot be revoked. This role does not implicitly receive catalogue, licensing, order, inventory, integration, or compliance authority; those remain separately composable roles.
 
 Rapid-operations implementation note: `platform_administrator` additionally receives `configuration.read` and `configuration.manage` for reference-data administration. `catalogue_manager` receives `configuration.read`, `publication.manage`, and `pricing.manage`. A compound quick-item command still rechecks `catalogue.manage`, `procurement.policy.manage`, optional `publication.manage`, optional `pricing.manage`, and optional warehouse-scoped `inventory.receipt.post` separately. Configuration administration alone cannot post stock or create commercial authority.
+
+ADR 0021 supersedes the ordinary role-composition UI. Existing platform administrators are migrated to the `owner` bundle, which receives all current active scopes. Owner approval grants the `agent` bundle, which receives current operational scopes but excludes `access.private.read`, `access.assignment.manage`, and `audit.private.read`. Granular legacy bundles remain internal and may still support tests or future scoped policy; they are not presented as everyday server roles.
 
 ## 4. Proposed staff roles
 
@@ -438,6 +442,8 @@ There is no universal dual-control rule. Any active actor with the required perm
 - Supabase Auth cookie sessions initiated through individual Discord OAuth identities; no staff email/password form
 - Fixed allowlisted OAuth callback and server-side PKCE code exchange
 - Discord provider subject and Supabase Auth UUID are identity data, never role or permission claims
+- First-time Discord identities create a pending database request visible only to an authorized Owner; the request itself grants no staff data or command access
+- Approval, denial, blocking, and reapproval are reasoned, version-checked, idempotent, audited database commands
 - Multi-factor authentication for elevated roles before launch
 - Shorter sessions or step-up authentication for high-risk actions
 - Immediate assignment revocation and practical session invalidation

@@ -15,10 +15,11 @@ const labels: Record<string, string> = {
   open_cases: "Open cases", outbox_failed: "Outbox failures", processing: "Orders processing",
   procurement_payments_pending: "Procurement payments pending", settlements_pending: "Consignment settlements pending",
   submitted: "Orders submitted", under_review: "Orders under review", applications_pending: "Applications pending",
+  requests_pending: "Discord access requests pending",
 };
 
-function Group({ title, values }: { title: string; values: Record<string, number> }) {
-  return <section className="integration-section"><div className="inventory-section-heading"><div><p className="eyebrow">Live authoritative counts</p><h2>{title}</h2></div></div>
+function Group({ actionHref, actionLabel, title, values }: { actionHref?: string; actionLabel?: string; title: string; values: Record<string, number> }) {
+  return <section className="integration-section"><div className="inventory-section-heading"><div><p className="eyebrow">Live authoritative counts</p><h2>{title}</h2></div>{actionHref && actionLabel && <Link className="button button-secondary" href={actionHref}>{actionLabel}</Link>}</div>
     <div className="inventory-summary">{Object.entries(values).map(([key, value]) => <article key={key}><span>{labels[key] ?? key.replaceAll("_", " ")}</span><strong>{value}</strong></article>)}</div></section>;
 }
 
@@ -29,10 +30,11 @@ export default async function DashboardPage() {
   const dashboard = result.data; const locale = getDefaultLocale();
   return <main className="staff-main">
     <header className="staff-page-header"><div><p className="eyebrow">Authenticated staff · complete overview</p><h1>EEC command dashboard</h1><p>One live overview of trade demand, inventory pressure, licensing, finance, compliance, documents, and projections.</p></div>
-      <div className="staff-button-row"><Link className="button button-primary" href="/staff/launch">Open launch desk</Link><Link className="button button-secondary" href="/staff/configuration">Quick inventory & items</Link><Link className="button button-secondary" href="/staff/operations">Operations</Link><form action={signOutAction}><button className="button button-secondary">Sign out</button></form></div></header>
+      <div className="staff-button-row"><Link className="button button-primary" href="/staff/launch">Open launch desk</Link>{dashboard.capabilities.can_review_applications&&<Link className="button button-primary" href="/staff/applications">Review applications</Link>}{dashboard.capabilities.can_manage_access&&<Link className="button button-primary" href="/staff/access">Approve staff access</Link>}<Link className="button button-secondary" href="/staff/configuration">Quick inventory & items</Link><Link className="button button-secondary" href="/staff/operations">System health</Link><form action={signOutAction}><button className="button button-secondary">Sign out</button></form></div></header>
     <p className="result-count">Snapshot {new Date(dashboard.generated_at).toLocaleString(locale)}. Every number comes directly from Supabase.</p>
+    {dashboard.capabilities.can_manage_access&&<Group actionHref="/staff/access" actionLabel="Review Discord access" title="Staff access" values={dashboard.access} />}
     <Group title="Orders" values={dashboard.orders} /><Group title="Inventory and assets" values={dashboard.inventory} />
-    <Group title="Licensing" values={dashboard.licensing} /><Group title="Finance" values={dashboard.finance} />
+    <Group actionHref={dashboard.capabilities.can_review_applications?"/staff/applications":undefined} actionLabel={dashboard.capabilities.can_review_applications?"Review applications":undefined} title="Licensing" values={dashboard.licensing} /><Group title="Finance" values={dashboard.finance} />
     <Group title="Compliance" values={dashboard.compliance} /><Group title="Integrations" values={dashboard.integrations} />
     <Group title="Official documents" values={dashboard.documents} />
     <section className="integration-section"><div className="inventory-section-heading"><div><p className="eyebrow">Newest demand</p><h2>Recent orders</h2></div><Link className="button button-secondary" href="/staff/orders">Full order queue</Link></div>

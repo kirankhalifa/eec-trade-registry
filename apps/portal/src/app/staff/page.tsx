@@ -76,6 +76,12 @@ export default async function StaffCataloguePage({
           <Link className="button button-primary" href="/staff/launch">
             Launch desk
           </Link>
+          <Link className="button button-primary" href="/staff/applications">
+            Review applications
+          </Link>
+          <Link className="button button-primary" href="/staff/access">
+            Staff approvals
+          </Link>
           <Link className="button button-primary" href="/staff/configuration">
             Quick operations
           </Link>
@@ -113,7 +119,7 @@ export default async function StaffCataloguePage({
             Integrations
           </Link>
           <Link className="button button-secondary" href="/staff/operations">
-            Operations
+            System health
           </Link>
           <Link className="button button-secondary" href="/staff/items/new">
             New canonical item

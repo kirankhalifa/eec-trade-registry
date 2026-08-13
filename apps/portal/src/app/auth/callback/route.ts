@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 
 import {
+  getStaffAccessPendingUrl,
   getStaffOAuthFailureUrl,
   getStaffOAuthSuccessUrl,
 } from "@/lib/staff-oauth";
+import { registerStaffAccessRequest } from "@/lib/staff-access";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 export async function GET(request: Request) {
@@ -11,8 +13,13 @@ export async function GET(request: Request) {
   const code = requestUrl.searchParams.get("code");
   const providerError = requestUrl.searchParams.get("error");
 
-  if (providerError || !code) {
-    return NextResponse.redirect(getStaffOAuthFailureUrl("cancelled"));
+  if (providerError) {
+    const reason = providerError === "access_denied" ? "cancelled" : "provider_error";
+    console.error(`[staff-auth:provider] ${providerError}`);
+    return NextResponse.redirect(getStaffOAuthFailureUrl(reason));
+  }
+  if (!code) {
+    return NextResponse.redirect(getStaffOAuthFailureUrl("missing_code"));
   }
 
   const client = await createServerSupabaseClient();
@@ -22,5 +29,13 @@ export async function GET(request: Request) {
     return NextResponse.redirect(getStaffOAuthFailureUrl("exchange_failed"));
   }
 
-  return NextResponse.redirect(getStaffOAuthSuccessUrl());
+  const registration = await registerStaffAccessRequest(client);
+  if (!registration.ok) {
+    await client.auth.signOut();
+    return NextResponse.redirect(getStaffOAuthFailureUrl("request_failed"));
+  }
+  if (registration.data.state === "authorized") {
+    return NextResponse.redirect(getStaffOAuthSuccessUrl());
+  }
+  return NextResponse.redirect(getStaffAccessPendingUrl(registration.data.state));
 }

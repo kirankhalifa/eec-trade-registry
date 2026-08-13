@@ -3,6 +3,11 @@ import { z } from "zod";
 
 const counterGroup = z.record(z.string(), z.number().int().nonnegative());
 const dashboardSchema = z.object({
+  access: counterGroup,
+  capabilities: z.object({
+    can_manage_access: z.boolean(),
+    can_review_applications: z.boolean(),
+  }),
   compliance: counterGroup,
   documents: counterGroup,
   finance: counterGroup,

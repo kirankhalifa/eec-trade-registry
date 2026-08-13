@@ -306,7 +306,7 @@ Frontend code may display estimates for usability only when clearly labeled and 
 - Failed projections do not roll back an already committed business transaction.
 - Export and notification delivery state is observable and retryable.
 - Backups, point-in-time recovery, migration rollback strategy, and incident procedures are launch prerequisites.
-- Staff authority must be administered through audited effective-dated commands; the system must prevent removal of the final active platform administrator.
+- Staff authority must be administered through audited effective-dated commands; the ordinary UI must protect Owner authority and the internal authorization layer must prevent removal of the final active platform administrator.
 - Operational health views may identify stale or failed work but must not silently correct or mutate authoritative business state.
 - Time is stored in UTC. A configured institutional time zone and calendar presentation determine display and policy cutoffs.
 - Generated references are unique and immutable; human-friendly formats are configurable.
@@ -357,6 +357,7 @@ The product owner approved the following initial deployment policy on 2026-08-04
 - Authorization follows active permissions and scope. There is no universal second-approver requirement.
 - Dealer authentication begins with individual password credentials through Supabase Auth.
 - Staff authentication begins with individual Discord OAuth identities through Supabase Auth. Provider identity and database business authorization remain separate.
+- ADR 0021 makes the server-facing access model Owner, Agent, business, and public. A first Discord login creates a pending owner-review record and no authority. Owner approval creates the Agent assignment; business access remains tied to a specific dealer relationship rather than a global staff role.
 - Prices are editable but may be unset. An unset price is pending/unavailable, not zero.
 - Ordinary, restricted, and unique are the initial configurable control behaviors; restricted and unique paths require stronger review in line with ADR 0005.
 - Partial approval and fulfillment are supported. Orders may be submitted without stock and may wait for stock.
@@ -416,7 +417,7 @@ Until these decisions are recorded, implementations must preserve configurabilit
 
 ## Launch command suite acceptance
 
-The implemented launch suite adds a full authenticated overview dashboard; rapid staff entry for licensed businesses and direct individuals; database-enforced `3×` direct pricing and weekly limits; deterministic dealer price precedence; public applications and renewals; consignment commission settlement; atomic unique-asset delivery; reviewed configured sanctions; and official license, order, fulfillment, and settlement PDFs from immutable snapshots.
+The implemented launch suite adds a full authenticated overview dashboard; rapid staff entry for licensed businesses and direct individuals; database-enforced `3×` direct pricing and weekly limits; deterministic dealer price precedence; public applications and renewals with a dedicated approval queue; consignment commission settlement; atomic unique-asset delivery; reviewed configured sanctions; and official license, order, fulfillment, and settlement PDFs from immutable snapshots. The access layer adds an owner-visible Discord request queue, explicit Agent approval/denial/blocking, and an owner roster without exposing the internal role catalogue as ordinary server administration.
 
 The suite does not make Sheets, Discord, or PDFs authoritative; calculate stock in frontend code; impose a universal license duration or commission; create stock because an order exists; or provide a general accounting ledger.
 

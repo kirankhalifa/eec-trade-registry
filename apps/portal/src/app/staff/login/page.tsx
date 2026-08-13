@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 
 import { signInWithDiscordAction } from "@/app/staff/actions";
 import { readPublicSupabaseEnvironment } from "@/lib/env";
-import { hasStaffSession } from "@/lib/staff-auth";
+import { getMyStaffAccessState } from "@/lib/staff-access";
+import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 interface StaffLoginPageProps {
   searchParams: Promise<{ error?: string }>;
@@ -14,8 +15,14 @@ export default async function StaffLoginPage({
 }: StaffLoginPageProps) {
   const { error } = await searchParams;
   const configured = Boolean(readPublicSupabaseEnvironment());
-  if (configured && (await hasStaffSession())) {
-    redirect("/staff/dashboard");
+  if (configured) {
+    const client = await createServerSupabaseClient();
+    const session = await client.auth.getClaims();
+    if (!session.error && typeof session.data?.claims?.sub === "string") {
+      const access = await getMyStaffAccessState(client);
+      if (access.ok && access.data.state === "authorized") redirect("/staff/dashboard");
+      if (access.ok) redirect(`/staff/access/pending?state=${access.data.state}`);
+    }
   }
 
   return (
@@ -44,10 +51,19 @@ export default async function StaffLoginPage({
               </div>
             )}
             {(error === "exchange_failed" ||
-              error === "provider_unavailable") && (
+              error === "provider_unavailable" ||
+              error === "provider_error" ||
+              error === "missing_code") && (
               <div className="staff-flash staff-flash-error" role="alert">
-                Discord sign-in could not be completed. No staff authority was
-                granted or changed.
+                Discord did not complete the sign-in. Try again and approve the
+                identity prompt. If this repeats, the owner should verify the
+                Discord OAuth redirect configuration.
+              </div>
+            )}
+            {error === "request_failed" && (
+              <div className="staff-flash staff-flash-error" role="alert">
+                Your Discord session was created, but the access request could
+                not be recorded. The session was closed and no authority was granted.
               </div>
             )}
             <button className="button button-primary" type="submit">
@@ -61,9 +77,9 @@ export default async function StaffLoginPage({
             ← Return to the public catalogue
           </Link>
           <p>
-            There is no staff email/password form. A successful Discord sign-in
-            grants no access unless the linked Supabase identity has an active
-            staff assignment.
+            There is no staff email/password form. First-time Discord users enter
+            an owner review queue. Approval as an Agent is still required before
+            any staff data or command becomes available.
           </p>
         </footer>
       </section>

@@ -102,6 +102,20 @@ An actor is not necessarily a legal or commercial party. A representative may au
 
 Implementation note: actor profiles currently support the stable machine types `staff` and `dealer`. User-facing role and organization titles remain configuration records.
 
+### `staff_access_requests`
+
+Owner-review record created from a confirmed Discord/Supabase identity. It is deliberately separate from `actor_profiles` and `staff_assignments`: pending authentication is not authority.
+
+Key fields:
+
+- `auth_user_id`, immutable `discord_user_id`, and non-authoritative `display_name`
+- `status`: pending, approved, denied, or blocked
+- `requested_at`, `last_attempted_at`, `reviewed_at`
+- `reviewed_by_actor_id`, optional resulting `approved_actor_id`, and `review_reason`
+- first/review request identifiers and optimistic `version`
+
+The authenticated user may read only a constrained self-state function. Owners read the queue through a permission-checked projection and decide it through a versioned command. Approval creates or reactivates exactly one actor and current Agent assignment atomically. Audit history and outbox work commit with the decision.
+
 ### `staff_roles`
 
 Configurable role definitions with stable permission bundles or references to permission scopes.
@@ -112,6 +126,8 @@ Key fields:
 - `description`
 - `is_assignable`
 - `is_elevated`
+
+Implementation note: ADR 0021 adds user-facing `owner` and `agent` bundles. Granular legacy roles and permission scopes remain internal authorization machinery, but the normal server-owner interface does not ask an administrator to compose technical roles. A business remains a represented party, never a staff role.
 
 ### `staff_assignments`
 
@@ -356,6 +372,8 @@ Key fields:
 - `source_payload` for versioned answers, subject to retention and privacy controls
 
 Application status is not license status.
+
+Implementation note: the current constrained public intake stores applicant/contact text, requested class, jurisdiction, renewal target, statement, status-token digest, requested endorsements, review evidence, and the resulting license link. The dedicated staff review projection returns pending work and 90 days of decision history without granting direct table access.
 
 ### `application_endorsement_requests`
 
