@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { signOutAction } from "@/app/staff/actions";
 import { StaffAccessDenied } from "@/components/staff-access-denied";
 import { StaffNotice } from "@/components/staff-notice";
 import { getDefaultLocale } from "@/lib/env";
@@ -35,7 +34,7 @@ export default async function OperationsPage({ searchParams }: OperationsPagePro
   ] as const;
 
   return <main className="staff-main">
-    <header className="staff-page-header"><div><p className="eyebrow">Owner only · platform readiness</p><h1>System health</h1><p>Review integration failures, expired operational work, and access audit evidence. Staff approvals now live in their own simple queue.</p></div><div className="staff-button-row"><Link className="button button-primary" href="/staff/access">Staff access approvals</Link><Link className="button button-secondary" href="/staff/dashboard">Dashboard</Link><Link className="button button-secondary" href="/staff/integrations">Integrations</Link><Link className="button button-secondary" href="/staff/compliance">Compliance</Link><form action={signOutAction}><button className="button button-secondary">Sign out</button></form></div></header>
+    <header className="staff-page-header"><div><p className="eyebrow">Owner only · platform readiness</p><h1>System health</h1><p>Monitor failures, expired work, and recent access-control evidence without wading through routine administration.</p></div><div className="staff-button-row"><Link className="button button-primary" href="/staff/access">Review staff access</Link><Link className="button button-secondary" href="/staff/integrations">Integration details</Link></div></header>
     <StaffNotice error={parameters.error} notice={parameters.notice}/>
     <section className="inventory-summary" aria-label="Operational health">{health.map(([label, value]) => <article key={label}><span>{label}</span><strong>{value}</strong></article>)}</section>
     <p className="result-count">Snapshot generated {new Date(workspace.generated_at).toLocaleString(locale)}. Counts identify work for review; they do not perform automatic corrections.</p>

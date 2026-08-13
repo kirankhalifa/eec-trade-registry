@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { signOutAction } from "@/app/staff/actions";
 import { StaffAccessDenied } from "@/components/staff-access-denied";
 import { StaffNotice } from "@/components/staff-notice";
 import { getDefaultLocale, readPublicSupabaseEnvironment } from "@/lib/env";
@@ -21,10 +20,7 @@ export default async function StaffDealersPage({ searchParams }: { searchParams:
 
   return <main className="staff-main">
     <header className="staff-page-header"><div><p className="eyebrow">Authenticated staff · dealer registry</p><h1>Dealer authorization queue</h1><p>Onboard counterparties and maintain public and private authority records through audited Supabase commands.</p></div><div className="staff-button-row">
-      <Link className="button button-secondary" href="/staff">Catalogue desk</Link>
-      <Link className="button button-secondary" href="/staff/licensing">Licensing office</Link>
       <Link className="button button-primary" href="/staff/dealers/new">Onboard dealer</Link>
-      <form action={signOutAction}><button className="button button-secondary" type="submit">Sign out</button></form>
     </div></header>
     <StaffNotice error={parameters.error} notice={parameters.notice} />
     <form className="staff-search" method="get" role="search"><label className="field"><span>Search dealers</span><input defaultValue={search} maxLength={100} name="q" placeholder="Reference, legal name, or display name" type="search" /></label><button className="button button-primary" type="submit">Search</button>{search && <Link className="button button-secondary" href="/staff/dealers">Clear</Link>}</form>

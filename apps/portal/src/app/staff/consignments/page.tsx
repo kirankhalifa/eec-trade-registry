@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { signOutAction } from "@/app/staff/actions";
 import {
   acceptConsignmentReportAction,
   changeConsignmentAgreementStatusAction,
@@ -37,10 +36,7 @@ export default async function StaffConsignmentsPage({ searchParams }: PageProps)
       <header className="staff-page-header">
         <div><p className="eyebrow">Authenticated staff - retained ownership</p><h1>Consignment desk</h1><p>Create agreements, move fungible stock into dealer custody, reconcile dealer observations, and preserve every custody movement in the inventory ledger.</p></div>
         <div className="staff-button-row">
-          <Link className="button button-secondary" href="/staff/inventory">Inventory</Link>
-          <Link className="button button-secondary" href="/staff/transfers">Transfers</Link>
-          <Link className="button button-secondary" href="/staff/assets">Serialized assets</Link>
-          <form action={signOutAction}><button className="button button-primary" type="submit">Sign out</button></form>
+          <Link className="button button-secondary" href="/dealer/consignments" target="_blank">Dealer view</Link>
         </div>
       </header>
       <ConsignmentNotice error={parameters.error} notice={parameters.notice} />

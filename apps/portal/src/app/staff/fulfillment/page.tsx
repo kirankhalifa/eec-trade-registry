@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { signOutAction } from "@/app/staff/actions";
 import {
   fulfillReservationAction,
   reverseFulfillmentAction,
@@ -59,13 +58,8 @@ export default async function StaffFulfillmentPage({
           </p>
         </div>
         <div className="staff-button-row">
-          <Link className="button button-secondary" href="/staff/inventory">Inventory desk</Link>
-          <Link className="button button-secondary" href="/staff/orders">Order desk</Link>
-          <Link className="button button-secondary" href="/staff/transfers">Transfers</Link>
-          <Link className="button button-secondary" href="/staff/consignments">Consignments</Link>
-          <form action={signOutAction}>
-            <button className="button button-primary" type="submit">Sign out</button>
-          </form>
+          <Link className="button button-secondary" href="/staff/inventory">View inventory</Link>
+          <Link className="button button-secondary" href="/staff/orders">View orders</Link>
         </div>
       </header>
 

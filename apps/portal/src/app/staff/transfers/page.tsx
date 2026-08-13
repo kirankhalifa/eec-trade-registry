@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { signOutAction } from "@/app/staff/actions";
 import {
   authorizeTransferAction,
   cancelTransferAction,
@@ -83,10 +82,6 @@ export default async function StaffTransfersPage({ searchParams }: StaffTransfer
         </div>
         <div className="staff-button-row">
           <Link className="button button-secondary" href="/staff/inventory">Inventory desk</Link>
-          <Link className="button button-secondary" href="/staff/fulfillment">Fulfillment</Link>
-          <Link className="button button-secondary" href="/staff/assets">Serialized assets</Link>
-          <Link className="button button-secondary" href="/staff/consignments">Consignments</Link>
-          <form action={signOutAction}><button className="button button-primary" type="submit">Sign out</button></form>
         </div>
       </header>
 
