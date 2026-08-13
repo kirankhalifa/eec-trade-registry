@@ -19,7 +19,10 @@ export async function generateMetadata({
   const { slug } = await params;
   const result = await getPublicCatalogueItem(slug);
   if (!result.ok || !result.data) {
-    return { title: "Catalogue entry" };
+    return {
+      title: "Catalogue entry",
+      description: "View current public trade terms and purchasing requirements from the authoritative registry.",
+    };
   }
 
   return {
