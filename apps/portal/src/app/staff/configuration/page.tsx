@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { signOutAction } from "@/app/staff/actions";
 import {
   createConfigurationReferenceAction,
   createControlProfileAction,
@@ -15,7 +14,7 @@ import { getDefaultLocale } from "@/lib/env";
 import { requireStaffSession } from "@/lib/staff-auth";
 
 interface PageProps {
-  searchParams: Promise<{ error?: string; notice?: string }>;
+  searchParams: Promise<{ error?: string; notice?: string; q?: string }>;
 }
 
 function preferredCode(codes: string[], preferred: string[]) {
@@ -56,6 +55,8 @@ export default async function ConfigurationPage({ searchParams }: PageProps) {
   const publicSchedules = workspace.price_schedules.filter((schedule) => schedule.audience_code === "public");
   const locale = getDefaultLocale();
   const canQuickCreate = capabilities.can_manage_catalogue && capabilities.can_manage_supply_policy;
+  const searchTerm = parameters.q?.trim().toLocaleLowerCase() ?? "";
+  const editableItems = workspace.items.filter((item) => item.status === "active" && (!searchTerm || item.display_name.toLocaleLowerCase().includes(searchTerm) || item.item_code.toLocaleLowerCase().includes(searchTerm)));
 
   return (
     <main className="staff-main">
@@ -66,11 +67,8 @@ export default async function ConfigurationPage({ searchParams }: PageProps) {
           <p>Create a complete item or post ordinary stock in one short workflow. Supabase still records every authoritative step and the inventory ledger remains immutable.</p>
         </div>
         <div className="staff-button-row">
-          <Link className="button button-secondary" href="/staff/inventory">Inventory</Link>
-          <Link className="button button-secondary" href="/staff/economy">Economy</Link>
-          <Link className="button button-secondary" href="/staff/licensing">Licensing</Link>
-          <Link className="button button-secondary" href="/staff">Catalogue</Link>
-          <form action={signOutAction}><button className="button button-primary" type="submit">Sign out</button></form>
+          <Link className="button button-secondary" href="/staff/inventory">Inventory details</Link>
+          <Link className="button button-secondary" href="/staff">Catalogue records</Link>
         </div>
       </header>
 
@@ -139,8 +137,8 @@ export default async function ConfigurationPage({ searchParams }: PageProps) {
       </div>
 
       {capabilities.can_manage_configuration && (
-        <section className="inventory-section">
-          <div className="inventory-section-heading"><div><p className="eyebrow">No-code vocabulary</p><h2>Add categories, units, license types, and endorsements</h2></div><p>New options become available to staff forms immediately.</p></div>
+        <details className="inventory-section configuration-disclosure">
+          <summary><div><p className="eyebrow">Advanced configuration</p><h2>Add categories, units, license types, and endorsements</h2><p>Open this only when the registry needs a new reusable option.</p></div><span>Open configuration</span></summary>
           <div className="configuration-reference-grid">
             <form action={createConfigurationReferenceAction} className="staff-form inventory-command-form">
               <label className="field"><span>Configuration type</span><select name="kind"><option value="item_category">Item category</option><option value="unit">Unit of measure</option><option value="license_class">License type</option><option value="endorsement">License endorsement</option><option value="availability_profile">Availability wording</option></select></label>
@@ -173,13 +171,15 @@ export default async function ConfigurationPage({ searchParams }: PageProps) {
             <article><h3>License types</h3><p>{workspace.license_classes.map((entry) => <span className="configuration-chip" key={entry.id}>{entry.display_name}</span>)}</p></article>
             <article><h3>Endorsements</h3><p>{workspace.endorsements.map((entry) => <span className="configuration-chip" key={entry.id}>{entry.display_name}</span>)}</p></article>
           </div>
-        </section>
+        </details>
       )}
 
       <section className="inventory-section">
         <div className="inventory-section-heading"><div><p className="eyebrow">Effective-dated public presentation</p><h2>Edit publication and price</h2></div><p>Saving creates a new effective version; it does not erase previous public terms.</p></div>
+        <form className="staff-search" method="get"><label className="field"><span>Find an item</span><input defaultValue={parameters.q ?? ""} name="q" placeholder="Search by item name or code" type="search" /></label><button className="button button-secondary" type="submit">Search</button>{searchTerm&&<Link className="button button-secondary" href="/staff/configuration">Clear</Link>}</form>
+        <p className="result-count">Showing {editableItems.length} active item{editableItems.length === 1 ? "" : "s"}.</p>
         <div className="configuration-item-list">
-          {workspace.items.filter((item) => item.status === "active").map((item) => (
+          {editableItems.map((item) => (
             <details className="configuration-item-card" key={item.id}>
               <summary><span><strong>{item.display_name}</strong><small>{item.item_code} · {item.category_code} · {item.supply_mode?.replaceAll("_", " ") ?? "supply policy missing"}</small></span><span>{item.publication_status === "published" ? "Published" : "Not public"}{item.price_amount_minor !== null ? ` · ${item.price_amount_minor} ${item.currency_code ?? ""}` : " · price unset"}</span></summary>
               <form action={setItemPublicTermsAction} className="staff-form-grid configuration-terms-form">
@@ -200,6 +200,7 @@ export default async function ConfigurationPage({ searchParams }: PageProps) {
               </form>
             </details>
           ))}
+          {!editableItems.length&&<p className="empty-state">No active item matches that search.</p>}
         </div>
       </section>
 

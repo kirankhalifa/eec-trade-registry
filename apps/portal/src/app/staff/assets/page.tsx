@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { signOutAction } from "@/app/staff/actions";
 import {
   changeAssetStatusAction,
   inspectAssetAction,
@@ -48,12 +47,7 @@ export default async function StaffAssetsPage({ searchParams }: StaffAssetsPageP
           <p>Register unique goods, allocate them exclusively, record accepted custody, inspect condition, and preserve every lifecycle event.</p>
         </div>
         <div className="staff-button-row">
-          <Link className="button button-secondary" href="/staff/inventory">Inventory</Link>
-          <Link className="button button-secondary" href="/staff/transfers">Transfers</Link>
-          <Link className="button button-secondary" href="/staff/consignments">Consignments</Link>
           <Link className="button button-secondary" href="/staff/compliance">Compliance</Link>
-          <Link className="button button-secondary" href="/staff/orders">Orders</Link>
-          <form action={signOutAction}><button className="button button-primary" type="submit">Sign out</button></form>
         </div>
       </header>
       <AssetNotice error={parameters.error} notice={parameters.notice} />

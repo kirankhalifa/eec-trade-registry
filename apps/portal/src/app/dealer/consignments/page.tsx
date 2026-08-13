@@ -1,6 +1,3 @@
-import Link from "next/link";
-
-import { signOutDealerAction } from "@/app/dealer/actions";
 import { submitConsignmentReportAction } from "@/app/dealer/consignments/actions";
 import { ConsignmentNotice } from "@/components/consignment-notice";
 import { DealerAccessDenied } from "@/components/dealer-access-denied";
@@ -26,7 +23,6 @@ export default async function DealerConsignmentsPage({ searchParams }: PageProps
     <main className="dealer-main">
       <header className="dealer-page-header">
         <div><p className="eyebrow">Authenticated representative - custody reporting</p><h1>Consigned stock</h1><p>Review stock held for the owner and submit periodic observations. Staff acceptance is a separate step and only accepted reports affect the authoritative ledger.</p></div>
-        <div className="staff-button-row"><Link className="button button-secondary" href="/dealer">Registry overview</Link><Link className="button button-secondary" href="/dealer/orders">Wholesale orders</Link><form action={signOutDealerAction}><button className="button button-primary" type="submit">Sign out</button></form></div>
       </header>
       <ConsignmentNotice error={parameters.error} notice={parameters.notice} />
       <section className="inventory-summary" aria-label="Dealer consignment totals"><article><span>Active custody issues</span><strong>{active.length}</strong></article><article><span>Units outstanding</span><strong>{quantity(outstanding)}</strong></article><article><span>Reports awaiting review</span><strong>{result.data.issues.reduce((sum, issue) => sum + issue.reports.filter((report) => report.status === "submitted").length, 0)}</strong></article></section>

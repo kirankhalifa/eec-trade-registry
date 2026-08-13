@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { signOutDealerAction } from "@/app/dealer/actions";
 import { DealerAccessDenied } from "@/components/dealer-access-denied";
 import { requireDealerSession } from "@/lib/dealer-auth";
 import { getDealerPortalOverview } from "@/lib/dealer-portal";
@@ -63,20 +62,9 @@ export default async function DealerPortalPage() {
           </p>
         </div>
         <div className="staff-button-row">
-          <Link className="button button-primary" href="/dealer/orders">
-            Wholesale orders
+          <Link className="button button-primary" href="/dealer/orders/new">
+            Create requisition
           </Link>
-          <Link className="button button-secondary" href="/dealer/consignments">
-            Consigned stock
-          </Link>
-          <Link className="button button-secondary" href="/">
-            Public catalogue
-          </Link>
-          <form action={signOutDealerAction}>
-            <button className="button button-primary" type="submit">
-              Sign out
-            </button>
-          </form>
         </div>
       </header>
 

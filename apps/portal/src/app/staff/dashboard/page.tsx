@@ -1,44 +1,73 @@
 import Link from "next/link";
-import { signOutAction } from "@/app/staff/actions";
+
 import { StaffAccessDenied } from "@/components/staff-access-denied";
-import { getCommandDashboard } from "@/lib/command-dashboard";
+import { type IconName, UiIcon } from "@/components/ui-icon";
+import { type CommandDashboard, getCommandDashboard } from "@/lib/command-dashboard";
 import { getDefaultLocale } from "@/lib/env";
 import { requireStaffSession } from "@/lib/staff-auth";
 
 export const dynamic = "force-dynamic";
 
-const labels: Record<string, string> = {
-  actions_pending: "Actions awaiting review", active_licenses: "Active licenses", asset_exceptions: "Asset exceptions",
-  awaiting_stock: "Orders awaiting stock", critical_reserves: "Critical reserves", deliveries_failed: "Discord deliveries failed",
-  direct_this_week: "Direct orders this week", documents_generated: "Documents generated", expired_reservations: "Expired reservations",
-  expiring_30_days: "Licenses expiring in 30 days", exports_failed: "Sheet exports failed", generated_7_days: "Documents generated in 7 days",
-  open_cases: "Open cases", outbox_failed: "Outbox failures", processing: "Orders processing",
-  procurement_payments_pending: "Procurement payments pending", settlements_pending: "Consignment settlements pending",
-  submitted: "Orders submitted", under_review: "Orders under review", applications_pending: "Applications pending",
-  requests_pending: "Discord access requests pending",
-};
+type CounterGroup = CommandDashboard["orders"];
+type PriorityCard = { href: string; icon: IconName; label: string; value: number; tone?: "urgent" | "warning" };
+type AttentionItem = { description: string; href: string; icon: IconName; label: string; value: number };
 
-function Group({ actionHref, actionLabel, title, values }: { actionHref?: string; actionLabel?: string; title: string; values: Record<string, number> }) {
-  return <section className="integration-section"><div className="inventory-section-heading"><div><p className="eyebrow">Live authoritative counts</p><h2>{title}</h2></div>{actionHref && actionLabel && <Link className="button button-secondary" href={actionHref}>{actionLabel}</Link>}</div>
-    <div className="inventory-summary">{Object.entries(values).map(([key, value]) => <article key={key}><span>{labels[key] ?? key.replaceAll("_", " ")}</span><strong>{value}</strong></article>)}</div></section>;
+const workspaces: Array<{ description: string; href: string; icon: IconName; label: string }> = [
+  { href: "/staff/orders", icon: "clipboard", label: "Order desk", description: "Review and progress demand" },
+  { href: "/staff/inventory", icon: "box", label: "Inventory", description: "Receive, reserve, and inspect stock" },
+  { href: "/staff/economy", icon: "coins", label: "Economy", description: "Procurement and reserve floors" },
+  { href: "/staff/fulfillment", icon: "package", label: "Fulfillment", description: "Complete approved handoffs" },
+  { href: "/staff/applications", icon: "document", label: "Applications", description: "Review public licensing intake" },
+  { href: "/staff/licensing", icon: "license", label: "Licenses", description: "Issue and maintain authority" },
+  { href: "/staff/dealers", icon: "building", label: "Businesses", description: "Onboard authorized dealers" },
+  { href: "/staff/configuration", icon: "gear", label: "Configuration", description: "Items, prices, and reference data" },
+];
+
+function value(group: CounterGroup, key: string) { return group[key] ?? 0; }
+
+function Priority({ card }: { card: PriorityCard }) {
+  const tone = card.tone ? ` is-${card.tone}` : "";
+  return <Link className={`dashboard-stat${tone}`} href={card.href}><span>{card.label}<UiIcon name={card.icon}/></span><strong>{card.value}</strong><small>Open workspace <UiIcon name="arrow" size={13}/></small></Link>;
 }
 
 export default async function DashboardPage() {
-  const { client } = await requireStaffSession(); const result = await getCommandDashboard(client);
+  const { client } = await requireStaffSession();
+  const result = await getCommandDashboard(client);
   if (!result.ok && result.denied) return <main className="staff-main"><StaffAccessDenied /></main>;
-  if (!result.ok) return <main className="staff-main"><section className="notice-panel"><h1>Command dashboard unavailable</h1><p>No fallback source was used.</p></section></main>;
-  const dashboard = result.data; const locale = getDefaultLocale();
+  if (!result.ok) return <main className="staff-main"><section className="notice-panel"><h1>Dashboard unavailable</h1><p>The authoritative registry could not be reached. No fallback data is shown.</p></section></main>;
+
+  const dashboard = result.data;
+  const locale = getDefaultLocale();
+  const priorityCards: PriorityCard[] = [
+    { href: "/staff/applications", icon: "document", label: "Applications waiting", value: value(dashboard.licensing,"applications_pending"), tone: value(dashboard.licensing,"applications_pending") > 0 ? "urgent" : undefined },
+    { href: "/staff/orders", icon: "clipboard", label: "Orders to review", value: value(dashboard.orders,"under_review"), tone: value(dashboard.orders,"under_review") > 0 ? "urgent" : undefined },
+    { href: "/staff/orders", icon: "package", label: "Awaiting stock", value: value(dashboard.orders,"awaiting_stock"), tone: value(dashboard.orders,"awaiting_stock") > 0 ? "warning" : undefined },
+    { href: "/staff/inventory", icon: "box", label: "Critical reserves", value: value(dashboard.inventory,"critical_reserves"), tone: value(dashboard.inventory,"critical_reserves") > 0 ? "warning" : undefined },
+  ];
+  const attentionCandidates: AttentionItem[] = [
+    { href: "/staff/access", icon: "people", label: "Discord access request", description: "An identity needs an Owner decision.", value: value(dashboard.access,"requests_pending") },
+    { href: "/staff/compliance", icon: "shield", label: "Compliance action", description: "A recorded action is waiting for review.", value: value(dashboard.compliance,"actions_pending") },
+    { href: "/staff/integrations", icon: "external", label: "Integration failure", description: "An export or delivery needs attention.", value: value(dashboard.integrations,"outbox_failed") + value(dashboard.integrations,"exports_failed") + value(dashboard.integrations,"deliveries_failed") },
+    { href: "/staff/inventory", icon: "box", label: "Expired reservation", description: "A stock claim needs operational review.", value: value(dashboard.inventory,"expired_reservations") },
+    { href: "/staff/licensing", icon: "license", label: "License expiring soon", description: "Review authority ending in the next 30 days.", value: value(dashboard.licensing,"expiring_30_days") },
+    { href: "/staff/economy", icon: "coins", label: "Payment outstanding", description: "A procurement or settlement record is pending.", value: value(dashboard.finance,"procurement_payments_pending") + value(dashboard.finance,"settlements_pending") },
+  ];
+  const attention = attentionCandidates.filter((item) => item.value > 0);
+
   return <main className="staff-main">
-    <header className="staff-page-header"><div><p className="eyebrow">Authenticated staff · complete overview</p><h1>EEC command dashboard</h1><p>One live overview of trade demand, inventory pressure, licensing, finance, compliance, documents, and projections.</p></div>
-      <div className="staff-button-row"><Link className="button button-primary" href="/staff/launch">Open launch desk</Link>{dashboard.capabilities.can_review_applications&&<Link className="button button-primary" href="/staff/applications">Review applications</Link>}{dashboard.capabilities.can_manage_access&&<Link className="button button-primary" href="/staff/access">Approve staff access</Link>}<Link className="button button-secondary" href="/staff/configuration">Quick inventory & items</Link><Link className="button button-secondary" href="/staff/operations">System health</Link><form action={signOutAction}><button className="button button-secondary">Sign out</button></form></div></header>
-    <p className="result-count">Snapshot {new Date(dashboard.generated_at).toLocaleString(locale)}. Every number comes directly from Supabase.</p>
-    {dashboard.capabilities.can_manage_access&&<Group actionHref="/staff/access" actionLabel="Review Discord access" title="Staff access" values={dashboard.access} />}
-    <Group title="Orders" values={dashboard.orders} /><Group title="Inventory and assets" values={dashboard.inventory} />
-    <Group actionHref={dashboard.capabilities.can_review_applications?"/staff/applications":undefined} actionLabel={dashboard.capabilities.can_review_applications?"Review applications":undefined} title="Licensing" values={dashboard.licensing} /><Group title="Finance" values={dashboard.finance} />
-    <Group title="Compliance" values={dashboard.compliance} /><Group title="Integrations" values={dashboard.integrations} />
-    <Group title="Official documents" values={dashboard.documents} />
-    <section className="integration-section"><div className="inventory-section-heading"><div><p className="eyebrow">Newest demand</p><h2>Recent orders</h2></div><Link className="button button-secondary" href="/staff/orders">Full order queue</Link></div>
-      <div className="integration-run-list">{dashboard.recent_orders.map((order) => <Link className="integration-run" href={`/staff/orders/${order.id}`} key={order.id}><div><span className="staff-status staff-status-active">{order.status}</span><strong>{order.reference} · {order.customer}</strong><small>{order.channel.replaceAll("_", " ")} · {new Date(order.submitted_at).toLocaleString(locale)}</small></div></Link>)}{dashboard.recent_orders.length===0&&<p>No order has been submitted.</p>}</div></section>
-    {dashboard.recent_audit.length>0&&<section className="integration-section"><div className="inventory-section-heading"><div><p className="eyebrow">Independent evidence</p><h2>Recent audit trail</h2></div></div><div className="integration-run-list">{dashboard.recent_audit.map((entry)=><article className="integration-run" key={entry.id}><div><strong>{entry.action} · {entry.record_type}</strong><small>{new Date(entry.occurred_at).toLocaleString(locale)}{entry.reason?` · ${entry.reason}`:""}</small></div></article>)}</div></section>}
+    <header className="dashboard-header"><div><p className="eyebrow">Today at a glance</p><h1>Command dashboard</h1><p>Start with what needs attention, then move directly into the right operational workspace.</p></div><div className="dashboard-actions"><Link className="button button-primary" href="/staff/launch"><UiIcon name="spark"/>Quick action</Link><Link className="button button-secondary" href="/staff/configuration"><UiIcon name="box"/>Add item or stock</Link></div></header>
+    <p className="dashboard-meta">Live from Supabase · refreshed {new Date(dashboard.generated_at).toLocaleString(locale)}</p>
+
+    <section className="dashboard-priority-grid" aria-label="Priority counts">{priorityCards.map((card)=><Priority card={card} key={card.label}/>)}</section>
+
+    <div className="dashboard-layout"><div>
+      <section className="dashboard-panel"><header className="dashboard-panel-header"><div><h2>Workspaces</h2><p>Everything you need, organized by task.</p></div></header><div className="dashboard-workspaces">{workspaces.map((workspace)=><Link className="dashboard-workspace-link" href={workspace.href} key={workspace.href}><span className="dashboard-workspace-icon"><UiIcon name={workspace.icon}/></span><span><strong>{workspace.label}</strong><small>{workspace.description}</small></span><UiIcon name="arrow" size={16}/></Link>)}</div></section>
+
+      <section className="dashboard-panel"><header className="dashboard-panel-header"><div><h2>Recent orders</h2><p>The newest recorded demand across channels.</p></div><Link href="/staff/orders">View all</Link></header>{dashboard.recent_orders.length > 0 ? <ul className="dashboard-activity-list">{dashboard.recent_orders.map((order)=><li key={order.id}><Link className="dashboard-activity-item" href={`/staff/orders/${order.id}`}><span className="dashboard-activity-mark"/><span><strong>{order.reference} · {order.customer}</strong><small>{order.status.replaceAll("_"," ")} · {order.channel.replaceAll("_"," ")} · {new Date(order.submitted_at).toLocaleString(locale)}</small></span></Link></li>)}</ul> : <p className="dashboard-empty">No orders have been submitted yet.</p>}</section>
+    </div><aside>
+      <section className="dashboard-panel"><header className="dashboard-panel-header"><div><h2>Needs attention</h2><p>Exceptions and decisions, not routine noise.</p></div></header>{attention.length > 0 ? <ul className="dashboard-attention-list">{attention.map((item)=><li key={item.label}><Link className="dashboard-attention-item" href={item.href}><span><UiIcon name={item.icon} size={16}/></span><span><strong>{item.value} {item.label}{item.value === 1 ? "" : "s"}</strong><small>{item.description}</small></span><UiIcon name="arrow" size={15}/></Link></li>)}</ul> : <p className="dashboard-empty">Nothing needs immediate attention. Routine operations are ready.</p>}</section>
+
+      <section className="dashboard-panel"><header className="dashboard-panel-header"><div><h2>Recent audit</h2><p>Latest authoritative changes.</p></div><Link href="/staff/operations">System health</Link></header>{dashboard.recent_audit.length > 0 ? <ul className="dashboard-activity-list">{dashboard.recent_audit.slice(0,6).map((entry)=><li className="dashboard-activity-item" key={entry.id}><span className="dashboard-activity-mark"/><span><strong>{entry.action} · {entry.record_type.replace("public.","").replaceAll("_"," ")}</strong><small>{new Date(entry.occurred_at).toLocaleString(locale)}{entry.reason ? ` · ${entry.reason}` : ""}</small></span></li>)}</ul> : <p className="dashboard-empty">No recent audit events.</p>}</section>
+    </aside></div>
   </main>;
 }

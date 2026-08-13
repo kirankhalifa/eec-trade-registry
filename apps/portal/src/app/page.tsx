@@ -1,6 +1,9 @@
+import Link from "next/link";
+
 import { CatalogueCard } from "@/components/catalogue-card";
 import { CatalogueFilter } from "@/components/catalogue-filter";
 import { CatalogueUnavailable } from "@/components/catalogue-unavailable";
+import { UiIcon } from "@/components/ui-icon";
 import {
   getPublicCatalogue,
   getPublicCatalogueCategories,
@@ -46,6 +49,17 @@ export default async function CataloguePage({
             decisions; private terms and exact warehouse stock are never shown
             here.
           </p>
+          <div className="hero-actions">
+            <a className="button button-primary" href="#catalogue-title">
+              <UiIcon name="search" /> Browse catalogue
+            </a>
+            <Link className="button button-secondary" href="/verify">
+              <UiIcon name="shield" /> Verify a record
+            </Link>
+            <Link className="text-link hero-quiet-link" href="/apply">
+              Apply for a license <UiIcon name="arrow" size={15} />
+            </Link>
+          </div>
         </div>
         <aside className="hero-seal" aria-label="Registry principles">
           <span>One catalogue</span>

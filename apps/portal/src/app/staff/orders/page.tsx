@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { signOutAction } from "@/app/staff/actions";
 import { OrderNotice } from "@/components/order-notice";
 import { StaffAccessDenied } from "@/components/staff-access-denied";
 import { getDefaultLocale } from "@/lib/env";
@@ -33,10 +32,8 @@ export default async function StaffOrdersPage({ searchParams }: StaffOrdersPageP
           <p>Review dealer requisitions, record nullable Septim prices, approve partial quantities, or place approved demand in awaiting-stock state.</p>
         </div>
         <div className="staff-button-row">
-          <Link className="button button-secondary" href="/staff">Catalogue desk</Link>
-          <Link className="button button-secondary" href="/staff/fulfillment">Fulfillment</Link>
-          <Link className="button button-secondary" href="/staff/licensing">Licensing office</Link>
-          <form action={signOutAction}><button className="button button-primary" type="submit">Sign out</button></form>
+          <Link className="button button-primary" href="/staff/launch">Enter an order</Link>
+          <Link className="button button-secondary" href="/staff/fulfillment">Open fulfillment</Link>
         </div>
       </header>
 

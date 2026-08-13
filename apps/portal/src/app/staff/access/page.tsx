@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import { reviewStaffAccessAction } from "@/app/staff/access/actions";
-import { signOutAction } from "@/app/staff/actions";
 import { StaffAccessDenied } from "@/components/staff-access-denied";
 import { StaffNotice } from "@/components/staff-notice";
 import { getDefaultLocale } from "@/lib/env";
@@ -52,7 +51,7 @@ export default async function StaffAccessPage({ searchParams }: AccessPageProps)
   const reviewed = result.data.requests.filter((request) => request.status !== "pending");
 
   return <main className="staff-main">
-    <header className="staff-page-header"><div><p className="eyebrow">Owner only · Discord access control</p><h1>Staff access approvals</h1><p>Discord proves identity. Only an explicit approval here creates an Agent profile and an audited database assignment.</p></div><div className="staff-button-row"><Link className="button button-primary" href="/staff/dashboard">Dashboard</Link><Link className="button button-secondary" href="/staff/operations">System health</Link><form action={signOutAction}><button className="button button-secondary">Sign out</button></form></div></header>
+    <header className="staff-page-header"><div><p className="eyebrow">Owner only · Discord access control</p><h1>Staff access</h1><p>Discord confirms identity; your decision here determines whether that person becomes an Agent.</p></div><div className="staff-button-row"><Link className="button button-secondary" href="/staff/operations">View access audit</Link></div></header>
     <StaffNotice error={parameters.error} notice={parameters.notice}/>
 
     <section className="inventory-summary" aria-label="Access overview">

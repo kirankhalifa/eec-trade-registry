@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { signOutDealerAction } from "@/app/dealer/actions";
 import { DealerAccessDenied } from "@/components/dealer-access-denied";
 import { OrderNotice } from "@/components/order-notice";
 import { requireDealerSession } from "@/lib/dealer-auth";
@@ -47,20 +46,9 @@ export default async function DealerOrdersPage({ searchParams }: DealerOrdersPag
           </p>
         </div>
         <div className="staff-button-row">
-          <Link className="button button-secondary" href="/dealer">
-            Registry overview
-          </Link>
-          <Link className="button button-secondary" href="/dealer/consignments">
-            Consigned stock
-          </Link>
           <Link className="button button-primary" href="/dealer/orders/new">
             New requisition
           </Link>
-          <form action={signOutDealerAction}>
-            <button className="button button-secondary" type="submit">
-              Sign out
-            </button>
-          </form>
         </div>
       </header>
 

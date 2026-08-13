@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { signOutAction } from "@/app/staff/actions";
 import {
   createComplianceInspectionAction, decideComplianceAppealAction,
   finishComplianceInspectionAction, recommendComplianceActionAction,
@@ -25,7 +24,7 @@ export default async function ComplianceCasePage({ params, searchParams }: Props
   if (!result.ok) return <main className="staff-main"><section className="notice-panel"><h1>Case file unavailable</h1><p>No cached or external record was substituted.</p></section></main>;
   const item = result.data; const locale = getDefaultLocale(); const localDateTime = new Date().toISOString().slice(0, 16); const caseRelated = item.related_record_id ? `${item.related_record_type}:${item.related_record_id}` : "none";
   return <main className="staff-main">
-    <header className="staff-page-header"><div><p className="eyebrow">Restricted case file - allegation is not a finding</p><h1>{item.public_reference}</h1><p>{item.summary}</p></div><div className="staff-button-row"><Link className="button button-secondary" href="/staff/compliance">Case queue</Link><form action={signOutAction}><button className="button button-primary" type="submit">Sign out</button></form></div></header>
+    <header className="staff-page-header"><div><p className="eyebrow">Restricted case file · allegation is not a finding</p><h1>{item.public_reference}</h1><p>{item.summary}</p></div><div className="staff-button-row"><Link className="button button-secondary" href="/staff/compliance">Back to casework</Link></div></header>
     <ComplianceNotice error={notices.error} notice={notices.notice} />
     <section className="inventory-summary" aria-label="Case status"><article><span>Status</span><strong>{item.status.replaceAll("_", " ")}</strong></article><article><span>Allegations</span><strong>{item.allegations.length}</strong></article><article><span>Findings</span><strong>{item.findings.length}</strong></article><article><span>Evidence records</span><strong>{item.evidence.length}</strong></article></section>
     <section className="inventory-section"><div className="inventory-section-heading"><div><p className="eyebrow">Case control</p><h2>State and assignment</h2></div><p>{item.case_type} - {item.confidentiality_level} - opened {new Date(item.opened_at).toLocaleString(locale)}</p></div><dl className="order-facts"><div><dt>Subject</dt><dd>{item.subject_name ?? "No party selected"}</dd></div><div><dt>Related record</dt><dd>{item.related_record_type === "none" ? "None" : item.related_record_type.replaceAll("_", " ")}</dd></div><div><dt>Assigned</dt><dd>{item.assigned_actor_name ?? "Unassigned"}</dd></div><div><dt>Resolution</dt><dd>{item.resolution ?? "Not resolved"}</dd></div></dl>
