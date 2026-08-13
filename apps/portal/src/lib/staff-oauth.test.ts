@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { getSiteOrigin } from "@/lib/env";
 import {
+  getStaffAccessPendingUrl,
   getStaffOAuthCallbackUrl,
   getStaffOAuthFailureUrl,
   getStaffOAuthSuccessUrl,
@@ -27,6 +28,9 @@ describe("staff OAuth destinations", () => {
       ).toString(),
     ).toBe(
       "https://registry.example.test/staff/login?error=exchange_failed",
+    );
+    expect(getStaffAccessPendingUrl("pending", productionEnvironment).toString()).toBe(
+      "https://registry.example.test/staff/access/pending?state=pending",
     );
   });
 

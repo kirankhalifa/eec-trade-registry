@@ -10,6 +10,7 @@ import {
   readUpdateCatalogueItemForm,
 } from "@/lib/staff-catalogue-form";
 import { getStaffOAuthCallbackUrl } from "@/lib/staff-oauth";
+import { registerStaffAccessRequest } from "@/lib/staff-access";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 function destination(path: string, key: "error" | "notice", value: string) {
@@ -76,6 +77,15 @@ export async function signOutAction() {
   const client = await createServerSupabaseClient();
   await client.auth.signOut();
   redirect("/staff/login");
+}
+
+export async function retryStaffAccessRequestAction() {
+  const client = await verifiedClient();
+  if (!client) redirect("/staff/login");
+  const result = await registerStaffAccessRequest(client);
+  if (!result.ok) redirect(destination("/staff/access/pending", "error", "request_failed"));
+  if (result.data.state === "authorized") redirect("/staff/dashboard");
+  redirect(`/staff/access/pending?state=${result.data.state}`);
 }
 
 export async function createCatalogueItemAction(formData: FormData) {

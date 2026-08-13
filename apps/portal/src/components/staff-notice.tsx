@@ -25,6 +25,9 @@ const notices: Record<string, string> = {
   settlement_created: "The consignment gross, commission, and owner settlement were calculated and frozen.",
   settlement_paid: "Payment evidence was recorded for the settlement.",
   terms_configured: "The effective-dated consignment commission terms were configured.",
+  access_approved: "The Discord identity is now approved as an Agent.",
+  access_denied_recorded: "The access request was denied and no staff authority was granted.",
+  access_blocked: "The Discord identity is blocked and any Agent authority is disabled.",
 };
 
 const errors: Record<string, string> = {
@@ -34,6 +37,7 @@ const errors: Record<string, string> = {
   duplicate: "That item code or public slug is already in use.",
   invalid_input: "Review the form fields and provide a clear audit reason.",
   last_administrator: "The last active platform administrator cannot be revoked.",
+  owner_protected: "Owner authority cannot be blocked from the Agent review queue.",
   not_found: "The requested authoritative record no longer exists.",
   save_failed: "The change could not be saved. No authoritative data was changed.",
   price_missing: "No authoritative price applies to that direct order. Configure a public price first.",

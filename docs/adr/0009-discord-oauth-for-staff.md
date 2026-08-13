@@ -3,6 +3,8 @@
 - Status: accepted
 - Date: 2026-08-05
 
+ADR 0021 supersedes the manual post-login provisioning procedure below with an owner-visible pending request and explicit Agent approval. The identity/authority separation and every other security decision in this ADR remain in force.
+
 ## Context
 
 The staff portal initially exposed an email/password form while production identity-provider policy remained open. The product owner selected Discord OAuth for staff and requested no staff email-based sign-in experience. Supabase PostgreSQL must remain the authority for roles and permissions, and Supabase Auth must continue to own application sessions.
@@ -27,7 +29,7 @@ The login experience does not ask the staff member to enter an email or password
 - A Discord-authenticated person with no actor profile or assignment fails closed at the secured database boundary.
 - Provider configuration requires a Discord application secret stored only in Discord and Supabase managed configuration. It must never enter the repository, browser environment variables, logs, audit snapshots, or chat.
 - Production must configure the exact portal origin and allowlist its `/auth/callback` URL in Supabase Auth.
-- Initial owner provisioning is a controlled two-step operation: complete Discord authentication, then link that exact Supabase Auth user UUID to a named staff actor and explicitly assign required roles.
+- Initial owner provisioning remains a controlled deployment operation. Later staff provisioning uses the ADR 0021 queue: complete Discord authentication, then have an existing Owner approve that exact immutable identity as Agent.
 - Open user enrollment may be disabled after the initial approved identity exists. This reduces unused Auth accounts but does not replace database authorization.
 - MFA, provider-account recovery, inactive-account handling, session duration, and step-up requirements remain launch policy decisions.
 
