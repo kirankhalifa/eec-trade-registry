@@ -12,8 +12,22 @@ export function getStaffOAuthSuccessUrl(
   return new URL("/staff/dashboard", getSiteOrigin(environment));
 }
 
+export function getStaffAccessPendingUrl(
+  state: "pending" | "denied" | "blocked" | "unregistered",
+  environment: NodeJS.ProcessEnv = process.env,
+): URL {
+  const target = new URL("/staff/access/pending", getSiteOrigin(environment));
+  target.searchParams.set("state", state);
+  return target;
+}
+
 export function getStaffOAuthFailureUrl(
-  reason: "cancelled" | "exchange_failed",
+  reason:
+    | "cancelled"
+    | "exchange_failed"
+    | "missing_code"
+    | "provider_error"
+    | "request_failed",
   environment: NodeJS.ProcessEnv = process.env,
 ): URL {
   const target = new URL("/staff/login", getSiteOrigin(environment));

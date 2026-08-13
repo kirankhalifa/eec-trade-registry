@@ -53,13 +53,15 @@ Let specifically assigned catalogue staff maintain canonical item source records
 
 1. Staff selects **Continue with Discord**. Supabase Auth initiates Discord OAuth and returns the browser to the portal's fixed allowlisted callback.
 2. The server exchanges the one-time PKCE authorization code for a cookie session. The portal accepts no caller-controlled post-login destination.
-3. Each database request independently validates the Supabase session and resolves an active actor profile, effective-dated role assignment, and required permission. A Discord-authenticated user without assignments receives no staff data or business authority.
-4. The internal work queue is returned by a secured projection and includes staff-only catalogue fields needed for this task.
-5. Creating an item calls a secure command that creates one unpublished canonical record. It does not create publication, price, eligibility, inventory, or asset state.
-6. Editing an item supplies the expected record version. The command locks and rechecks the row so stale work cannot overwrite a concurrent change.
-7. Item code and public slug remain immutable after creation until a correction policy is approved.
-8. Archive and restore are explicit status commands with a mandatory reason. Archiving removes the item from current public projections without deleting publication, price, or audit history.
-9. Every accepted write records actor, authentication identity, permission and assignment, request/correlation ID, reason, previous state, new state, source surface, and timestamp.
+3. The callback records or refreshes the immutable Discord identity in the owner access queue. Existing authorized Owner/Agent identities continue to the dashboard; an unknown identity sees a pending page and no staff data.
+4. The owner opens `/staff/access`, compares the immutable Discord identifier with the known server person, and approves as Agent, denies, or blocks with a reason. Approval creates the actor and Agent assignment transactionally; appearing in the queue never grants authority.
+5. Each later database request independently validates the Supabase session and resolves an active actor profile, effective-dated role assignment, and required permission.
+6. The internal work queue is returned by a secured projection and includes staff-only catalogue fields needed for this task.
+7. Creating an item calls a secure command that creates one unpublished canonical record. It does not create publication, price, eligibility, inventory, or asset state.
+8. Editing an item supplies the expected record version. The command locks and rechecks the row so stale work cannot overwrite a concurrent change.
+9. Item code and public slug remain immutable after creation until a correction policy is approved.
+10. Archive and restore are explicit status commands with a mandatory reason. Archiving removes the item from current public projections without deleting publication, price, or audit history.
+11. Every accepted write records actor, authentication identity, permission and assignment, request/correlation ID, reason, previous state, new state, source surface, and timestamp.
 
 ### Failure behavior
 
@@ -188,7 +190,7 @@ submitted / under_review / awaiting_information -> withdrawn
 
 ### Staff review flow
 
-1. A licensing officer claims or is assigned the application.
+1. An authorized Agent opens the dedicated `/staff/applications` queue from the dashboard.
 2. The officer reviews submitted answers, dealer authorization, existing licenses, standing, debts if relevant, prior actions, and requested endorsements.
 3. The officer may request information, record an interview, add a recommendation, approve with conditions, deny, or escalate.
 4. Required secondary approvals are collected according to the approval policy.
@@ -208,7 +210,7 @@ One authoritative issuance command:
 8. Writes outbox events for documents and notifications.
 9. Commits or rolls back as a unit.
 
-Implementation note: the first staff lifecycle increment implements direct staff issuance to an existing active party, transactional reference allocation, initial endorsements, status history, audit, and outbox work. The UI leaves the term open because duration policy is unresolved. Application approval and issuance-from-application remain distinct future work and cannot be inferred from this direct staff path.
+Implementation note: direct staff issuance and issuance/renewal from a public application are implemented. The review workspace shows requested endorsements and requires an existing canonical holder for a new application. Approval atomically issues or renews, links the application, records history/audit, and emits outbox work. The UI leaves the term open because duration policy remains unresolved.
 
 ### License states
 

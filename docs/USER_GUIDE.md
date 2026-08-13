@@ -9,7 +9,7 @@ Configured currency: `SEP` (Septims, zero decimal places)
 
 ## 1. Purpose of this guide
 
-This guide explains how to use the implemented East Empire Company trade registry as a public visitor, dealer representative, staff operator, or platform administrator. It also explains what each operation changes, what it deliberately does not change, how the public Google Sheet is connected, and how to diagnose routine problems.
+This guide explains how to use the implemented East Empire Company trade registry as a public visitor, business representative, Agent, or Owner. It also explains what each operation changes, what it deliberately does not change, how the public Google Sheet is connected, and how to diagnose routine problems.
 
 ## Fastest routine administration
 
@@ -68,13 +68,14 @@ flowchart TD
     Outbox --> Discord
 ```
 
-The portal has three audiences:
+The portal has four simple access classes:
 
-| Audience | Authentication | Main capabilities |
+| Access class | Authentication | Main capabilities |
 |---|---|---|
 | Public | None | Browse the catalogue and verify exact dealer or license references |
-| Dealer representative | Supabase dealer credentials plus an active representative grant | View represented organizations, submit and inspect orders, cancel eligible orders, and report consignment observations |
-| Staff | Discord OAuth plus active database role assignments | Operate the desks allowed by the assigned roles and scopes |
+| Business | Dealer credentials plus an active representative grant for one exact business | View that represented organization, submit and inspect its orders, cancel eligible orders, and report its consignment observations |
+| Agent | Discord OAuth plus an owner-approved Agent assignment | Perform day-to-day EEC trade, licensing, inventory, dealer, finance, and compliance work |
+| Owner | Discord OAuth plus protected Owner authority | Everything an Agent can do, plus staff access approval, restricted audit, and platform administration |
 
 Authentication and authority are separate. A successful login identifies an actor. It does not grant business permission by itself.
 
@@ -123,11 +124,13 @@ Posted inventory movements, domain events, and audits are not rewritten. Correct
 2. Select **Continue with Discord**.
 3. Approve the Discord OAuth request when prompted.
 4. Supabase exchanges the one-time authorization code and creates the portal session.
-5. The portal resolves the matching actor and active staff assignments.
+5. On a first login, the portal creates a **pending access request** and shows the user a waiting page. This is visible to the Owner at `/staff/access` but grants no staff data.
+6. The Owner compares the immutable Discord ID with the known server member and approves as Agent, denies, or blocks the request with a reason.
+7. After approval, the Agent signs in normally and lands on `/staff/dashboard`.
 
 Discord server roles, display names, and bot permissions do not grant EEC business authority. Staff authority comes from effective-dated database assignments.
 
-If Discord sign-in succeeds but a staff desk is denied, the usual cause is a missing, expired, revoked, or out-of-scope database assignment.
+If Discord sign-in succeeds and shows **Owner approval is pending**, the login worked correctly; the Owner still needs to decide the request. If an approved Agent later sees a denied desk, refresh the access roster and confirm the Agent is still active.
 
 ### 4.2 Dealer sign-in
 
@@ -243,7 +246,7 @@ This is the practical starting point for administrators. The word **add** has a 
 | An actual license held by a party | License record | `/staff/licensing/new` | Does not create dealer authority or staff access |
 | An endorsement on an existing license | Effective-dated endorsement grant | The license detail page | Does not rewrite the license class |
 | A public catalogue price | Effective-dated price rule | `/staff/configuration` | Does not settle an order price retroactively |
-| Access for an EEC operator | Staff assignment | `/staff/operations` | Does not come from a Discord server role |
+| Access for an EEC Agent | Owner-approved Agent assignment | `/staff/access` | Does not come from a Discord server role |
 | A public or staff-facing status phrase | Availability profile | `/staff/configuration` | Does not calculate or change stock |
 | A risk and review behavior | Control profile | `/staff/configuration` | Does not automatically define a specific license or endorsement requirement |
 
@@ -582,15 +585,15 @@ A dealer authorization proves that the organization may deal with EEC. A license
 
 Discord OAuth answers “Which Discord account signed in?” It does not answer “What may this person do?”
 
-1. Have the staff member sign in once through Discord so the identity can be resolved.
-2. Open `/staff/operations` as an authorized platform administrator.
-3. Select the exact actor profile, not a display-name guess.
-4. Grant the narrowest role needed.
-5. Set effective dates and warehouse, jurisdiction, or other supported scope.
-6. Enter a reason.
-7. Confirm the new operator can open only the intended desks.
+1. Have the future Agent open `/staff/login` and complete **Continue with Discord** once.
+2. They should stop at **Owner approval is pending**. They do not need to send you a Supabase UUID or use an email form.
+3. As Owner, open `/staff/access` or select **Approve staff access** from the dashboard.
+4. Find the pending person by both their displayed Discord name and immutable Discord ID. Confirm that ID with the known server member; do not approve a display-name guess.
+5. Choose **Approve as Agent**, enter why they are trusted to act for the EEC, and record the decision. To refuse access, choose **Deny**; choose **Block** for an identity that must not be reconsidered through repeated sign-ins.
+6. The database creates the staff actor and Agent assignment together. The new Agent can refresh or sign in again and use the dashboard.
+7. To remove an approved Agent, find the approved request in the same workspace and choose **Block this identity** with a reason.
 
-Changing a Discord server role does not create, expand, or revoke the database assignment. Revoke the exact staff assignment in the portal when authority ends.
+Changing a Discord server role does not create, expand, or revoke EEC authority. Business users are not approved here; they use the Dealer portal and must be tied to their exact business.
 
 ### 7.22 Identifier cheat sheet
 
@@ -1004,19 +1007,18 @@ An approved record-only action may receive one appeal. Staff can record an affir
 
 ## 20. Access administration and operations
 
-Open <https://eec-trade-registry-portal.vercel.app/staff/operations>.
+Open <https://eec-trade-registry-portal.vercel.app/staff/access> for people and <https://eec-trade-registry-portal.vercel.app/staff/operations> for system health.
 
-### 20.1 Grant a role
+### 20.1 Approve an Agent
 
-1. Confirm the target actor identity. Never use a Discord display name as the identity key.
-2. Select the role.
-3. Set effective dates and supported assignment scope.
-4. Enter a reason.
-5. Grant the assignment.
+1. Confirm the pending Discord ID with the known server person.
+2. Choose **Approve as Agent**.
+3. Enter a clear reason.
+4. Submit once. A retry cannot create a duplicate Agent.
 
-### 20.2 Revoke a role
+### 20.2 Deny or block access
 
-Revoke the exact active assignment with a reason. Revocation is effective-dated and audited. The database prevents revocation of the final active platform-administrator assignment.
+**Deny** records that a pending request was refused without creating an actor or assignment. **Block** disables an approved Agent or prevents a refused identity from being approved accidentally. A deliberate later approval can reinstate a blocked Agent; it requires a new owner decision and reason. The protected Owner identity cannot be blocked from this Agent queue.
 
 ### 20.3 Health review
 
@@ -1029,7 +1031,7 @@ The operations console summarizes conditions such as:
 - Expired reservations
 - In-transit or disputed transfers
 - Open compliance work
-- Active staff assignments
+- Recent access audit evidence
 
 The console identifies conditions; it does not silently rewrite authoritative records.
 
@@ -1128,6 +1130,8 @@ Do not repair a stale projection by manually editing the Sheet.
 
 Staff Discord OAuth login is active.
 
+A new Discord login now creates an owner-visible pending request. If the private `staff-alerts` Discord destination and bot delivery are configured, the same database event may also produce a private alert. The website queue is the review surface; a Discord message or role never approves the request.
+
 The application also contains signed public `/catalogue`, `/dealer`, and `/license` lookup handling and allowlisted staff-alert routing. Discord verifies requests with Ed25519 signatures, stale requests are rejected, and mentions are disabled.
 
 Bot delivery and command registration remain inactive until the server-side bot token is installed and a private numeric staff-alert channel is configured. Discord messages, reactions, edits, and deletions never change EEC business state.
@@ -1137,11 +1141,11 @@ Bot delivery and command registration remain inactive until the server-side bot 
 ### Opening review
 
 1. Sign in through Discord.
-2. Open `/staff/operations`.
-3. Review failed outbox, delivery, and export counts.
-4. Review expired leases and overdue definitions.
-5. Review expired reservations and in-transit/disputed transfers.
-6. Review open compliance work relevant to the operator's role.
+2. If you are the Owner, open `/staff/access` and decide pending Discord identities.
+3. Open `/staff/applications` and decide pending license applications relevant to your work.
+4. Open `/staff/operations` and review failed outbox, delivery, and export counts.
+5. Review expired leases, overdue definitions, reservations, and in-transit/disputed transfers.
+6. Review open compliance work relevant to the operator's authority.
 7. Open `/staff/integrations` and confirm the latest scheduled export cycle delivered.
 8. Check the public Sheet generation timestamps.
 
@@ -1349,7 +1353,10 @@ At no point is the Google Sheet used to create authoritative business state.
 
 | Symptom | Likely cause | Correct response |
 |---|---|---|
-| Discord login succeeds but staff access is denied | No active actor assignment or wrong role/scope | Review the actor and effective assignment in Operations |
+| Discord says sign-in was cancelled | The person rejected/closed the provider prompt, or Discord returned `access_denied` | Try again and approve the prompt; no session or authority was created |
+| Discord sign-in could not be completed | Missing callback code, provider error, or OAuth redirect misconfiguration | Retry once; if it repeats, the Owner checks the exact Discord/Supabase callback configuration |
+| Discord login shows Owner approval pending | Authentication succeeded but the identity has no authority yet | Owner opens `/staff/access`, verifies the immutable Discord ID, and records a decision |
+| An approved Agent is blocked or denied | Owner withdrew authority or the actor is inactive | Review the decision history in `/staff/access`; reapprove only after deliberate review |
 | Dealer login succeeds but organization is missing | Missing/expired representative grant or non-current dealer authorization | Review the exact actor-to-party relationship and dates |
 | `Not found` for a dealer order | Wrong represented party or inaccessible identifier | Confirm organization context; do not infer another dealer's record exists |
 | Stale version error | Another operator changed the record | Refresh, review the new state, and resubmit intentionally |
@@ -1417,6 +1424,7 @@ If this guide conflicts with a governing decision record or the authoritative da
 
 After Discord sign-in, staff land on `/staff/dashboard`. This is the full overview:
 
+- **Staff access** (Owner only) shows pending Discord identities and links directly to approval.
 - **Orders** shows submitted, review, awaiting-stock, processing, and recent direct demand.
 - **Inventory and assets** shows critical reserves, expired reservations, and custody exceptions.
 - **Licensing** shows pending applications, active licenses, and licenses expiring within 30 days.
@@ -1425,7 +1433,7 @@ After Discord sign-in, staff land on `/staff/dashboard`. This is the full overvi
 - **Integrations** shows failed outbox, Discord delivery, or public Sheet work.
 - **Documents** shows recent official source snapshots.
 
-The dashboard is a monitor. It never changes a record merely because a count is red or nonzero. Choose **Launch desk** for customer-facing commands, **Quick inventory & items** for routine stock/catalogue work, or a specialist desk for detailed processing.
+The dashboard is a monitor. It never changes a record merely because a count is red or nonzero. Choose **Approve staff access** for people, **Review applications** for public licensing intake, **Launch desk** for customer-facing commands, **Quick inventory & items** for routine stock/catalogue work, or a specialist desk for detailed processing.
 
 ### 30.2 Aurelion orders a Nocturnal Dress through a licensed tailor
 
@@ -1464,9 +1472,11 @@ This deliberate premium protects the licensed trade network while keeping a lawf
 3. Renewal requires the exact existing license reference.
 4. Submission returns an `EEC-LAP-*` reference and a private status token. The token is shown once; only its SHA-256 digest is stored.
 5. The player uses both values on the same page to check status. The public response does not reveal private review notes.
-6. A licensing officer sees the request in the Launch desk. For a new application, choose the canonical party record, effective date, optional expiration, and active/provisional status. For renewal, enter the approved new expiration.
-7. Approval issues or extends the license atomically and records the application link. Denial records the decision without authority.
-8. Generate a license certificate from **Official records** after issuance. The PDF is a projection of a frozen source snapshot.
+6. An authorized Agent selects **Review applications** on the dashboard or opens `/staff/applications`. The dedicated queue shows the applicant statement, contact label, class, jurisdiction, every requested endorsement, and the exact renewal license when applicable.
+7. For a new business application, first use **Onboard a business** if the applicant does not yet have a canonical party/dealer record. Return to the application and choose that exact canonical holder. For renewal, the existing license already supplies the holder.
+8. Choose approve or deny, set the approved effective/expiration values, choose active or provisional where applicable, and enter a decision reason.
+9. Approval issues or extends the license atomically and records the application link. Denial records the decision without authority. The reviewed request then remains visible in the 90-day decision history.
+10. Generate a license certificate from **Official records** after issuance. The PDF is a projection of a frozen source snapshot.
 
 There is no guessed universal license duration or renewal grace period. Staff enter the approved term for that decision.
 
