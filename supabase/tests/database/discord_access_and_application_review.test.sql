@@ -78,14 +78,20 @@ select lives_ok($test$select public.get_owner_access_workspace()$test$, 'Owner c
 select ok(public.get_owner_access_workspace() -> 'requests' @> '[{"display_name":"Prospective Agent","status":"pending"}]'::jsonb, 'owner queue identifies the pending Discord user');
 select is((public.get_staff_command_dashboard() #>> '{access,requests_pending}')::integer, 1, 'owner dashboard shows pending access count');
 
-select lives_ok(format(
-  $test$select * from public.owner_review_staff_access_request(%L::uuid, 1, 'approve', 'Known server agent.', 'fc300000-0000-4000-8000-000000000002')$test$,
-  (select id from public.staff_access_requests where auth_user_id = 'fc100000-0000-4000-8000-000000000002')
-), 'Owner approves the request as Agent');
-select lives_ok(format(
-  $test$select * from public.owner_review_staff_access_request(%L::uuid, 1, 'approve', 'Known server agent.', 'fc300000-0000-4000-8000-000000000002')$test$,
-  (select id from public.staff_access_requests where auth_user_id = 'fc100000-0000-4000-8000-000000000002')
-), 'approval retry is idempotent');
+select lives_ok(
+  $test$select * from public.owner_review_staff_access_request(
+    (public.get_owner_access_workspace() #>> '{requests,0,id}')::uuid,
+    1, 'approve', 'Known server agent.', 'fc300000-0000-4000-8000-000000000002'
+  )$test$,
+  'Owner approves the request as Agent'
+);
+select lives_ok(
+  $test$select * from public.owner_review_staff_access_request(
+    (public.get_owner_access_workspace() #>> '{requests,0,id}')::uuid,
+    1, 'approve', 'Known server agent.', 'fc300000-0000-4000-8000-000000000002'
+  )$test$,
+  'approval retry is idempotent'
+);
 reset role;
 
 select is((select count(*)::integer from public.actor_profiles where auth_user_id = 'fc100000-0000-4000-8000-000000000002' and status = 'active'), 1, 'approval creates one active actor');
@@ -100,10 +106,13 @@ select lives_ok($test$select public.get_staff_command_dashboard()$test$, 'Agent 
 
 select set_config('request.jwt.claims', '{"sub":"fc100000-0000-4000-8000-000000000001","role":"authenticated"}', true);
 select ok(public.get_owner_access_workspace() -> 'staff' @> '[{"display_name":"Prospective Agent","access_class":"agent"}]'::jsonb, 'owner roster shows the Agent');
-select lives_ok(format(
-  $test$select * from public.owner_review_staff_access_request(%L::uuid, 2, 'block', 'Agent access withdrawn.', 'fc300000-0000-4000-8000-000000000003')$test$,
-  (select id from public.staff_access_requests where auth_user_id = 'fc100000-0000-4000-8000-000000000002')
-), 'Owner can block an approved Agent');
+select lives_ok(
+  $test$select * from public.owner_review_staff_access_request(
+    (public.get_owner_access_workspace() #>> '{requests,0,id}')::uuid,
+    2, 'block', 'Agent access withdrawn.', 'fc300000-0000-4000-8000-000000000003'
+  )$test$,
+  'Owner can block an approved Agent'
+);
 reset role;
 
 select is((select status from public.actor_profiles where auth_user_id = 'fc100000-0000-4000-8000-000000000002'), 'disabled', 'blocking disables the actor');
@@ -115,10 +124,13 @@ select set_config('request.jwt.claims', '{"sub":"fc100000-0000-4000-8000-0000000
 select is(public.get_my_staff_access_state() ->> 'state', 'blocked', 'blocked user sees blocked state');
 
 select set_config('request.jwt.claims', '{"sub":"fc100000-0000-4000-8000-000000000001","role":"authenticated"}', true);
-select lives_ok(format(
-  $test$select * from public.owner_review_staff_access_request(%L::uuid, 3, 'approve', 'Agent reinstated after review.', 'fc300000-0000-4000-8000-000000000004')$test$,
-  (select id from public.staff_access_requests where auth_user_id = 'fc100000-0000-4000-8000-000000000002')
-), 'Owner can deliberately reapprove a blocked Agent');
+select lives_ok(
+  $test$select * from public.owner_review_staff_access_request(
+    (public.get_owner_access_workspace() #>> '{requests,0,id}')::uuid,
+    3, 'approve', 'Agent reinstated after review.', 'fc300000-0000-4000-8000-000000000004'
+  )$test$,
+  'Owner can deliberately reapprove a blocked Agent'
+);
 reset role;
 
 select is((select count(*)::integer from public.staff_assignments assignment join public.staff_roles role on role.id = assignment.staff_role_id join public.actor_profiles actor on actor.id = assignment.actor_id where actor.auth_user_id = 'fc100000-0000-4000-8000-000000000002' and role.code = 'agent' and assignment.revoked_at is null), 1, 'reapproval creates one current Agent assignment');
