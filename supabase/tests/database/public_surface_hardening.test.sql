@@ -88,6 +88,8 @@ select ok(
   public.consume_public_verification_rate_limit(repeat('a', 64), repeat('b', 64)),
   'a routine repeated lookup is accepted'
 );
+
+reset role;
 select is(
   (
     select request_count
@@ -97,6 +99,8 @@ select is(
   2,
   'the per-reference bucket is consumed atomically'
 );
+
+set local role service_role;
 
 do $$
 begin

@@ -125,9 +125,9 @@ grant execute on function public.consume_public_verification_rate_limit(text, te
   to service_role;
 
 revoke execute on function public.public_dealer_verification(text)
-  from anon, authenticated;
+  from anon;
 revoke execute on function public.public_license_verification(text)
-  from anon, authenticated;
+  from anon;
 grant execute on function public.public_dealer_verification(text) to service_role;
 grant execute on function public.public_license_verification(text) to service_role;
 
@@ -674,11 +674,7 @@ begin
     elsif supplied.value_type = 'warehouse_uuid_array' then
       if jsonb_typeof(supplied.scope_value) <> 'array' then return false; end if;
       for warehouse_value in select jsonb_array_elements_text(supplied.scope_value) loop
-        if warehouse_value !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'
-          or not exists (
-            select 1 from public.warehouses as warehouse
-            where warehouse.id::text = warehouse_value
-          )
+        if warehouse_value !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
         then return false; end if;
       end loop;
     end if;
@@ -690,6 +686,64 @@ $$;
 alter table public.staff_assignments add constraint staff_assignments_scope_keys_valid
   check (private.scope_object_is_valid('staff_assignment', assignment_scope)) not valid;
 alter table public.staff_assignments validate constraint staff_assignments_scope_keys_valid;
+
+-- Warehouse fixtures and imports can create a scoped assignment before its
+-- warehouse in the same transaction. Match foreign-key behavior by checking
+-- warehouse existence at commit while keeping shape validation immediate.
+do $$
+begin
+  if exists (
+    select 1
+    from public.staff_assignments as assignment
+    cross join lateral jsonb_array_elements_text(
+      coalesce(assignment.assignment_scope -> 'warehouse_ids', '[]'::jsonb)
+    ) as scoped_warehouse(id)
+    where not exists (
+      select 1
+      from public.warehouses as warehouse
+      where warehouse.id::text = scoped_warehouse.id
+    )
+  ) then
+    raise exception using
+      errcode = '23503',
+      message = 'staff_assignment_scope_warehouse_not_found';
+  end if;
+end;
+$$;
+
+create function private.validate_staff_assignment_scope_warehouses()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  warehouse_value text;
+begin
+  for warehouse_value in
+    select jsonb_array_elements_text(
+      coalesce(new.assignment_scope -> 'warehouse_ids', '[]'::jsonb)
+    )
+  loop
+    if not exists (
+      select 1
+      from public.warehouses as warehouse
+      where warehouse.id::text = warehouse_value
+    ) then
+      raise exception using
+        errcode = '23503',
+        message = 'staff_assignment_scope_warehouse_not_found';
+    end if;
+  end loop;
+  return new;
+end;
+$$;
+
+create constraint trigger staff_assignments_scope_warehouse_references
+after insert or update of assignment_scope on public.staff_assignments
+deferrable initially deferred
+for each row execute function private.validate_staff_assignment_scope_warehouses();
+
 alter table public.party_representatives add constraint party_representatives_scope_keys_valid
   check (private.scope_object_is_valid('dealer_authority', authority_scope)) not valid;
 alter table public.party_representatives validate constraint party_representatives_scope_keys_valid;
@@ -699,3 +753,5 @@ alter table public.representative_role_definitions validate constraint represent
 
 revoke all on table private.scope_key_definitions from public, anon, authenticated;
 revoke all on function private.scope_object_is_valid(text, jsonb) from public, anon, authenticated;
+revoke all on function private.validate_staff_assignment_scope_warehouses()
+  from public, anon, authenticated;
