@@ -17,10 +17,10 @@ export default async function ApplyPage() {
       <section className="hero">
         <div>
           <p className="eyebrow">Trade registry intake</p>
-          <h1>License applications and renewals</h1>
+          <h1>Apply for trade authority</h1>
           <p>
-            Apply for configured trade authority or request renewal of an existing
-            EEC license. Submission creates a review case, not an automatic license.
+            Start a new application, renew an existing LIC reference, or check a
+            submitted review. No login or email is required.
           </p>
         </div>
       </section>

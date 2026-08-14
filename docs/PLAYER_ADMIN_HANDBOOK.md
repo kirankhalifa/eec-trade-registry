@@ -788,11 +788,36 @@ If reserves run low, the dashboard says so and approved orders can wait for mate
 
 Open `/staff/economy`.
 
-- **Reserve positions** shows real ledger stock, active reservations, approved unmet demand, recent buying, and the configured target band.
-- **Register supplier** creates the stable identity used on future deliveries. Use the character or organization actually supplying the goods.
-- **Publish purchase offer** sets a guaranteed per-unit rate for a defined effective period. Confirm the rate with the economic policy owner first.
-- **Receive supplier delivery** is the physical handoff. Choose the supplier, current offer, receiving location, and accepted quantity.
+- The desk is an action queue containing only procurement materials. A made-to-order catalogue item such as a dress does not appear in this reserve table.
+- If every material needs setup, use the prominent **Set the first material** action. Do not interpret a page of zeroes as real policy.
+- Open the material you are handling. Its page shows real ledger stock, active reservations, approved unmet demand, recent buying, and its configured target band.
+- **Set safety levels** changes policy thresholds; it never changes stock.
+- **Publish purchase rate** sets the guaranteed per-unit floor for that material. SEP and the material are derived rather than reselected.
+- **Receive delivery** is the physical handoff. Choose the supplier and enter the accepted quantity. A single warehouse, receiving location, offer, or currency is derived automatically.
+- If the supplier is not listed, expand **Supplier not listed?** on that material and register the character or organization actually supplying the goods.
 - **Record paid** is used only after the Septim payment happened elsewhere. Enter a Discord log, voucher, ticket, or other approved reference.
-- **Edit policy** changes sourcing mode, reserve thresholds, personal channel availability, and review limits. Threshold changes do not alter stock.
 
 Do not use a supplier reference as a dealer reference, license number, or login. Those identifiers prove different relationships.
+
+<!-- FEATURE_STATUS:START -->
+## Current feature status
+
+This table is generated from the same manifest used by the application. Do not edit it by hand.
+
+| Capability | Status | Portal route |
+| --- | --- | --- |
+| Public catalogue | Live | `/` |
+| Dealer and license verification | Live | `/verify` |
+| New license applications | Live | `/apply` |
+| License renewal requests | Live | `/apply` |
+| Staff-assisted and direct order entry | Live | `/staff/orders/new` |
+| Ledger inventory and reservations | Live | `/staff/inventory` |
+| Keystone material procurement | Live | `/staff/economy` |
+| Unique-asset fulfillment | Live | `/staff/assets/fulfillment` |
+| Consignment settlement | Live | `/staff/consignments/finance` |
+| Official document generation | Live | `/staff/documents/new` |
+| Effective price rules | Live | `/staff/pricing` |
+| Google Sheets and Discord projections | Built; external setup required | `/staff/integrations` |
+| Stock-count reconciliation | Policy-gated | — |
+| Compliance evidence file storage | Policy-gated | — |
+<!-- FEATURE_STATUS:END -->

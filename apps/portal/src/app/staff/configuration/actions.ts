@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 import {
@@ -35,6 +35,7 @@ async function verifiedClient() {
 }
 
 function refreshConfiguration() {
+  updateTag("public-catalogue");
   revalidatePath(configurationPath);
   revalidatePath("/staff");
   revalidatePath("/staff/economy");

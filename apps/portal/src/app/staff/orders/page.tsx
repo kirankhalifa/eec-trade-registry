@@ -32,7 +32,7 @@ export default async function StaffOrdersPage({ searchParams }: StaffOrdersPageP
           <p>Review dealer requisitions, record nullable Septim prices, approve partial quantities, or place approved demand in awaiting-stock state.</p>
         </div>
         <div className="staff-button-row">
-          <Link className="button button-primary" href="/staff/launch">Enter an order</Link>
+          <Link className="button button-primary" href="/staff/orders/new">Enter an order</Link>
           <Link className="button button-secondary" href="/staff/fulfillment">Open fulfillment</Link>
         </div>
       </header>

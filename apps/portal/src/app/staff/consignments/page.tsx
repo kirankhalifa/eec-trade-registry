@@ -36,6 +36,7 @@ export default async function StaffConsignmentsPage({ searchParams }: PageProps)
       <header className="staff-page-header">
         <div><p className="eyebrow">Authenticated staff - retained ownership</p><h1>Consignment desk</h1><p>Create agreements, move fungible stock into dealer custody, reconcile dealer observations, and preserve every custody movement in the inventory ledger.</p></div>
         <div className="staff-button-row">
+          <Link className="button button-primary" href="/staff/consignments/finance">Commission & settlement</Link>
           <Link className="button button-secondary" href="/dealer/consignments" target="_blank">Dealer view</Link>
         </div>
       </header>

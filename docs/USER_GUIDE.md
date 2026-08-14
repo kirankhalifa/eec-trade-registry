@@ -1,7 +1,7 @@
 # East Empire Company Trade Registry — Complete User Guide
 
 Status: Production operator guide  
-Last revised and checked against the live portal: 2026-08-10  
+Last revised and checked against the live portal: 2026-08-13
 Production portal: <https://eec-trade-registry-portal.vercel.app>  
 Public registry Sheet: <https://docs.google.com/spreadsheets/d/13bJeSAUF52cQnudC_l0JNOlKmcYY0wRWIq8OVqiEdrc/edit>  
 Institutional time zone: `America/New_York`  
@@ -745,7 +745,7 @@ Revoked and surrendered states are terminal in the current model. Expiration beh
 
 Endorsements are modular grants attached to a license. Granting or revoking one creates effective-dated history; it does not rewrite the license class or erase prior authority.
 
-Applications, renewal review, automatic expiration, and condition-authoring workflows are not yet active. Staff must not represent direct issuance as an application decision when no application record exists.
+Public applications and renewal intake are active, and authorized Agents decide them in `/staff/applications`. Automatic expiration and free-form condition authoring remain policy-gated. Staff must not represent direct issuance as an application decision when no application record exists.
 
 ## 11. Dealer orders
 
@@ -1319,7 +1319,7 @@ This allows the EEC to stabilize material availability without pretending supply
 
 ### 25.7 Direct individual premium purchase
 
-1. The EEC agent opens **Staff → Launch desk → Enter a customer order**.
+1. The EEC agent opens **Orders → New order** (`/staff/orders/new`).
 2. The agent chooses **Direct individual** and selects an existing customer or enters a new name, contact label, and region.
 3. The agent chooses up to five goods and quantities. Only items explicitly enabled for direct purchase are accepted.
 4. Supabase resolves the current public base price and applies the authoritative `3×` premium. The selected price schedule, rule, base amount, multiplier, final amount, and currency are frozen on the line.
@@ -1471,7 +1471,7 @@ This deliberate premium protects the licensed trade network while keeping a lawf
 ### 30.4 Public license application or renewal
 
 1. A player opens `/apply`; no login or email is required.
-2. They choose new application or renewal, enter a name and Discord/contact label, select configured class, region, and endorsements, and describe intended trade.
+2. For a new application, they enter their name/contact, choose a configured license type, and request only the endorsement groups they intend to use. For a renewal, they enter only the existing `EEC-LIC-…` reference; the holder, region, class, and active endorsements are derived from that authority.
 3. Renewal requires the exact existing license reference.
 4. Submission returns an `EEC-LAP-*` reference and a private status token. The token is shown once; only its SHA-256 digest is stored.
 5. The player uses both values on the same page to check status. The public response does not reveal private review notes.

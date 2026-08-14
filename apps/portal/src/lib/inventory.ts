@@ -101,6 +101,8 @@ const inventoryWorkspaceSchema = z.object({
   warehouses: z.array(warehouseSchema),
 });
 
+const receiptItemIdsSchema = z.array(z.guid());
+
 export type InventoryWorkspace = z.infer<typeof inventoryWorkspaceSchema>;
 
 export type InventoryResult =
@@ -128,5 +130,23 @@ export async function getStaffInventoryWorkspace(
     console.error("[staff-inventory:workspace] Supabase returned an unexpected response shape.");
     return { ok: false, code: "invalid_response" };
   }
-  return { ok: true, data: parsed.data };
+  const { data: receiptItemIds, error: receiptOptionsError } = await client.rpc(
+    "get_staff_inventory_receipt_item_ids",
+  );
+  if (receiptOptionsError) {
+    console.error(`[staff-inventory:receipt-options] ${receiptOptionsError.message}`);
+    return { ok: false, code: "query_failed" };
+  }
+  const parsedReceiptItemIds = receiptItemIdsSchema.safeParse(receiptItemIds);
+  if (!parsedReceiptItemIds.success) {
+    console.error("[staff-inventory:receipt-options] Supabase returned an unexpected response shape.");
+    return { ok: false, code: "invalid_response" };
+  }
+  return {
+    ok: true,
+    data: {
+      ...parsed.data,
+      items: parsed.data.items.filter((item) => parsedReceiptItemIds.data.includes(item.id)),
+    },
+  };
 }

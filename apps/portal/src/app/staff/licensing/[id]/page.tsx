@@ -7,6 +7,7 @@ import {
   grantLicenseEndorsementAction,
   revokeLicenseEndorsementAction,
 } from "@/app/staff/licensing/actions";
+import { ReferenceBlock } from "@/components/reference-block";
 import { StaffAccessDenied } from "@/components/staff-access-denied";
 import { StaffNotice } from "@/components/staff-notice";
 import { getDefaultLocale } from "@/lib/env";
@@ -97,6 +98,8 @@ export default async function LicenseDetailPage({
           {license.public_reference} · {license.license_class_label}
         </p>
       </header>
+
+      <ReferenceBlock label="License reference" reference={license.public_reference} status={license.status_label} />
 
       <StaffNotice error={parameters.error} notice={parameters.notice} />
 

@@ -1,6 +1,6 @@
 # EEC Trade Registry — Product Specification
 
-Status: Implementation in progress under the approved operating baseline in ADR 0005
+Status: Operational implementation; current feature gates are generated in `PLAYER_ADMIN_HANDBOOK.md`
 Audience: Product owner, operations leads, designers, engineers, and reviewers  
 Authority: This document describes intended product behavior. Supabase PostgreSQL remains the sole authoritative data source at runtime.
 

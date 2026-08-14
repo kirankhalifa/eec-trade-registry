@@ -15,11 +15,15 @@ type Command = {
 };
 
 const commands: Command[] = [
-  { href: "/staff/launch#enter-order", icon: "spark", label: "Create an order", description: "Enter a business or direct customer request", keywords: "new submit requisition customer" },
+  { href: "/staff/orders/new", icon: "spark", label: "Create an order", description: "Enter a business or direct customer request", keywords: "new submit requisition customer" },
   { href: "/staff/orders", icon: "clipboard", label: "Find an order", description: "Review demand and continue fulfillment", keywords: "approve reserve fulfill handoff" },
   { href: "/staff/configuration#quick-add-item", icon: "box", label: "Add a catalogue item", description: "Create and publish a new good", keywords: "new product material catalogue" },
   { href: "/staff/inventory", icon: "package", label: "Receive or inspect stock", description: "Post receipts and see physical balances", keywords: "inventory warehouse quantity" },
   { href: "/staff/economy", icon: "coins", label: "Receive a supplier delivery", description: "Buy player-sourced reserve materials", keywords: "procurement floor bulk ore leather" },
+  { href: "/staff/pricing", icon: "coins", label: "Publish a price rule", description: "Bind a schedule to a business, class, region, or channel", keywords: "dealer pricing wholesale" },
+  { href: "/staff/consignments", icon: "truck", label: "Open consignments", description: "Manage custody, reports, commission, and settlement", keywords: "consignment finance commission" },
+  { href: "/staff/assets", icon: "key", label: "Open unique assets", description: "Manage serialized goods and ready handoffs", keywords: "unique custody reservation" },
+  { href: "/staff/documents", icon: "document", label: "Open documents", description: "Generate or download official PDF snapshots", keywords: "certificate receipt pdf" },
   { href: "/staff/applications", icon: "document", label: "Review applications", description: "Approve or deny license intake", keywords: "pending renew application" },
   { href: "/staff/licensing/new", icon: "license", label: "Issue a license", description: "Create configured trade authority", keywords: "permit endorsement" },
   { href: "/staff/dealers/new", icon: "building", label: "Add a business", description: "Register an authorized dealer", keywords: "dealer organization shop" },

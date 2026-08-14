@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
@@ -188,6 +188,7 @@ export async function setCatalogueItemStatusAction(formData: FormData) {
   }
 
   revalidatePath("/");
+  updateTag("public-catalogue");
   revalidatePath("/staff");
   revalidatePath(fallbackPath);
   redirect(destination(fallbackPath, "notice", input.status));

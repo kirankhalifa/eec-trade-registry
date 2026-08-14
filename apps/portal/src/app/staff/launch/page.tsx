@@ -1,60 +1,40 @@
 import Link from "next/link";
-import {
-  configureFinanceTermsAction, configurePriceBindingAction, createSettlementAction, createTradeOrderAction,
-  fulfillUniqueAssetAction, generateDocumentAction, markSettlementPaidAction,
-} from "@/app/staff/launch/actions";
-import { StaffAccessDenied } from "@/components/staff-access-denied";
-import { StaffNotice } from "@/components/staff-notice";
-import { getDefaultLocale } from "@/lib/env";
-import { getLaunchWorkspace, type LaunchWorkspace } from "@/lib/launch-workspace";
-import { requireStaffSession } from "@/lib/staff-auth";
 
-export const dynamic = "force-dynamic";
-interface Props { searchParams: Promise<{ error?: string; notice?: string }> }
+import { UiIcon, type IconName } from "@/components/ui-icon";
 
-function OrderLine({ number, items }: { number: number; items: LaunchWorkspace["items"] }) {
-  return <div className="staff-form-grid"><label className="field"><span>Item {number}{number===1?" (required)":" (optional)"}</span><select name={`item_id_${number}`} required={number===1}><option value="">Choose goods</option>{items.map((item)=><option key={item.id} value={item.id}>{item.code} · {item.name}{item.direct_allowed?` · direct limit ${item.direct_weekly_limit??"unlimited"}/week`:""}</option>)}</select></label><label className="field"><span>Quantity</span><input defaultValue={number===1?1:undefined} min="0.001" name={`quantity_${number}`} step="0.001" type="number" /></label></div>;
-}
+const actions: Array<{
+  description: string;
+  href: string;
+  icon: IconName;
+  label: string;
+}> = [
+  { href: "/staff/orders/new", icon: "clipboard", label: "Create an order", description: "Business or individual intake with a price and quota preview." },
+  { href: "/staff/applications", icon: "license", label: "Review applications", description: "Approve or deny new licenses and renewals." },
+  { href: "/staff/consignments/finance", icon: "coins", label: "Settle consignments", description: "Set commission terms, freeze settlements, and record payment." },
+  { href: "/staff/assets/fulfillment", icon: "key", label: "Hand over a unique asset", description: "Complete an active unique reservation and custody transfer." },
+  { href: "/staff/pricing", icon: "coins", label: "Publish a price rule", description: "Choose the binding level, target, schedule, and effective dates." },
+  { href: "/staff/documents/new", icon: "document", label: "Generate a document", description: "Create an official PDF snapshot from an authoritative record." },
+];
 
-function DocumentForm({ type, label, options }: { type: string; label: string; options: { id: string; label: string }[] }) {
-  if (!options.length) return null;
-  return <form action={generateDocumentAction} className="inventory-command-form"><input name="document_type" type="hidden" value={type}/><label className="field"><span>{label}</span><select name="source_record_id" required><option value="">Choose source record</option>{options.map((item)=><option key={item.id} value={item.id}>{item.label}</option>)}</select></label><label className="field"><span>Generation reason</span><input name="reason" required maxLength={500}/></label><button className="button button-secondary">Generate official PDF snapshot</button></form>;
-}
-
-export default async function LaunchPage({ searchParams }: Props) {
-  const parameters=await searchParams; const { client }=await requireStaffSession(); const result=await getLaunchWorkspace(client);
-  if (!result.ok&&result.denied) return <main className="staff-main"><StaffAccessDenied/></main>;
-  if (!result.ok) return <main className="staff-main"><section className="notice-panel"><h1>Launch desk unavailable</h1><p>No fallback business state was used.</p></section></main>;
-  const workspace=result.data; const locale=getDefaultLocale();
-  return <main className="staff-main">
-    <header className="staff-page-header"><div><p className="eyebrow">Fast, guided operations</p><h1>Quick actions</h1><p>Complete everyday customer, finance, delivery, and document tasks without hunting through specialist screens.</p></div><div className="staff-button-row"><Link className="button button-secondary" href="/staff/documents">Document archive</Link><Link className="button button-secondary" href="/staff/configuration">Items & inventory</Link></div></header>
-    <StaffNotice error={parameters.error} notice={parameters.notice}/>
-
-    <nav aria-label="Quick action sections" className="quick-action-index"><span>Jump to</span>{workspace.capabilities.can_create_order&&<a href="#enter-order">Order</a>}{workspace.capabilities.can_review_applications&&<a href="#license-review">Licensing</a>}{workspace.capabilities.can_manage_finance&&<a href="#consignment-finance">Finance</a>}{workspace.capabilities.can_fulfill_asset&&<a href="#unique-fulfillment">Unique asset</a>}{workspace.capabilities.can_manage_pricing&&<a href="#dealer-pricing">Pricing</a>}{workspace.capabilities.can_generate_documents&&<a href="#official-documents">Documents</a>}</nav>
-
-    {workspace.capabilities.can_create_order&&<section className="integration-section quick-action-target" id="enter-order"><div className="inventory-section-heading"><div><p className="eyebrow">Target: under 30 seconds</p><h2>Enter a customer order</h2></div><p>Licensed business orders use precedence pricing. Direct orders use the public base price ×3 and consume the customer’s current weekly item limit automatically.</p></div>
-      <form action={createTradeOrderAction} className="inventory-command-form">
-        <div className="staff-form-grid"><label className="field"><span>Sales channel</span><select defaultValue="staff_assisted_business" name="channel"><option value="staff_assisted_business">Staff-assisted verified business</option><option value="direct_individual">Direct individual (automatic 3× premium)</option></select></label><label className="field"><span>Fulfillment</span><select name="fulfillment_mode"><option value="collection">Collection</option><option value="delivery">Delivery</option><option value="consignment">Consignment</option></select></label></div>
-        <label className="field"><span>Licensed business and license (business channel)</span><select name="business_key"><option value="">Not a licensed-business order</option>{workspace.businesses.flatMap((business)=>business.licenses.map((license)=><option key={license.id} value={`${business.party_id}|${business.dealer_authorization_id}|${license.id}|${business.jurisdiction_id}`}>{business.party_name} · {business.dealer_reference} · {license.reference} · {license.class}</option>))}</select></label>
-        <div className="staff-form-grid"><label className="field"><span>Returning direct customer</span><select name="direct_customer_id"><option value="">Create a new direct customer</option>{workspace.direct_customers.map((customer)=><option key={customer.party_id} value={customer.party_id}>{customer.name} · {customer.reference}</option>)}</select></label><label className="field"><span>New direct customer name</span><input maxLength={200} name="new_customer_name" placeholder="Only for a new direct customer"/></label></div>
-        <div className="staff-form-grid"><label className="field"><span>Direct customer jurisdiction</span><select name="jurisdiction_id"><option value="">Business order derives jurisdiction</option>{workspace.jurisdictions.map((item)=><option key={item.id} value={item.id}>{item.label}</option>)}</select></label><label className="field"><span>Customer contact / Discord label</span><input maxLength={300} name="contact_label"/></label></div>
-        {[1,2,3,4,5].map((number)=><OrderLine items={workspace.items} key={number} number={number}/>)}
-        <label className="field"><span>Customer notes</span><textarea maxLength={2000} name="notes" rows={2}/></label><label className="field"><span>Staff audit reason</span><input maxLength={500} name="reason" required placeholder="Example: Entered by Agent Tullius after in-game counter request."/></label>
-        <button className="button button-primary">Price, quota-check, and submit order</button>
-      </form></section>}
-
-    {workspace.capabilities.can_review_applications&&<section className="integration-section quick-action-target" id="license-review"><div className="inventory-section-heading"><div><p className="eyebrow">Public intake to issued authority</p><h2>License applications and renewals</h2></div><Link className="button button-primary" href="/staff/applications">Open review queue</Link></div><p>{workspace.applications.length} application{workspace.applications.length===1?"":"s"} currently await a decision. The dedicated review workspace shows endorsements, holder selection, approval, denial, and recent decision history.</p></section>}
-
-    {workspace.capabilities.can_manage_finance&&<section className="integration-section quick-action-target" id="consignment-finance"><div className="inventory-section-heading"><div><p className="eyebrow">Configurable commission</p><h2>Consignment finance</h2></div><p>Terms are effective-dated. Settlement uses the terms in force when the dealer submitted the accepted report.</p></div>
-      <details className="configuration-item-card"><summary><strong>Configure agreement commission</strong><span>Open command</span></summary><form action={configureFinanceTermsAction} className="inventory-command-form"><label className="field"><span>Agreement</span><select name="agreement_id" required>{workspace.consignment_agreements.map((item)=><option key={item.id} value={item.id}>{item.label}</option>)}</select></label><div className="staff-form-grid"><label className="field"><span>Commission percent</span><input min="0" max="100" name="commission_percent" step="0.01" type="number" required/></label><label className="field"><span>Currency</span><input defaultValue="SEP" maxLength={12} name="currency_code" required/></label></div><div className="staff-form-grid"><label className="field"><span>Effective from</span><input name="effective_from" type="datetime-local"/></label><label className="field"><span>Effective until</span><input name="effective_until" type="datetime-local"/></label></div><label className="field"><span>Reason</span><input maxLength={500} name="reason" required/></label><button className="button button-secondary">Set commission terms</button></form></details>
-      <div className="inventory-command-grid">{workspace.settlement_candidates.map((candidate)=><form action={createSettlementAction} className="inventory-command-form" key={candidate.report_id}><h3>{candidate.report_reference}</h3><p>{candidate.agreement_reference} · {candidate.quantity_sold} sold</p><input name="report_id" type="hidden" value={candidate.report_id}/><label className="field"><span>Actual sale price per unit (Septims)</span><input min="0" name="unit_sale_price" type="number" required/></label><label className="field"><span>Settlement reason</span><input maxLength={500} name="reason" required/></label><button className="button button-primary">Calculate and freeze settlement</button></form>)}</div>
-      <div className="inventory-reservation-list">{workspace.settlements.map((settlement)=><article className="inventory-reservation-card" key={settlement.id}><header><h3>{settlement.reference}</h3><strong>{settlement.status}</strong></header><p>Gross {settlement.gross} · commission {settlement.commission} · owner {settlement.owner_amount} {settlement.currency}</p>{settlement.status==="pending"&&<form action={markSettlementPaidAction} className="inventory-command-form"><input name="settlement_id" type="hidden" value={settlement.id}/><input name="expected_version" type="hidden" value={settlement.version}/><label className="field"><span>Payment reference / evidence</span><input maxLength={200} name="payment_reference" required/></label><label className="field"><span>Reason</span><input maxLength={500} name="reason" required/></label><button className="button button-secondary">Record paid</button></form>}</article>)}</div>
-    </section>}
-
-    {workspace.capabilities.can_fulfill_asset&&<section className="integration-section quick-action-target" id="unique-fulfillment"><div className="inventory-section-heading"><div><p className="eyebrow">One asset · one recipient</p><h2>Unique-asset fulfillment</h2></div><p>This consumes the active reservation and transfers authoritative custody in one command.</p></div><div className="inventory-command-grid">{workspace.unique_reservations.map((reservation)=><form action={fulfillUniqueAssetAction} className="inventory-command-form" key={reservation.reservation_id}><h3>{reservation.asset_reference}</h3><p>{reservation.order_reference} · {reservation.customer_name}</p><small>Reserved as {reservation.reservation_reference} until {new Date(reservation.expires_at).toLocaleString(locale)}</small><input name="reservation_id" type="hidden" value={reservation.reservation_id}/><input name="reservation_version" type="hidden" value={reservation.reservation_version}/><input name="asset_version" type="hidden" value={reservation.asset_version}/><label className="field"><span>Accepted handoff evidence</span><input maxLength={500} name="reason" required/></label><button className="button button-primary">Fulfill and transfer custody</button></form>)}{workspace.unique_reservations.length===0&&<p>No active unique reservation is ready for delivery.</p>}</div></section>}
-
-    {workspace.capabilities.can_manage_pricing&&<section className="integration-section quick-action-target" id="dealer-pricing"><div className="inventory-section-heading"><div><p className="eyebrow">Exact precedence</p><h2>Dealer-specific pricing</h2></div><p>Party → license class → dealer type → jurisdiction → channel default → audience fallback. Higher numeric priority breaks ties inside a level.</p></div><form action={configurePriceBindingAction} className="inventory-command-form"><div className="staff-form-grid"><label className="field"><span>Price schedule</span><select name="schedule_id" required>{workspace.price_schedules.map((item)=><option key={item.id} value={item.id}>{item.label} · {item.audience}</option>)}</select></label><label className="field"><span>Binding level</span><select name="binding_type"><option value="party">Specific dealer party (highest)</option><option value="license_class">License class</option><option value="dealer_type">Dealer type</option><option value="jurisdiction">Jurisdiction</option><option value="channel_default">Channel default</option></select></label></div><label className="field"><span>Target (leave blank only for channel default)</span><select name="target_id"><option value="">Channel default</option><optgroup label="Parties">{workspace.price_targets.parties.map((item)=><option key={item.id} value={item.id}>{item.label}</option>)}</optgroup><optgroup label="License classes">{workspace.price_targets.license_classes.map((item)=><option key={item.id} value={item.id}>{item.label}</option>)}</optgroup><optgroup label="Dealer types">{workspace.price_targets.dealer_types.map((item)=><option key={item.id} value={item.id}>{item.label}</option>)}</optgroup><optgroup label="Jurisdictions">{workspace.price_targets.jurisdictions.map((item)=><option key={item.id} value={item.id}>{item.label}</option>)}</optgroup></select></label><div className="staff-form-grid"><label className="field"><span>Channel (for channel default)</span><select name="channel_code"><option value="staff_assisted_business">Staff-assisted business</option><option value="dealer_portal">Dealer portal</option><option value="direct_individual">Direct individual</option></select></label><label className="field"><span>Tie priority</span><input defaultValue="0" max="1000" min="-1000" name="priority" type="number"/></label></div><div className="staff-form-grid"><label className="field"><span>Effective from</span><input name="effective_from" type="datetime-local"/></label><label className="field"><span>Effective until</span><input name="effective_until" type="datetime-local"/></label></div><label className="field"><span>Reason</span><input maxLength={500} name="reason" required/></label><button className="button button-secondary">Create effective price binding</button></form></section>}
-
-    {workspace.capabilities.can_generate_documents&&<section className="integration-section quick-action-target" id="official-documents"><div className="inventory-section-heading"><div><p className="eyebrow">Immutable snapshot → PDF projection</p><h2>Generate official records</h2></div><Link className="button button-secondary" href="/staff/documents">Document archive</Link></div><div className="inventory-command-grid"><DocumentForm label="License" options={workspace.document_sources.licenses} type="license_certificate"/><DocumentForm label="Order" options={workspace.document_sources.orders} type="order_confirmation"/><DocumentForm label="Unique fulfillment" options={workspace.document_sources.fulfillments} type="unique_fulfillment_receipt"/><DocumentForm label="Consignment settlement" options={workspace.document_sources.settlements} type="consignment_statement"/></div></section>}
-  </main>;
+export default function LaunchPage() {
+  return (
+    <main className="staff-main">
+      <header className="staff-page-header">
+        <div>
+          <p className="eyebrow">Quick actions</p>
+          <h1>What do you need to do?</h1>
+          <p>Each action opens its own short, guided workspace. Records and references never need to be copied between desks.</p>
+        </div>
+      </header>
+      <section className="action-launcher-grid" aria-label="Available quick actions">
+        {actions.map((action) => (
+          <Link href={action.href} key={action.href}>
+            <span><UiIcon name={action.icon} size={22} /></span>
+            <div><h2>{action.label}</h2><p>{action.description}</p></div>
+            <UiIcon name="arrow" size={18} />
+          </Link>
+        ))}
+      </section>
+    </main>
+  );
 }
