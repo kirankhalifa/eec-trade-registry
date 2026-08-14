@@ -1,6 +1,6 @@
 begin;
 
-select plan(23);
+select plan(24);
 
 select has_table(
   'private',
@@ -18,6 +18,15 @@ select has_function('private', 'scope_object_is_valid', array['text', 'jsonb'], 
 select ok(private.scope_object_is_valid('staff_assignment', '{}'::jsonb), 'global staff scope is valid');
 select ok(not private.scope_object_is_valid('staff_assignment', '{"warehose_ids": []}'::jsonb), 'unknown staff scope keys fail loudly');
 select ok(not private.scope_object_is_valid('staff_assignment', '{"warehouse_ids": ["not-a-uuid"]}'::jsonb), 'malformed warehouse scopes fail loudly');
+select ok(
+  not exists (
+    select 1
+    from public.endorsement_definitions
+    where code = 'calibrated-instruments'
+      and active
+  ),
+  'the fictional calibrated-instrument fixture is not offered publicly'
+);
 select matches(private.allocate_license_reference(), '^EEC-LIC-[0-9]{4}-[A-F0-9]{10}$', 'new license references include entropy');
 select matches(private.allocate_dealer_reference(), '^EEC-DLR-[0-9]{4}-[A-F0-9]{10}$', 'new dealer references include entropy');
 select has_function(

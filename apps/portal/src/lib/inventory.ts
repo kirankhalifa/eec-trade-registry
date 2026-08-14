@@ -87,7 +87,15 @@ const inventoryTransactionSchema = z.object({
   reason: z.string(),
   reversal_of_id: z.guid().nullable(),
   source_reference: z.string(),
-  transaction_type: z.enum(["receipt", "reversal"]),
+  transaction_type: z.enum([
+    "receipt",
+    "issue",
+    "transfer_dispatch",
+    "transfer_receipt",
+    "consignment_issue",
+    "consignment_settlement",
+    "reversal",
+  ]),
   warehouse_id: z.guid(),
   warehouse_name: z.string(),
 });
