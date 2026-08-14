@@ -491,14 +491,15 @@ values
   );
 
 insert into public.endorsement_definitions (
-  id, code, display_name, public_display_name, description
+  id, code, display_name, public_display_name, description, active
 )
 values (
   '98000000-0000-0000-0000-000000000001',
   'calibrated-instruments',
   'Calibrated instrument trade',
   'Calibrated instrument trade',
-  'A fictional modular endorsement with no production policy effect.'
+  'A fictional modular endorsement with no production policy effect.',
+  false
 );
 
 insert into public.licenses (
