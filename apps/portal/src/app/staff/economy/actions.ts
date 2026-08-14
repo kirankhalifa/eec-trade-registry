@@ -9,17 +9,23 @@ import {
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 const economyPath = "/staff/economy";
-function destination(key: "error" | "notice", value: string) {
-  return `${economyPath}?${new URLSearchParams({ [key]: value })}`;
+function returnPath(formData: FormData) {
+  const candidate = formData.get("return_to");
+  return typeof candidate === "string" && /^\/staff\/materials\/[A-Za-z0-9-]+$/.test(candidate)
+    ? candidate
+    : economyPath;
 }
-function errorPath(error: { code?: string; message: string }) {
+function destination(key: "error" | "notice", value: string, path = economyPath) {
+  return `${path}?${new URLSearchParams({ [key]: value })}`;
+}
+function errorPath(error: { code?: string; message: string }, path = economyPath) {
   console.error(`[staff-economy:mutation] ${error.code ?? "unknown"}`);
-  if (error.code === "40001" || error.message.includes("version_conflict")) return destination("error", "conflict");
-  if (error.code === "42501" || error.code === "28000") return destination("error", "access_denied");
-  if (error.code === "P0002") return destination("error", "not_found");
-  if (error.message.includes("player_sourced_procurement_required")) return destination("error", "player_source_required");
-  if (["22023", "23514", "23P01"].includes(error.code ?? "")) return destination("error", "invalid_input");
-  return destination("error", "save_failed");
+  if (error.code === "40001" || error.message.includes("version_conflict")) return destination("error", "conflict", path);
+  if (error.code === "42501" || error.code === "28000") return destination("error", "access_denied", path);
+  if (error.code === "P0002") return destination("error", "not_found", path);
+  if (error.message.includes("player_sourced_procurement_required")) return destination("error", "player_source_required", path);
+  if (["22023", "23514", "23P01"].includes(error.code ?? "")) return destination("error", "invalid_input", path);
+  return destination("error", "save_failed", path);
 }
 async function verifiedClient() {
   const client = await createServerSupabaseClient();
@@ -32,8 +38,9 @@ function refresh() {
 }
 
 export async function saveSupplyPolicyAction(formData: FormData) {
+  const path = returnPath(formData);
   const parsed = readSupplyPolicyForm(formData);
-  if (!parsed.success) redirect(destination("error", "invalid_input"));
+  if (!parsed.success) redirect(destination("error", "invalid_input", path));
   const client = await verifiedClient(); if (!client) redirect("/staff/login");
   const input = parsed.data;
   const { error } = await client.rpc("staff_upsert_item_supply_policy", {
@@ -46,12 +53,13 @@ export async function saveSupplyPolicyAction(formData: FormData) {
     p_reason: input.reason, p_request_id: crypto.randomUUID(), p_supply_mode: input.supplyMode,
     p_surplus_level: input.surplusLevel, p_target_level: input.targetLevel,
   });
-  if (error) redirect(errorPath(error)); refresh(); redirect(destination("notice", "policy_saved"));
+  if (error) redirect(errorPath(error, path)); refresh(); redirect(destination("notice", "policy_saved", path));
 }
 
 export async function registerSupplierAction(formData: FormData) {
+  const path = returnPath(formData);
   const parsed = readSupplierForm(formData);
-  if (!parsed.success) redirect(destination("error", "invalid_input"));
+  if (!parsed.success) redirect(destination("error", "invalid_input", path));
   const client = await verifiedClient(); if (!client) redirect("/staff/login");
   const input = parsed.data;
   const { error } = await client.rpc("staff_register_procurement_supplier", {
@@ -59,12 +67,13 @@ export async function registerSupplierAction(formData: FormData) {
     p_legal_name: input.legalName, p_notes: input.notes, p_party_type_code: input.partyTypeCode,
     p_reason: input.reason, p_request_id: crypto.randomUUID(),
   });
-  if (error) redirect(errorPath(error)); refresh(); redirect(destination("notice", "supplier_registered"));
+  if (error) redirect(errorPath(error, path)); refresh(); redirect(destination("notice", "supplier_registered", path));
 }
 
 export async function createOfferAction(formData: FormData) {
+  const path = returnPath(formData);
   const parsed = readOfferForm(formData);
-  if (!parsed.success) redirect(destination("error", "invalid_input"));
+  if (!parsed.success) redirect(destination("error", "invalid_input", path));
   const client = await verifiedClient(); if (!client) redirect("/staff/login");
   const input = parsed.data;
   const { error } = await client.rpc("staff_create_procurement_offer", {
@@ -74,12 +83,13 @@ export async function createOfferAction(formData: FormData) {
     p_notes: input.notes, p_reason: input.reason, p_request_id: crypto.randomUUID(),
     p_staff_review_quantity: input.staffReviewQuantity,
   });
-  if (error) redirect(errorPath(error)); refresh(); redirect(destination("notice", "offer_created"));
+  if (error) redirect(errorPath(error, path)); refresh(); redirect(destination("notice", "offer_created", path));
 }
 
 export async function recordDeliveryAction(formData: FormData) {
+  const path = returnPath(formData);
   const parsed = readDeliveryForm(formData);
-  if (!parsed.success) redirect(destination("error", "invalid_input"));
+  if (!parsed.success) redirect(destination("error", "invalid_input", path));
   const client = await verifiedClient(); if (!client) redirect("/staff/login");
   const input = parsed.data;
   const { error } = await client.rpc("staff_record_procurement_delivery", {
@@ -87,7 +97,7 @@ export async function recordDeliveryAction(formData: FormData) {
     p_reason: input.reason, p_request_id: crypto.randomUUID(),
     p_stock_location_id: input.stockLocationId, p_supplier_id: input.supplierId,
   });
-  if (error) redirect(errorPath(error)); refresh(); redirect(destination("notice", "delivery_received"));
+  if (error) redirect(errorPath(error, path)); refresh(); redirect(destination("notice", "delivery_received", path));
 }
 
 export async function settleDeliveryAction(formData: FormData) {

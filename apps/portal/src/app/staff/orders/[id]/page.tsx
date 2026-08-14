@@ -10,6 +10,7 @@ import {
   reviewOrderLineAction,
 } from "@/app/staff/orders/actions";
 import { OrderNotice } from "@/components/order-notice";
+import { ReferenceBlock } from "@/components/reference-block";
 import { StaffAccessDenied } from "@/components/staff-access-denied";
 import { UiIcon } from "@/components/ui-icon";
 import { getDefaultLocale } from "@/lib/env";
@@ -58,6 +59,8 @@ export default async function StaffOrderDetail({ params, searchParams }: StaffOr
         </div>
         <span className={`order-status order-status-${order.status}`}>{label(order.status)}</span>
       </header>
+
+      <ReferenceBlock label="Order reference" reference={order.public_reference} status={label(order.status)} />
 
       <OrderNotice error={parameters.error} notice={parameters.notice} />
 

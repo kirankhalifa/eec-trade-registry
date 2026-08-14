@@ -54,6 +54,12 @@ export default async function StaffInventoryPage({ searchParams }: StaffInventor
     (position) => position.stock_state === "available" && position.available > 0,
   );
   const fungibleItems = workspace.items.filter((item) => item.inventory_mode === "fungible");
+  const stockLocations = workspace.warehouses.flatMap((warehouse) =>
+    warehouse.locations.map((location) => ({
+      ...location,
+      warehouseName: warehouse.display_name,
+    })),
+  );
 
   return (
     <main className="staff-main">
@@ -64,7 +70,7 @@ export default async function StaffInventoryPage({ searchParams }: StaffInventor
           <p>On-hand stock is derived from immutable balanced entries. Reservations are separate 48-hour claims and never overwrite a balance.</p>
         </div>
         <div className="staff-button-row">
-          <Link className="button button-primary" href="/staff/configuration">Quick add</Link>
+          <Link className="button button-primary" href="/staff/orders">Order queue</Link>
           <Link className="button button-secondary" href="/staff/fulfillment">Fulfillment</Link>
           <Link className="button button-secondary" href="/staff/transfers">Transfers</Link>
         </div>
@@ -82,25 +88,25 @@ export default async function StaffInventoryPage({ searchParams }: StaffInventor
       <div className="inventory-command-grid">
         <section className="staff-form inventory-command-card">
           <div><p className="eyebrow">Immutable receipt</p><h2>Receive fungible stock</h2><p>Use only for goods whose supply policy permits generic receipts. Player-sourced keystone materials must use the economy desk.</p></div>
-          <form action={postInventoryReceiptAction} className="inventory-command-form">
-            <label className="field"><span>Warehouse location</span><select name="stock_location_id" required>{workspace.warehouses.flatMap((warehouse) => warehouse.locations.map((location) => <option key={location.id} value={location.id}>{warehouse.display_name} · {location.display_name}</option>))}</select></label>
-            <label className="field"><span>Fungible item</span><select name="item_id" required>{fungibleItems.map((item) => <option key={item.id} value={item.id}>{item.item_code} · {item.display_name} ({item.unit_code})</option>)}</select></label>
+          {fungibleItems.length > 0 && stockLocations.length > 0 ? <form action={postInventoryReceiptAction} className="inventory-command-form">
+            {stockLocations.length === 1 ? <><input name="stock_location_id" type="hidden" value={stockLocations[0].id} /><p className="derived-choice"><span>Receive into</span><strong>{stockLocations[0].warehouseName} · {stockLocations[0].display_name}</strong></p></> : <label className="field"><span>Receive into</span><select defaultValue="" name="stock_location_id" required><option disabled value="">Choose a location</option>{stockLocations.map((location) => <option key={location.id} value={location.id}>{location.warehouseName} · {location.display_name}</option>)}</select></label>}
+            <label className="field"><span>Item received</span><select defaultValue="" name="item_id" required><option disabled value="">Choose an item</option>{fungibleItems.map((item) => <option key={item.id} value={item.id}>{item.item_code} · {item.display_name} ({item.unit_code})</option>)}</select></label>
             <label className="field"><span>Quantity</span><input min="0.001" name="quantity" required step="0.001" type="number" /></label>
             <label className="field"><span>Source or manifest reference</span><input maxLength={200} name="source_reference" required /></label>
             <label className="field"><span>Audit reason</span><textarea maxLength={500} name="reason" required rows={3} /></label>
-            <button className="button button-primary" disabled={fungibleItems.length === 0 || workspace.warehouses.length === 0} type="submit">Post receipt</button>
-          </form>
+            <button className="button button-primary" type="submit">Post receipt</button>
+          </form> : <div className="empty-state"><p>No items currently permit a generic warehouse receipt.</p><Link href="/staff/economy">Receive player-sourced materials through the economy desk</Link></div>}
         </section>
 
         <section className="staff-form inventory-command-card">
           <div><p className="eyebrow">Atomic stock claim</p><h2>Reserve approved demand</h2><p>The database rechecks account availability and approved remaining quantity.</p></div>
-          <form action={createReservationAction} className="inventory-command-form">
-            <label className="field"><span>Approved order line</span><select name="order_line_id" required>{workspace.order_lines.map((line) => <option key={line.id} value={line.id}>{line.order_reference} · line {line.line_number} · {line.item_code} · {quantity(line.quantity_approved - line.quantity_fulfilled - line.quantity_reserved)} remaining</option>)}</select></label>
-            <label className="field"><span>Available inventory account</span><select name="inventory_account_id" required>{availablePositions.map((position) => <option key={position.account_id} value={position.account_id}>{position.item_code} · {position.warehouse_name}/{position.location_name} · {quantity(position.available)} available</option>)}</select></label>
+          {workspace.order_lines.length > 0 && availablePositions.length > 0 ? <form action={createReservationAction} className="inventory-command-form">
+            <label className="field"><span>Approved order line</span><select defaultValue="" name="order_line_id" required><option disabled value="">Choose an order line</option>{workspace.order_lines.map((line) => <option key={line.id} value={line.id}>{line.order_reference} · line {line.line_number} · {line.item_code} · {quantity(line.quantity_approved - line.quantity_fulfilled - line.quantity_reserved)} remaining</option>)}</select></label>
+            <label className="field"><span>Reserve from</span><select defaultValue="" name="inventory_account_id" required><option disabled value="">Choose matching stock</option>{availablePositions.map((position) => <option key={position.account_id} value={position.account_id}>{position.item_code} · {position.warehouse_name}/{position.location_name} · {quantity(position.available)} available</option>)}</select></label>
             <label className="field"><span>Quantity</span><input min="0.001" name="quantity" required step="0.001" type="number" /></label>
             <label className="field"><span>Audit reason</span><textarea maxLength={500} name="reason" required rows={3} /></label>
-            <button className="button button-primary" disabled={workspace.order_lines.length === 0 || availablePositions.length === 0} type="submit">Create 48-hour reservation</button>
-          </form>
+            <button className="button button-primary" type="submit">Create 48-hour reservation</button>
+          </form> : <div className="empty-state"><p>{workspace.order_lines.length === 0 ? "No approved order lines are waiting for stock." : "No matching stock is currently available to reserve."}</p><Link href="/staff/orders">Open the order queue</Link></div>}
         </section>
       </div>
 

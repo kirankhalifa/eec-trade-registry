@@ -3,11 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { CatalogueUnavailable } from "@/components/catalogue-unavailable";
+import { RelativeTime } from "@/components/relative-time";
 import { getPublicCatalogueItem } from "@/lib/catalogue";
 import { getDefaultLocale } from "@/lib/env";
 import { formatMinorAmount, formatQuantity } from "@/lib/format";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 interface CatalogueItemPageProps {
   params: Promise<{ slug: string }>;
@@ -28,6 +29,16 @@ export async function generateMetadata({
   return {
     title: result.data.display_name,
     description: result.data.description,
+    openGraph: {
+      description: result.data.description,
+      title: result.data.display_name,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      description: result.data.description,
+      title: result.data.display_name,
+    },
   };
 }
 
@@ -135,8 +146,8 @@ export default async function CatalogueItemPage({
 
         <footer>
           <p>
-            This entry was projected from the authoritative registry. It does
-            not expose exact stock or establish purchase eligibility.
+            Registry terms refreshed <RelativeTime value={item.generated_at} />.
+            This entry does not expose exact stock or establish purchase eligibility.
           </p>
         </footer>
       </article>

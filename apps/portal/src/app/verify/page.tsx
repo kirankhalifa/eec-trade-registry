@@ -1,55 +1,66 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+
+import { VerificationForm } from "@/components/verification-form";
+import {
+  DealerVerificationResult,
+  LicenseVerificationResult,
+  UnsupportedVerificationReference,
+  VerificationRateLimited,
+  VerificationUnavailable,
+} from "@/components/verification-result";
+import { getDefaultLocale } from "@/lib/env";
+import {
+  createPublicVerificationFingerprints,
+  verifyPublicDealer,
+  verifyPublicLicense,
+} from "@/lib/verification";
+import {
+  inferVerificationKind,
+  parseVerificationReference,
+} from "@/lib/verification-query";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Public verification",
   description:
-    "Verify published dealer authorizations and licenses by exact public reference.",
+    "Verify a published East Empire Company dealer authorization or license by its exact DLR or LIC reference.",
 };
 
-export default function VerificationLandingPage() {
+interface VerificationPageProps {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function VerificationPage({
+  searchParams,
+}: VerificationPageProps) {
+  const reference = parseVerificationReference(await searchParams);
+  const kind = reference ? inferVerificationKind(reference) : null;
+  const locale = getDefaultLocale();
+  const fingerprints = reference
+    ? await createPublicVerificationFingerprints(reference)
+    : null;
+  const dealerLookup =
+    reference && kind === "dealer"
+      ? await verifyPublicDealer(reference, fingerprints ?? undefined)
+      : null;
+  const licenseLookup =
+    reference && kind === "license"
+      ? await verifyPublicLicense(reference, fingerprints ?? undefined)
+      : null;
+
   return (
-    <main>
+    <main className="verification-main">
       <section className="verification-hero">
         <p className="eyebrow">Official public registry</p>
-        <h1>Verify a published record.</h1>
+        <h1>Verify a dealer or license.</h1>
         <p>
-          Use the exact public reference printed on an authorization or license.
-          The registry returns a privacy-safe result directly from the
-          authoritative database.
+          Enter the exact DLR or LIC reference. The prefix tells the registry
+          which record to check; no separate lookup screen is required.
         </p>
       </section>
-      <section className="verification-choices" aria-labelledby="choose-record">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Reference lookup</p>
-            <h2 id="choose-record">Choose a record type</h2>
-          </div>
-        </div>
-        <div className="verification-choice-grid">
-          <Link className="verification-choice" href="/verify/dealer">
-            <span>01</span>
-            <div>
-              <h3>Dealer authorization</h3>
-              <p>
-                Confirm the published identity, type, region, term, and related
-                public license summaries for an authorized counterparty.
-              </p>
-            </div>
-            <strong>Verify dealer →</strong>
-          </Link>
-          <Link className="verification-choice" href="/verify/license">
-            <span>02</span>
-            <div>
-              <h3>License</h3>
-              <p>
-                Confirm the published holder, class, jurisdiction, term,
-                endorsements, and public conditions for an issued license.
-              </p>
-            </div>
-            <strong>Verify license →</strong>
-          </Link>
-        </div>
+      <section className="verification-choices verification-lookup-shell">
+        <VerificationForm reference={reference} />
         <aside className="verification-privacy-note">
           <strong>Privacy by design</strong>
           <p>
@@ -58,6 +69,33 @@ export default function VerificationLandingPage() {
           </p>
         </aside>
       </section>
+      {reference && !kind && (
+        <UnsupportedVerificationReference reference={reference} />
+      )}
+      {dealerLookup &&
+        (!dealerLookup.ok ? (
+          dealerLookup.code === "rate_limited" ? (
+            <VerificationRateLimited />
+          ) : (
+            <VerificationUnavailable
+              notConfigured={dealerLookup.code === "not_configured"}
+            />
+          )
+        ) : (
+          <DealerVerificationResult result={dealerLookup.data} locale={locale} />
+        ))}
+      {licenseLookup &&
+        (!licenseLookup.ok ? (
+          licenseLookup.code === "rate_limited" ? (
+            <VerificationRateLimited />
+          ) : (
+            <VerificationUnavailable
+              notConfigured={licenseLookup.code === "not_configured"}
+            />
+          )
+        ) : (
+          <LicenseVerificationResult result={licenseLookup.data} locale={locale} />
+        ))}
     </main>
   );
 }

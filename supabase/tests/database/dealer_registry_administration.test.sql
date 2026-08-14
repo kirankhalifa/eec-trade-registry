@@ -73,7 +73,7 @@ select is((select count(*)::integer from public.parties as party join public.dea
 select is((select count(*)::integer from public.dealer_authorization_events where request_id = 'c2000000-0000-0000-0000-000000000001'), 1, 'onboarding history is append-only and idempotent');
 select is((select count(*)::integer from public.audit_log where record_type = 'public.dealer_authorizations' and request_id = 'c2000000-0000-0000-0000-000000000001'), 1, 'dealer onboarding is audited once');
 select is((select count(*)::integer from public.outbox_events where deduplication_key = 'dealer.authorization_created:c2000000-0000-0000-0000-000000000001'), 1, 'dealer onboarding emits one durable event');
-select matches((select public_reference from public.dealer_authorizations where source_request_id = 'c2000000-0000-0000-0000-000000000001'), '^EEC-DLR-[0-9]{4,}$', 'dealer public reference comes from configuration');
+select matches((select public_reference from public.dealer_authorizations where source_request_id = 'c2000000-0000-0000-0000-000000000001'), '^EEC-DLR-[0-9]{4}-[A-F0-9]{10}$', 'dealer public reference comes from configuration and includes lookup entropy');
 select set_config('test.dealer_id', (select id::text from public.dealer_authorizations where source_request_id = 'c2000000-0000-0000-0000-000000000001'), true);
 select set_config('test.dealer_reference', (select public_reference from public.dealer_authorizations where id = current_setting('test.dealer_id')::uuid), true);
 select is((select result_code from public.public_dealer_verification(current_setting('test.dealer_reference'))), 'valid', 'new active disclosed dealer verifies publicly');

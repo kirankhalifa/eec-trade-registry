@@ -3,7 +3,7 @@ import { z } from "zod";
 
 const option = z.object({ code: z.string(), label: z.string() });
 export const applicationOptionsSchema = z.object({
-  endorsements: z.array(option.extend({ description: z.string() })), jurisdictions: z.array(option), license_classes: z.array(option),
+  endorsements: z.array(option.extend({ description: z.string(), group: z.string() })), jurisdictions: z.array(option), license_classes: z.array(option),
 });
 export type ApplicationOptions = z.infer<typeof applicationOptionsSchema>;
 

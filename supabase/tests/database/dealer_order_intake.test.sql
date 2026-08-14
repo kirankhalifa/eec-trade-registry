@@ -2,6 +2,19 @@ begin;
 
 select plan(60);
 
+-- Order behavior is tested against the original mixed-control fixtures. They
+-- are withdrawn from public launch data, so publish them only inside this
+-- rolled-back test transaction.
+update public.item_publications
+set publication_status = 'published'
+where item_id in (
+  '70000000-0000-0000-0000-000000000001',
+  '70000000-0000-0000-0000-000000000002',
+  '70000000-0000-0000-0000-000000000003',
+  '70000000-0000-0000-0000-000000000004'
+)
+  and audience_code = 'public';
+
 select has_table('public', 'orders', 'orders table exists');
 select has_table('public', 'order_lines', 'order lines table exists');
 select has_table('public', 'order_status_events', 'order status history exists');

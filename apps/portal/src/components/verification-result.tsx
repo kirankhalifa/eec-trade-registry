@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { ReferenceBlock } from "@/components/reference-block";
+
 import type {
   DealerVerification,
   LicenseVerification,
@@ -35,7 +37,13 @@ function ResultHeader({ code, reference, verifiedAt, locale }: ResultHeaderProps
       <div>
         <p className="eyebrow">Verification result</p>
         <h2>{resultLabels[code]}</h2>
-        {reference && <p className="verification-reference">{reference}</p>}
+        {reference && (
+          <ReferenceBlock
+            label="Public reference"
+            reference={reference}
+            status={resultLabels[code]}
+          />
+        )}
       </div>
       <span className={`verification-badge verification-badge-${code}`}>
         {resultLabels[code]}
@@ -44,6 +52,40 @@ function ResultHeader({ code, reference, verifiedAt, locale }: ResultHeaderProps
         Queried {formatDate(verifiedAt, locale, true)}
       </p>
     </header>
+  );
+}
+
+export function UnsupportedVerificationReference({
+  reference,
+}: {
+  reference: string;
+}) {
+  return (
+    <section className="verification-result" aria-live="polite">
+      <div className="verification-generic-miss">
+        <p className="eyebrow">Reference not recognized</p>
+        <h2>Use a dealer or license reference.</h2>
+        <p>
+          Current dealer references begin with EEC-DLR- and license references
+          begin with EEC-LIC-. Earlier DLR- and LIC- records remain valid. Order, fulfillment, and private application references
+          are not public verification records.
+        </p>
+        <ReferenceBlock label="Entered reference" reference={reference} />
+      </div>
+    </section>
+  );
+}
+
+export function VerificationRateLimited() {
+  return (
+    <section className="notice-panel" role="status">
+      <p className="eyebrow">Lookup limit reached</p>
+      <h2>Wait a few minutes, then try again.</h2>
+      <p>
+        Public verification is intentionally rate limited to protect the
+        registry from automated reference guessing.
+      </p>
+    </section>
   );
 }
 
@@ -149,7 +191,7 @@ export function DealerVerificationResult({
               <li key={license.public_reference}>
                 <Link
                   href={{
-                    pathname: "/verify/license",
+                    pathname: "/verify",
                     query: { reference: license.public_reference },
                   }}
                 >

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const text = (maximum: number) => z.string().trim().min(1).max(maximum);
-const optionalGuid = z.union([z.literal(""), z.guid()]).transform((value) => value || null);
+const optionalGuid = z.union([z.undefined(), z.literal(""), z.guid()]).transform((value) => value || null);
 const optionalDate = z.union([z.literal(""), z.iso.datetime({ local: true })]).transform((value) => value || null);
 
 function fields(form: FormData) {
@@ -15,6 +15,10 @@ export const assistedOrderSchema = z.object({
   new_customer_name: z.string().trim().max(200).default(""), notes: z.string().trim().max(2000).default(""),
   reason: text(500),
 });
+
+export type AssistedOrderInput = z.infer<typeof assistedOrderSchema> & {
+  lines: Array<{ item_id: string; quantity: number }>;
+};
 
 export function readAssistedOrderForm(form: FormData) {
   const base = assistedOrderSchema.safeParse(fields(form));
@@ -61,7 +65,7 @@ export const documentGenerationSchema = z.object({
 export const priceBindingSchema = z.object({
   binding_type: z.enum(["party", "license_class", "dealer_type", "jurisdiction", "channel_default"]),
   channel_code: z.enum(["dealer_portal", "staff_assisted_business", "direct_individual"]).optional(),
-  effective_from: optionalDate, effective_until: optionalDate, priority: z.coerce.number().int().min(-1000).max(1000),
+  effective_from: optionalDate, effective_until: optionalDate, priority: z.coerce.number().int().min(-1000).max(1000).default(0),
   reason: text(500), schedule_id: z.guid(), target_id: optionalGuid,
 });
 

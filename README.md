@@ -2,7 +2,7 @@
 
 A configurable trade, licensing, wholesale distribution, inventory, and compliance platform. Supabase PostgreSQL is the sole authoritative data source; the web portal and future integrations are projections of its records.
 
-The active implementation includes the unauthenticated public catalogue, Discord OAuth staff sign-in with database-authorized staff operations, audited effective-dated staff access administration, an operational health console, exact-reference public dealer and license verification, credential-based dealer access with effective-dated representation, an audited staff licensing office, wholesale order intake, warehouse ledger and reservation operations, fungible fulfillment, warehouse transfers, fungible consignment custody, serialized-asset custody, policy-neutral compliance casework, and one-way projection integrations. Dealers can submit requisitions without price or stock on hand and report consigned sales, returns, loss, damage, and observed stock. Authorized staff can process orders and custody, then separately record compliance inspections, allegations, restricted evidence metadata, explicit findings, record-only action reviews, and appeals through immutable case history. Compliance actions currently cannot alter a license, authorization, order, quota, stock record, or asset. A leased worker replaces approved public Google Sheet tabs and delivers allowlisted Discord alerts, while signed Discord commands expose only the existing public catalogue and verification contracts. Applications, renewal, unique-asset fulfillment, stock-count reconciliation, consignment finance/exception handling, cross-domain enforcement effects, evidence file storage, and generated documents remain policy-gated work.
+The active implementation includes the public catalogue and verification registry, public license applications and renewal intake, Discord-authenticated owner and agent operations, dealer access, staff-assisted business and direct-customer ordering, authoritative pricing previews, ledger inventory, reservations and fulfillment, keystone-material procurement, consignment settlement, serialized-asset custody and fulfillment, compliance casework/effects, generated documents, and one-way projection integrations. The machine-readable feature manifest generates the current status table in the [Player and Discord Admin Handbook](docs/PLAYER_ADMIN_HANDBOOK.md#current-feature-status); CI rejects documentation drift.
 
 ## Repository layout
 
@@ -66,19 +66,7 @@ For local development only:
 
 1. Configure a Discord developer application with the local Supabase callback `http://localhost:54321/auth/v1/callback` and enable the Discord provider in local Supabase Auth.
 2. Complete Discord sign-in once, open local Supabase Studio at `http://127.0.0.1:54323`, and copy the resulting user UUID.
-3. In the local SQL editor, assign the existing configurable catalogue role to that exact identity:
-
-```sql
-with created_actor as (
-  insert into public.actor_profiles (auth_user_id, display_name)
-  values ('<AUTH_USER_UUID>', 'Local Catalogue Manager')
-  returning id
-)
-insert into public.staff_assignments (actor_id, staff_role_id)
-select created_actor.id, role.id
-from created_actor
-join public.staff_roles as role on role.code = 'catalogue_manager';
-```
+3. Set `LOCAL_AUTH_USER_UUID` to that value, load the local service-role key printed by `supabase status`, and run `npm run bootstrap:local-staff`. The script refuses every host except `localhost:54321` or `127.0.0.1:54321`. Optional variables are `LOCAL_STAFF_DISPLAY_NAME` and `LOCAL_STAFF_ROLE`.
 
 This bootstrap procedure is for disposable local environments. In production, provider enrollment and actor/role assignment are separate controlled operations. The Discord display name is never an identity key. MFA, recovery, and access-review details remain policy-gated.
 

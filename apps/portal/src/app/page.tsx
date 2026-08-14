@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CatalogueCard } from "@/components/catalogue-card";
 import { CatalogueFilter } from "@/components/catalogue-filter";
 import { CatalogueUnavailable } from "@/components/catalogue-unavailable";
+import { RelativeTime } from "@/components/relative-time";
 import { UiIcon } from "@/components/ui-icon";
 import {
   getPublicCatalogue,
@@ -12,7 +13,7 @@ import {
 import { getDefaultLocale, getInstitutionName } from "@/lib/env";
 import { parseCatalogueQuery } from "@/lib/query";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 export const metadata: Metadata = {
   title: "Trade catalogue",
   description: "Browse the East Empire Company's official public catalogue, current purchasing terms, and controlled-trade requirements.",
@@ -34,25 +35,19 @@ export default async function CataloguePage({
   const locale = getDefaultLocale();
 
   const categories = categoriesResult.ok ? categoriesResult.data : [];
-  const generatedAt =
-    catalogueResult.ok && catalogueResult.data[0]
-      ? new Intl.DateTimeFormat(locale, {
-          dateStyle: "medium",
-          timeStyle: "short",
-        }).format(new Date(catalogueResult.data[0].generated_at))
-      : null;
+  const generatedAt = catalogueResult.ok
+    ? catalogueResult.data[0]?.generated_at ?? null
+    : null;
 
   return (
     <main>
-      <section className="hero">
+      <section className="hero catalogue-hero">
         <div>
-          <p className="eyebrow">Official public registry</p>
-          <h1>A single catalogue for controlled trade.</h1>
+          <p className="eyebrow">Official public catalogue</p>
+          <h1>Published trade catalogue</h1>
           <p className="hero-copy">
-            Browse goods published by {institutionName}. Catalogue visibility,
-            pricing, availability, and purchasing authority are separate
-            decisions; private terms and exact warehouse stock are never shown
-            here.
+            Browse goods currently offered by {institutionName}. Open an entry
+            for its public terms, purchasing requirements, and control level.
           </p>
           <div className="hero-actions">
             <a className="button button-primary" href="#catalogue-title">
@@ -66,11 +61,6 @@ export default async function CataloguePage({
             </Link>
           </div>
         </div>
-        <aside className="hero-seal" aria-label="Registry principles">
-          <span>One catalogue</span>
-          <span>Verified records</span>
-          <span>Auditable changes</span>
-        </aside>
       </section>
 
       <section className="catalogue-shell" aria-labelledby="catalogue-title">
@@ -79,7 +69,7 @@ export default async function CataloguePage({
             <p className="eyebrow">Public catalogue</p>
             <h2 id="catalogue-title">Published goods</h2>
           </div>
-          {generatedAt && <p>Registry queried {generatedAt}</p>}
+          {generatedAt && <p>Updated <RelativeTime value={generatedAt} /></p>}
         </div>
 
         <CatalogueFilter categories={categories} query={query} />

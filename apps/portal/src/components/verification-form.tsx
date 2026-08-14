@@ -1,32 +1,29 @@
 interface VerificationFormProps {
-  kind: "dealer" | "license";
   reference: string | null;
 }
 
-export function VerificationForm({ kind, reference }: VerificationFormProps) {
-  const noun = kind === "dealer" ? "dealer" : "license";
-
+export function VerificationForm({ reference }: VerificationFormProps) {
   return (
-    <form className="verification-form" action={`/verify/${kind}`} method="get">
-      <label className="field" htmlFor={`${kind}-reference`}>
-        <span>Public {noun} reference</span>
+    <form className="verification-form verification-form-single" action="/verify" method="get">
+      <label className="field" htmlFor="verification-reference">
+        <span>Dealer or license reference</span>
         <input
-          id={`${kind}-reference`}
+          id="verification-reference"
           name="reference"
           defaultValue={reference ?? ""}
           maxLength={128}
           autoComplete="off"
           spellCheck={false}
           required
-          placeholder={kind === "dealer" ? "DLR-DEMO-A7K9" : "LIC-DEMO-4Q2M"}
+          placeholder="EEC-DLR-… or EEC-LIC-…"
         />
       </label>
       <button className="button" type="submit">
-        Verify {noun}
+        Verify record
       </button>
       <p>
-        Enter the exact public reference. Name and organization search are not
-        enabled.
+        The DLR or LIC prefix identifies the record. Names and organizations
+        cannot be searched.
       </p>
     </form>
   );

@@ -19,3 +19,4 @@ supabase/.temp/
 .DS_Store
 Thumbs.db
 *.tsbuildinfo
+.vercel/
