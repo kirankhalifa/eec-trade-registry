@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 
 import { changeDealerStatusAction, updateDealerAction } from "@/app/staff/dealers/actions";
+import { ReferenceBlock } from "@/components/reference-block";
 import { StaffAccessDenied } from "@/components/staff-access-denied";
 import { StaffNotice } from "@/components/staff-notice";
 import { requireStaffSession } from "@/lib/staff-auth";
@@ -31,6 +32,7 @@ export default async function DealerDetailPage({ params, searchParams }: { param
 
   return <main className="staff-main">
     <header className="staff-page-header"><div><p className="eyebrow">Dealer registry · {dealer.public_reference}</p><h1>{dealer.display_name}</h1><p>{dealer.dealer_type_label} · {dealer.jurisdiction_label}</p></div><div className="staff-button-row"><Link className="button button-secondary" href="/staff/dealers">Back to dealers</Link><Link className="button button-secondary" href="/staff/licensing/new">Issue license</Link></div></header>
+    <ReferenceBlock label="Dealer reference" reference={dealer.public_reference} status={dealer.status_label}/>
     <StaffNotice error={parameters.error} notice={parameters.notice} />
     <section className="detail-grid"><article className="detail-card"><p className="eyebrow">Current authority</p><h2>{dealer.status_label}</h2><dl><div><dt>Reference</dt><dd>{dealer.public_reference}</dd></div><div><dt>Effective from</dt><dd>{new Date(dealer.effective_from).toLocaleString()}</dd></div><div><dt>Public disclosure</dt><dd>{dealer.public_disclosure_enabled ? "Enabled" : "Private"}</dd></div><div><dt>Version</dt><dd>{dealer.version}</dd></div></dl></article></section>
     <form action={updateDealerAction} className="staff-form">

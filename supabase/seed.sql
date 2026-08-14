@@ -190,7 +190,7 @@ values
   (
     '70000000-0000-0000-0000-000000000001',
     'public',
-    'published',
+    'withdrawn',
     'Harbor Lantern',
     'A weather-resistant lantern intended for commercial docks and transport offices.',
     '50000000-0000-0000-0000-000000000001',
@@ -203,7 +203,7 @@ values
   (
     '70000000-0000-0000-0000-000000000002',
     'public',
-    'published',
+    'withdrawn',
     'Surveyor Instrument Set',
     'A calibrated set of instruments for licensed survey and navigation work.',
     '50000000-0000-0000-0000-000000000002',
@@ -216,7 +216,7 @@ values
   (
     '70000000-0000-0000-0000-000000000003',
     'public',
-    'published',
+    'withdrawn',
     'Treated Packing Fiber',
     'Moisture-resistant packing material supplied in commercial lots.',
     '50000000-0000-0000-0000-000000000001',
@@ -229,7 +229,7 @@ values
   (
     '70000000-0000-0000-0000-000000000004',
     'public',
-    'published',
+    'withdrawn',
     'Master Navigation Chronometer',
     'An individually registered precision instrument released only under special authorization.',
     '50000000-0000-0000-0000-000000000003',

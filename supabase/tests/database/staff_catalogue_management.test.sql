@@ -2,6 +2,14 @@ begin;
 
 select plan(35);
 
+-- This suite exercises the lifecycle commands against the original catalogue
+-- fixture. Public seed data retires demonstrations by default, so explicitly
+-- opt this transaction's fixture back into publication.
+update public.item_publications
+set publication_status = 'published'
+where item_id = '70000000-0000-0000-0000-000000000001'
+  and audience_code = 'public';
+
 select has_table('public', 'actor_profiles', 'actor profiles table exists');
 select has_table('public', 'permission_scopes', 'permission scopes table exists');
 select has_table('public', 'staff_roles', 'staff roles table exists');

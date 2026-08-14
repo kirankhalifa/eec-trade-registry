@@ -14,3 +14,11 @@ export function normalizeVerificationReference(value: string | null): string | n
 export function parseVerificationReference(params: SearchParams): string | null {
   return normalizeVerificationReference(firstValue(params.reference));
 }
+
+export type VerificationKind = "dealer" | "license";
+
+export function inferVerificationKind(reference: string): VerificationKind | null {
+  if (reference.startsWith("DLR-") || reference.startsWith("EEC-DLR-")) return "dealer";
+  if (reference.startsWith("LIC-") || reference.startsWith("EEC-LIC-")) return "license";
+  return null;
+}

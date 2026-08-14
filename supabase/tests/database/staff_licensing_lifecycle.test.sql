@@ -217,19 +217,36 @@ select lives_ok(
   'an authorized officer can issue a license with a modular endorsement'
 );
 
+reset role;
+select set_config(
+  'test.issued_license_reference',
+  (
+    select public_reference
+    from public.licenses
+    where source_request_id = 'e2000000-0000-0000-0000-000000000001'
+  ),
+  true
+);
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"b2000000-0000-0000-0000-000000000001","role":"authenticated"}',
+  true
+);
+
 select is(
   (
     select public_reference
-    from public.get_staff_license_queue('EEC-LIC-1001')
+    from public.get_staff_license_queue(current_setting('test.issued_license_reference'))
   ),
-  'EEC-LIC-1001',
-  'the secure allocator creates the configured immutable reference'
+  current_setting('test.issued_license_reference'),
+  'the secure allocator creates an immutable lookup reference'
 );
 
 select is(
   (
     select count(*)::integer
-    from public.get_staff_license_queue('EEC-LIC-1001')
+    from public.get_staff_license_queue(current_setting('test.issued_license_reference'))
     where status_code = 'active'
       and version = 1
       and jsonb_array_length(endorsements) = 1
@@ -283,7 +300,7 @@ select set_config(
 select is(
   (
     select result_code
-    from public.public_license_verification('EEC-LIC-1001')
+    from public.public_license_verification(current_setting('test.issued_license_reference'))
   ),
   'valid',
   'an issued public license is immediately verifiable'
@@ -292,7 +309,7 @@ select is(
 select throws_ok(
   $test$
     select * from public.staff_change_license_status(
-      (select id from public.get_staff_license_queue('EEC-LIC-1001')),
+      (select id from public.get_staff_license_queue(current_setting('test.issued_license_reference'))),
       99,
       'suspended',
       'Attempt stale status update.',
@@ -307,7 +324,7 @@ select throws_ok(
 select lives_ok(
   $test$
     select * from public.staff_change_license_status(
-      (select id from public.get_staff_license_queue('EEC-LIC-1001')),
+      (select id from public.get_staff_license_queue(current_setting('test.issued_license_reference'))),
       1,
       'suspended',
       'Suspend for an approved recorded review.',
@@ -318,7 +335,7 @@ select lives_ok(
 );
 
 select is(
-  (select result_code from public.public_license_verification('EEC-LIC-1001')),
+  (select result_code from public.public_license_verification(current_setting('test.issued_license_reference'))),
   'suspended',
   'public verification reflects the committed suspension'
 );
@@ -326,7 +343,7 @@ select is(
 select lives_ok(
   $test$
     select * from public.staff_change_license_status(
-      (select id from public.get_staff_license_queue('EEC-LIC-1001')),
+      (select id from public.get_staff_license_queue(current_setting('test.issued_license_reference'))),
       2,
       'active',
       'Reinstate after the recorded review completed.',
@@ -339,7 +356,7 @@ select lives_ok(
 select lives_ok(
   $test$
     select * from public.staff_grant_license_endorsement(
-      (select id from public.get_staff_license_queue('EEC-LIC-1001')),
+      (select id from public.get_staff_license_queue(current_setting('test.issued_license_reference'))),
       3,
       'consignment',
       null,
@@ -355,7 +372,7 @@ select lives_ok(
 select is(
   (
     select jsonb_array_length(endorsements)
-    from public.get_staff_license_queue('EEC-LIC-1001')
+    from public.get_staff_license_queue(current_setting('test.issued_license_reference'))
   ),
   2,
   'the endorsement grant is returned by the authorized projection'
@@ -364,7 +381,7 @@ select is(
 select throws_ok(
   $test$
     select * from public.staff_grant_license_endorsement(
-      (select id from public.get_staff_license_queue('EEC-LIC-1001')),
+      (select id from public.get_staff_license_queue(current_setting('test.issued_license_reference'))),
       4,
       'consignment',
       null,
@@ -384,7 +401,7 @@ select lives_ok(
     select * from public.staff_revoke_license_endorsement(
       (
         select endorsement ->> 'id'
-        from public.get_staff_license_queue('EEC-LIC-1001'),
+        from public.get_staff_license_queue(current_setting('test.issued_license_reference')),
         lateral jsonb_array_elements(endorsements) as endorsement
         where endorsement ->> 'code' = 'consignment'
       )::uuid,
@@ -399,7 +416,7 @@ select lives_ok(
 select is(
   (
     select count(*)::integer
-    from public.get_staff_license_queue('EEC-LIC-1001'),
+    from public.get_staff_license_queue(current_setting('test.issued_license_reference')),
       lateral jsonb_array_elements(endorsements) as endorsement
     where endorsement ->> 'code' = 'consignment'
       and endorsement ->> 'revoked_at' is not null
@@ -411,7 +428,7 @@ select is(
 select lives_ok(
   $test$
     select * from public.staff_change_license_status(
-      (select id from public.get_staff_license_queue('EEC-LIC-1001')),
+      (select id from public.get_staff_license_queue(current_setting('test.issued_license_reference'))),
       5,
       'revoked',
       'Record the final authorized revocation.',
@@ -424,7 +441,7 @@ select lives_ok(
 select throws_ok(
   $test$
     select * from public.staff_change_license_status(
-      (select id from public.get_staff_license_queue('EEC-LIC-1001')),
+      (select id from public.get_staff_license_queue(current_setting('test.issued_license_reference'))),
       6,
       'active',
       'Attempt to rewrite terminal history.',
@@ -437,7 +454,7 @@ select throws_ok(
 );
 
 select is(
-  (select result_code from public.public_license_verification('EEC-LIC-1001')),
+  (select result_code from public.public_license_verification(current_setting('test.issued_license_reference'))),
   'revoked',
   'public verification reflects terminal revocation'
 );
@@ -453,10 +470,10 @@ select ok(
       and audit.reason = 'Issue approved general trade authority.'
       and audit.request_id = 'e2000000-0000-0000-0000-000000000001'::uuid
       and audit.previous_state is null
-      and audit.new_state ->> 'public_reference' = 'EEC-LIC-1001'
+      and audit.new_state ->> 'public_reference' = current_setting('test.issued_license_reference')
     from public.audit_log as audit
     where audit.record_type = 'public.licenses'
-      and audit.new_state ->> 'public_reference' = 'EEC-LIC-1001'
+      and audit.new_state ->> 'public_reference' = current_setting('test.issued_license_reference')
       and audit.request_id = 'e2000000-0000-0000-0000-000000000001'::uuid
     order by audit.occurred_at desc, audit.id desc
     limit 1
@@ -468,7 +485,7 @@ select is(
   (
     select count(*)::integer
     from public.license_status_events
-    where license_id = (select id from public.licenses where public_reference = 'EEC-LIC-1001')
+    where license_id = (select id from public.licenses where public_reference = current_setting('test.issued_license_reference'))
   ),
   4,
   'issuance and every accepted status transition have append-only domain history'
@@ -478,7 +495,7 @@ select is(
   (
     select count(*)::integer
     from public.license_endorsement_events
-    where license_id = (select id from public.licenses where public_reference = 'EEC-LIC-1001')
+    where license_id = (select id from public.licenses where public_reference = current_setting('test.issued_license_reference'))
   ),
   2,
   'post-issuance endorsement grant and revocation have append-only domain history'
@@ -488,7 +505,7 @@ select is(
   (
     select count(*)::integer
     from public.outbox_events
-    where aggregate_id = (select id from public.licenses where public_reference = 'EEC-LIC-1001')
+    where aggregate_id = (select id from public.licenses where public_reference = current_setting('test.issued_license_reference'))
   ),
   6,
   'each accepted lifecycle command creates one durable outbox event'

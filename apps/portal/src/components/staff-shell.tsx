@@ -11,29 +11,21 @@ type NavigationItem = { href: string; icon: IconName; label: string; exact?: boo
 const groups: Array<{ label: string; items: NavigationItem[] }> = [
   { label: "Overview", items: [
     { href: "/staff/dashboard", icon: "dashboard", label: "Dashboard", exact: true },
+    { href: "/staff/launch", icon: "spark", label: "Quick actions", exact: true },
   ] },
-  { label: "Trade", items: [
+  { label: "Work", items: [
     { href: "/staff/orders", icon: "clipboard", label: "Orders" },
-    { href: "/staff/fulfillment", icon: "package", label: "Fulfillment" },
     { href: "/staff/inventory", icon: "box", label: "Inventory" },
     { href: "/staff/economy", icon: "coins", label: "Economy" },
+    { href: "/staff/applications", icon: "clipboard", label: "Applications" },
   ] },
   { label: "Registry", items: [
     { href: "/staff", icon: "catalogue", label: "Catalogue", exact: true },
-    { href: "/staff/applications", icon: "clipboard", label: "Applications" },
     { href: "/staff/licensing", icon: "license", label: "Licenses" },
     { href: "/staff/dealers", icon: "building", label: "Businesses" },
   ] },
-  { label: "Operations", items: [
-    { href: "/staff/transfers", icon: "transfer", label: "Transfers" },
-    { href: "/staff/consignments", icon: "truck", label: "Consignments" },
-    { href: "/staff/assets", icon: "key", label: "Unique assets" },
-    { href: "/staff/compliance", icon: "shield", label: "Compliance" },
-  ] },
   { label: "Administration", items: [
     { href: "/staff/configuration", icon: "gear", label: "Configuration" },
-    { href: "/staff/documents", icon: "document", label: "Documents" },
-    { href: "/staff/integrations", icon: "external", label: "Integrations" },
     { href: "/staff/access", icon: "people", label: "Staff access", ownerOnly: true },
     { href: "/staff/operations", icon: "heart", label: "System health", ownerOnly: true },
   ] },

@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+import { cache } from "react";
 import { z } from "zod";
 
 import { CatalogueConfigurationError, getPublicSupabaseClient } from "@/lib/supabase";
@@ -65,7 +67,7 @@ function reportQueryFailure(operation: string, message: string): void {
   console.error(`[catalogue:${operation}] ${message}`);
 }
 
-export async function getPublicCatalogue(
+async function queryPublicCatalogue(
   query: CatalogueQuery,
 ): Promise<CatalogueResult<PublicCatalogueItem[]>> {
   try {
@@ -96,7 +98,19 @@ export async function getPublicCatalogue(
   }
 }
 
-export async function getPublicCatalogueCategories(): Promise<
+const getCachedPublicCatalogue = unstable_cache(
+  queryPublicCatalogue,
+  ["public-catalogue"],
+  { revalidate: 60, tags: ["public-catalogue"] },
+);
+
+export function getPublicCatalogue(
+  query: CatalogueQuery,
+): Promise<CatalogueResult<PublicCatalogueItem[]>> {
+  return getCachedPublicCatalogue(query);
+}
+
+async function queryPublicCatalogueCategories(): Promise<
   CatalogueResult<PublicCatalogueCategory[]>
 > {
   try {
@@ -127,7 +141,19 @@ export async function getPublicCatalogueCategories(): Promise<
   }
 }
 
-export async function getPublicCatalogueItem(
+const getCachedPublicCatalogueCategories = unstable_cache(
+  queryPublicCatalogueCategories,
+  ["public-catalogue-categories"],
+  { revalidate: 60, tags: ["public-catalogue"] },
+);
+
+export function getPublicCatalogueCategories(): Promise<
+  CatalogueResult<PublicCatalogueCategory[]>
+> {
+  return getCachedPublicCatalogueCategories();
+}
+
+async function queryPublicCatalogueItem(
   slug: string,
 ): Promise<CatalogueResult<PublicCatalogueItem | null>> {
   try {
@@ -161,3 +187,14 @@ export async function getPublicCatalogueItem(
     return { ok: false, code: "query_failed" };
   }
 }
+
+const getCachedPublicCatalogueItem = unstable_cache(
+  queryPublicCatalogueItem,
+  ["public-catalogue-item"],
+  { revalidate: 60, tags: ["public-catalogue"] },
+);
+
+export const getPublicCatalogueItem = cache(
+  (slug: string): Promise<CatalogueResult<PublicCatalogueItem | null>> =>
+    getCachedPublicCatalogueItem(slug),
+);

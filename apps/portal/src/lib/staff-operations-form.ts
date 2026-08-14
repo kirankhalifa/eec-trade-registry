@@ -20,7 +20,9 @@ function scope(value: FormDataEntryValue | null): unknown {
 
 const grantSchema = z.object({
   actorId: z.guid(),
-  assignmentScope: z.record(z.string(), z.unknown()),
+  assignmentScope: z.object({
+    warehouse_ids: z.array(z.guid()).optional(),
+  }).strict(),
   effectiveUntil: z.string().datetime({ offset: true }).nullable(),
   reason,
   roleId: z.guid(),

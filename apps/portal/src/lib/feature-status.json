@@ -1,0 +1,16 @@
+{
+  "publicCatalogue": { "label": "Public catalogue", "status": "live", "route": "/" },
+  "publicVerification": { "label": "Dealer and license verification", "status": "live", "route": "/verify" },
+  "publicApplications": { "label": "New license applications", "status": "live", "route": "/apply" },
+  "publicRenewals": { "label": "License renewal requests", "status": "live", "route": "/apply" },
+  "staffAssistedOrderEntry": { "label": "Staff-assisted and direct order entry", "status": "live", "route": "/staff/orders/new" },
+  "inventoryReservations": { "label": "Ledger inventory and reservations", "status": "live", "route": "/staff/inventory" },
+  "keystoneProcurement": { "label": "Keystone material procurement", "status": "live", "route": "/staff/economy" },
+  "uniqueAssetFulfillment": { "label": "Unique-asset fulfillment", "status": "live", "route": "/staff/assets/fulfillment" },
+  "consignmentFinance": { "label": "Consignment settlement", "status": "live", "route": "/staff/consignments/finance" },
+  "generatedDocuments": { "label": "Official document generation", "status": "live", "route": "/staff/documents/new" },
+  "priceRules": { "label": "Effective price rules", "status": "live", "route": "/staff/pricing" },
+  "projectionIntegrations": { "label": "Google Sheets and Discord projections", "status": "external_setup", "route": "/staff/integrations" },
+  "stockCountReconciliation": { "label": "Stock-count reconciliation", "status": "gated", "route": null },
+  "evidenceFileStorage": { "label": "Compliance evidence file storage", "status": "gated", "route": null }
+}

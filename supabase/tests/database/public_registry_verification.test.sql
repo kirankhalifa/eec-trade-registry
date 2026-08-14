@@ -41,20 +41,20 @@ select ok(
   'anonymous callers cannot select licenses directly'
 );
 select ok(
-  has_function_privilege(
+  not has_function_privilege(
     'anon',
     'public.public_dealer_verification(text)',
     'execute'
   ),
-  'anonymous callers can execute dealer verification'
+  'anonymous callers cannot bypass the web dealer-verification limiter'
 );
 select ok(
-  has_function_privilege(
+  not has_function_privilege(
     'anon',
     'public.public_license_verification(text)',
     'execute'
   ),
-  'anonymous callers can execute license verification'
+  'anonymous callers cannot bypass the web license-verification limiter'
 );
 
 insert into public.licenses (
@@ -82,7 +82,7 @@ values (
   true
 );
 
-set local role anon;
+set local role service_role;
 
 select is(
   (
