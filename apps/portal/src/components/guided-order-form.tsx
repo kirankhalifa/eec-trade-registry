@@ -36,7 +36,7 @@ export function GuidedOrderForm({ workspace }: { workspace: LaunchWorkspace }) {
     directId: "",
     key: `business:${license.id}`,
     label: business.party_name,
-    secondary: `${license.class} license`,
+    secondary: license.class,
   })));
   const directOptions = workspace.direct_customers.map((customer) => ({
     businessKey: "",
