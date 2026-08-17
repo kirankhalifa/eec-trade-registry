@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import { recordDeliveryAction, registerSupplierAction } from "@/app/staff/economy/actions";
@@ -25,7 +26,7 @@ export function GuidedMaterialPurchaseForm({ workspace }: { workspace: EconomyWo
   const jurisdiction = workspace.jurisdictions[0];
 
   if (!offers.length) {
-    return <section className="simple-task-card empty-state"><h2>No guaranteed rates are active</h2><p>Open Staff tools → Reserve economy to publish a purchasing rate before accepting materials.</p></section>;
+    return <section className="simple-task-card empty-state"><h2>No guaranteed rates are active</h2><p>Set the Company’s guaranteed buying price before accepting materials. The rate will be reused automatically on every purchase.</p><Link className="button button-primary" href="/staff/economy">Set guaranteed rates</Link></section>;
   }
 
   return (
