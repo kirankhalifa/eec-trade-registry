@@ -26,7 +26,7 @@ export default async function StaffCataloguePage({
     return (
       <main className="staff-main">
         <section className="notice-panel">
-          <p className="eyebrow">Staff catalogue unavailable</p>
+          <p className="eyebrow">Catalogue unavailable</p>
           <h1>Supabase is not configured</h1>
           <p>No secondary data source is used when the registry is unavailable.</p>
         </section>
@@ -47,8 +47,8 @@ export default async function StaffCataloguePage({
     return (
       <main className="staff-main">
         <section className="notice-panel">
-          <p className="eyebrow">Staff catalogue unavailable</p>
-          <h1>The work queue could not be loaded</h1>
+          <p className="eyebrow">Catalogue unavailable</p>
+          <h1>The catalogue could not be loaded</h1>
           <p>No authoritative data was changed. Try again after the registry recovers.</p>
         </section>
       </main>
@@ -61,19 +61,13 @@ export default async function StaffCataloguePage({
     <main className="staff-main">
       <header className="staff-page-header">
         <div>
-          <p className="eyebrow">Authenticated staff · catalogue management</p>
-          <h1>Canonical item work queue</h1>
-          <p>
-            Maintain internal source records, or use Quick operations to create a
-            complete supplied and published item in one workflow.
-          </p>
+          <p className="eyebrow">Goods and materials</p>
+          <h1>Catalogue</h1>
+          <p>Add or update what the Company buys and sells. Each item keeps its public listing, price, supply policy, and stock history together.</p>
         </div>
         <div className="staff-button-row">
-          <Link className="button button-primary" href="/staff/configuration">
-            Quick add
-          </Link>
-          <Link className="button button-secondary" href="/staff/items/new">
-            Advanced item setup
+          <Link className="button button-primary" href="/staff/configuration#quick-add-item">
+            Add item
           </Link>
         </div>
       </header>
@@ -82,12 +76,12 @@ export default async function StaffCataloguePage({
 
       <form className="staff-search" method="get" role="search">
         <label className="field">
-          <span>Search internal catalogue</span>
+          <span>Find an item</span>
           <input
             defaultValue={search}
             maxLength={100}
             name="q"
-            placeholder="Item code, source name, or slug"
+            placeholder="Item name or code"
             type="search"
           />
         </label>
@@ -102,7 +96,7 @@ export default async function StaffCataloguePage({
       </form>
 
       <p className="result-count">
-        {result.data.length} internal record{result.data.length === 1 ? "" : "s"}
+        {result.data.length} item{result.data.length === 1 ? "" : "s"}
       </p>
 
       <section className="staff-item-list" aria-label="Canonical catalogue records">
@@ -122,12 +116,8 @@ export default async function StaffCataloguePage({
             </div>
             <dl className="staff-item-facts">
               <div>
-                <dt>Public presentation</dt>
-                <dd>{item.public_name ?? "Not published"}</dd>
-              </div>
-              <div>
-                <dt>Publication state</dt>
-                <dd>{item.publication_status ?? "None"}</dd>
+                <dt>Public listing</dt>
+                <dd>{item.public_name ? "Published" : "Not published"}</dd>
               </div>
               <div>
                 <dt>Public price</dt>
@@ -138,7 +128,7 @@ export default async function StaffCataloguePage({
                 </dd>
               </div>
               <div>
-                <dt>Last source update</dt>
+                <dt>Last changed</dt>
                 <dd>{new Date(item.updated_at).toLocaleString(locale)}</dd>
               </div>
             </dl>
@@ -146,7 +136,7 @@ export default async function StaffCataloguePage({
               className="button button-secondary"
               href={`/staff/items/${item.id}/edit`}
             >
-              Review record
+              Open item
             </Link>
           </article>
         ))}
@@ -154,9 +144,8 @@ export default async function StaffCataloguePage({
 
       {result.data.length === 0 && (
         <section className="empty-state">
-          <p className="eyebrow">No internal records found</p>
-          <h2>Try another search</h2>
-          <p>The query is evaluated by the authorized Supabase projection.</p>
+          <p className="eyebrow">No items found</p>
+          <h2>Try another name</h2>
         </section>
       )}
     </main>

@@ -10,7 +10,6 @@ import {
   reviewOrderLineAction,
 } from "@/app/staff/orders/actions";
 import { OrderNotice } from "@/components/order-notice";
-import { ReferenceBlock } from "@/components/reference-block";
 import { StaffAccessDenied } from "@/components/staff-access-denied";
 import { UiIcon } from "@/components/ui-icon";
 import { getDefaultLocale } from "@/lib/env";
@@ -24,7 +23,20 @@ interface StaffOrderDetailProps {
   searchParams: Promise<{ error?: string; notice?: string }>;
 }
 
-function label(value: string) { return value.replaceAll("_", " "); }
+function label(value: string) {
+  const labels: Record<string, string> = {
+    approved: "Approved",
+    awaiting_stock: "Waiting for stock",
+    cancelled: "Cancelled",
+    denied: "Denied",
+    fulfilled: "Completed",
+    partially_fulfilled: "In progress",
+    processing: "In progress",
+    review_required: "Needs review",
+    submitted: "Needs review",
+  };
+  return labels[value] ?? value.replaceAll("_", " ");
+}
 
 export default async function StaffOrderDetail({ params, searchParams }: StaffOrderDetailProps) {
   const [{ id }, parameters] = await Promise.all([params, searchParams]);
@@ -53,25 +65,22 @@ export default async function StaffOrderDetail({ params, searchParams }: StaffOr
       <Link className="back-link" href="/staff/orders">← Back to order queue</Link>
       <header className="staff-editor-header order-workspace-header">
         <div>
-          <p className="eyebrow">Order · {label(order.status)}</p>
-          <h1>{order.public_reference}</h1>
-          <p>{order.ordering_party_name} · {order.dealer_reference}</p>
+          <p className="eyebrow">{label(order.status)}</p>
+          <h1>{order.ordering_party_name}</h1>
+          <p>Order {order.public_reference}</p>
         </div>
         <span className={`order-status order-status-${order.status}`}>{label(order.status)}</span>
       </header>
 
-      <ReferenceBlock label="Order reference" reference={order.public_reference} status={label(order.status)} />
-
       <OrderNotice error={parameters.error} notice={parameters.notice} />
 
       <section className="staff-readonly-grid order-summary-grid">
-        <div><span>Submitted</span><strong>{new Date(order.submitted_at).toLocaleString(locale, { dateStyle: "medium", timeStyle: "short" })}</strong></div>
-        <div><span>Handoff</span><strong>{label(order.fulfillment_mode)}</strong></div>
-        <div><span>License</span><strong>{order.license_reference ?? "No license attached"}</strong></div>
-        <div><span>Order version</span><strong>{order.version}</strong></div>
+        <div><span>Placed</span><strong>{new Date(order.submitted_at).toLocaleString(locale, { dateStyle: "medium", timeStyle: "short" })}</strong></div>
+        <div><span>How they will get it</span><strong>{label(order.fulfillment_mode)}</strong></div>
+        <div><span>Pricing path</span><strong>{order.license_reference ? "Licensed business" : "Individual purchase"}</strong></div>
       </section>
 
-      <p className="order-policy-banner"><strong>Work from this page.</strong> Approve, reserve, and complete each line below. Every button posts its own authoritative database transaction; you never need to copy this reference to another desk.</p>
+      <p className="order-policy-banner"><strong>Everything happens here.</strong> The next available action appears under each item. You never need to copy the order reference or move to another desk.</p>
 
       <section className="order-detail-lines">
         {order.lines.map((line) => {
@@ -88,6 +97,7 @@ export default async function StaffOrderDetail({ params, searchParams }: StaffOr
           const approved = line.quantity_approved !== null;
           const reserved = reservations.some((entry) => ["active", "consumed"].includes(entry.effective_status));
           const fulfilled = line.status === "fulfilled" || line.quantity_fulfilled >= (line.quantity_approved ?? Number.POSITIVE_INFINITY);
+          const ready = reserved || fulfilled;
           const remaining = reservableLine ? reservableLine.quantity_approved - reservableLine.quantity_fulfilled - reservableLine.quantity_reserved : 0;
 
           return (
@@ -96,37 +106,36 @@ export default async function StaffOrderDetail({ params, searchParams }: StaffOr
                 <div>
                   <span className={`order-status order-status-${line.status}`}>{label(line.status)}</span>
                   <h2>{line.item_name}</h2>
-                  <p>Line {line.line_number} · {line.item_code} · {line.control_profile_code}</p>
+                  <p>{line.item_code}{line.requires_serial_tracking ? " · Individually tracked" : line.requires_staff_review ? " · Approval required" : ""}</p>
                 </div>
                 <strong>{line.quantity_requested} {line.unit_code}</strong>
               </header>
 
               <ol className="order-progress" aria-label={`Progress for ${line.item_name}`}>
-                <li className="is-complete"><span><UiIcon name="check" size={14}/></span><small>Requested</small></li>
-                <li className={approved ? "is-complete" : "is-current"}><span>{approved ? <UiIcon name="check" size={14}/> : "2"}</span><small>Approved</small></li>
-                <li className={reserved ? "is-complete" : approved ? "is-current" : ""}><span>{reserved ? <UiIcon name="check" size={14}/> : "3"}</span><small>Reserved</small></li>
-                <li className={fulfilled ? "is-complete" : reserved ? "is-current" : ""}><span>{fulfilled ? <UiIcon name="check" size={14}/> : "4"}</span><small>Handed off</small></li>
+                <li className="is-complete"><span><UiIcon name="check" size={14}/></span><small>Ordered</small></li>
+                <li className={ready ? "is-complete" : approved ? "is-current" : ""}><span>{ready ? <UiIcon name="check" size={14}/> : "2"}</span><small>Ready</small></li>
+                <li className={fulfilled ? "is-complete" : ready ? "is-current" : ""}><span>{fulfilled ? <UiIcon name="check" size={14}/> : "3"}</span><small>Completed</small></li>
               </ol>
 
               <dl className="order-facts">
-                <div><dt>Approved</dt><dd>{line.quantity_approved ?? "Waiting for decision"} {line.quantity_approved ? line.unit_code : ""}</dd></div>
-                <div><dt>Reserved</dt><dd>{reservations.filter((entry) => entry.effective_status === "active").reduce((sum, entry) => sum + entry.quantity, 0)} {line.unit_code}</dd></div>
-                <div><dt>Handed off</dt><dd>{line.quantity_fulfilled} {line.unit_code}</dd></div>
+                <div><dt>Ordered</dt><dd>{line.quantity_requested} {line.unit_code}</dd></div>
+                <div><dt>Ready</dt><dd>{reservations.filter((entry) => entry.effective_status === "active").reduce((sum, entry) => sum + entry.quantity, 0)} {line.unit_code}</dd></div>
                 <div><dt>Unit price</dt><dd>{line.unit_price_minor === null ? "Not set" : `${line.unit_price_minor} ${order.currency_code}`}</dd></div>
               </dl>
 
               {!terminal && reviewable && (
                 <section className="order-next-action">
-                  <div className="order-next-action-copy"><p className="eyebrow">Next step</p><h3>Review this request</h3><p>Approve the requested amount, record it as awaiting stock, or deny it.</p></div>
-                  <form action={reviewOrderLineAction} className="order-guided-form">
+                  <div className="order-next-action-copy"><p className="eyebrow">Next step</p><h3>{line.requires_staff_review ? "Review required" : "Approve this order"}</h3><p>{line.requires_staff_review ? "This item’s configured control requires an authorized decision." : "The customer, price, and item were checked when the order was entered."}</p></div>
+                  <form action={reviewOrderLineAction} className="order-guided-form is-compact">
                     <input name="order_id" type="hidden" value={order.id} />
                     <input name="order_line_id" type="hidden" value={line.id} />
                     <input name="expected_order_version" type="hidden" value={order.version} />
-                    <label className="field"><span>Decision</span><select defaultValue="approve" name="decision"><option value="approve">Approve</option><option value="awaiting_stock">Approve, get stock later</option><option value="deny">Deny</option></select></label>
-                    <label className="field"><span>Quantity</span><input defaultValue={line.quantity_requested} max={line.quantity_requested} min="0.001" name="approved_quantity" required step="0.001" type="number" /></label>
-                    <details className="advanced-fields"><summary>Price and review note</summary><div><label className="field"><span>Unit price ({order.currency_code}, optional)</span><input min="0" name="unit_price_minor" step="1" type="number" /></label><label className="field"><span>Review note</span><input defaultValue="Order request reviewed by staff." maxLength={500} minLength={1} name="reason" required /></label></div></details>
-                    <button className="button button-primary" type="submit"><UiIcon name="check"/>Record decision</button>
+                    <input name="decision" type="hidden" value="approve" />
+                    <input name="approved_quantity" type="hidden" value={line.quantity_requested} />
+                    <input name="reason" type="hidden" value="Order reviewed and approved by staff." />
+                    <button className="button button-primary" type="submit"><UiIcon name="check"/>Approve order</button>
                   </form>
+                  <details className="order-secondary-actions"><summary>Approve a different quantity, wait for stock, or deny</summary><form action={reviewOrderLineAction} className="staff-inline-action"><input name="order_id" type="hidden" value={order.id}/><input name="order_line_id" type="hidden" value={line.id}/><input name="expected_order_version" type="hidden" value={order.version}/><label className="field"><span>Decision</span><select defaultValue="awaiting_stock" name="decision"><option value="awaiting_stock">Approve and wait for stock</option><option value="approve">Approve a different quantity</option><option value="deny">Deny</option></select></label><label className="field"><span>Quantity</span><input defaultValue={line.quantity_requested} max={line.quantity_requested} min="0.001" name="approved_quantity" required step="0.001" type="number"/></label><label className="field"><span>Reason</span><input maxLength={500} minLength={1} name="reason" required/></label><button className="button button-secondary">Record decision</button></form></details>
                 </section>
               )}
 
@@ -136,9 +145,9 @@ export default async function StaffOrderDetail({ params, searchParams }: StaffOr
                   {positions.length ? <form action={reserveOrderLineAction} className="order-guided-form">
                     <input name="order_id" type="hidden" value={order.id}/><input name="order_line_id" type="hidden" value={line.id}/>
                     {positions.length === 1 ? <><input name="inventory_account_id" type="hidden" value={positions[0].account_id}/><p className="derived-choice"><span>Source</span><strong>{positions[0].warehouse_name} · {positions[0].location_name}</strong><small>{positions[0].available} {positions[0].unit_code} available</small></p></> : <label className="field"><span>Stock source</span><select name="inventory_account_id" required>{positions.map((position) => <option key={position.account_id} value={position.account_id}>{position.warehouse_name} · {position.location_name} · {position.available} available</option>)}</select></label>}
-                    <label className="field"><span>Quantity to reserve</span><input defaultValue={Math.min(remaining, positions[0]?.available ?? remaining)} max={remaining} min="0.001" name="quantity" required step="0.001" type="number"/></label>
-                    <details className="advanced-fields"><summary>Reservation note</summary><div><label className="field"><span>Audit note</span><input defaultValue="Stock reserved for approved order." maxLength={500} minLength={1} name="reason" required/></label></div></details>
-                    <button className="button button-primary"><UiIcon name="package"/>Reserve stock</button>
+                    {positions.length === 1 ? <input name="quantity" type="hidden" value={Math.min(remaining, positions[0].available)}/> : <label className="field"><span>Quantity to make ready</span><input defaultValue={remaining} max={remaining} min="0.001" name="quantity" required step="0.001" type="number"/></label>}
+                    <input name="reason" type="hidden" value="Available stock held for this customer order."/>
+                    <button className="button button-primary"><UiIcon name="package"/>Make order ready</button>
                   </form> : <Link className="button button-secondary" href="/staff/inventory"><UiIcon name="box"/>Receive or inspect stock</Link>}
                 </section>
               )}

@@ -35,6 +35,15 @@ describe("economy forms", () => {
     })).success).toBe(false);
   });
 
+  it("uses the supplier name as the display name in quick intake", () => {
+    const result = readSupplierForm(form({
+      display_name: "", jurisdiction_id: id(2), legal_name: "Ragnar the Miner",
+      notes: "", party_type_code: "individual", reason: "Registered at receiving",
+    }));
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.displayName).toBe("Ragnar the Miner");
+  });
+
   it("parses an effective-dated purchase offer", () => {
     const result = readOfferForm(form({
       amount_minor: "25", currency_id: id(3), effective_from: "2026-08-10T12:00",

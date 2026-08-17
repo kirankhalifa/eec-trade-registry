@@ -24,6 +24,7 @@ Implementation proceeds through the policy-gated vertical slices in `ROADMAP.md`
 8. **History is preserved.** Consequential actions are attributable and corrections use reversing or superseding records instead of destructive edits.
 9. **Keystone reserves come from production.** Configured baseline materials enter Company stock through accepted supplier deliveries, not administrative spawning. Guaranteed purchase floors and high reserve resale terms form an economic corridor without replacing player trade.
 10. **Routine administration beats spreadsheet work.** Once policy inputs exist, creating an ordinary item or posting an ordinary stock receipt should take no more than approximately 30 seconds without sacrificing permission checks, audit history, or ledger provenance.
+11. **The interface is smaller than the domain.** Ordinary staff describe the buyer, goods, quantity, and handoff; Supabase derives classifications and carries references. Advanced systems remain available in one explained Staff tools panel and on the records to which they apply, not in primary navigation.
 
 ## 3. Users and actors
 
@@ -278,10 +279,12 @@ Frontend code may display estimates for usability only when clearly labeled and 
 - A public visitor can browse without an account.
 - A verification lookup returns a clear result without exposing whether a private, unpublished record exists.
 - A dealer sees why an item is unavailable or requires review in policy-safe language.
-- An ordinary staff order can be processed in approximately one minute once required data is present.
+- A first-time Agent can record an ordinary order in approximately 30 seconds without consulting documentation once required policy and price data are present.
+- A prepared player-material purchase can be recorded from supplier, material, and quantity in approximately 30 seconds.
 - A prepared ordinary item can be onboarded and an ordinary inventory receipt can be posted in approximately 30 seconds through the rapid-operations workspace.
 - Work queues identify ownership, age, blocking reason, and next permitted actions.
 - The interface never presents raw Booleans, enum codes, or database identifiers when plain language is appropriate.
+- Routine forms never ask staff to choose a sales channel, price schedule, license reference, warehouse, ledger account, reservation record, or audit reference when the authoritative service can derive it.
 - Dates, currency labels, organizational titles, and setting-specific vocabulary are configuration-driven.
 - Accessibility, mobile behavior, and localization expectations must be defined before interface implementation.
 

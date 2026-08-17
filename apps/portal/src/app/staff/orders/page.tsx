@@ -10,6 +10,15 @@ interface StaffOrdersPageProps {
   searchParams: Promise<{ error?: string; notice?: string; q?: string }>;
 }
 
+function nextStep(status: string) {
+  if (["submitted", "under_review"].includes(status)) return "Review order";
+  if (status === "awaiting_stock") return "Waiting for stock";
+  if (["approved", "processing", "partially_fulfilled"].includes(status)) return "Continue order";
+  if (status === "fulfilled") return "Completed";
+  if (["cancelled", "denied"].includes(status)) return "Closed";
+  return status.replaceAll("_", " ");
+}
+
 export default async function StaffOrdersPage({ searchParams }: StaffOrdersPageProps) {
   const parameters = await searchParams;
   const search = parameters.q?.trim().slice(0, 100) || undefined;
@@ -27,20 +36,19 @@ export default async function StaffOrdersPage({ searchParams }: StaffOrdersPageP
     <main className="staff-main">
       <header className="staff-page-header">
         <div>
-          <p className="eyebrow">Authenticated staff · order desk</p>
-          <h1>Wholesale order queue</h1>
-          <p>Review dealer requisitions, record nullable Septim prices, approve partial quantities, or place approved demand in awaiting-stock state.</p>
+          <p className="eyebrow">Customer orders</p>
+          <h1>Orders</h1>
+          <p>Open an order to see what happens next. Review, stock holding, and handoff all stay on that order’s page.</p>
         </div>
         <div className="staff-button-row">
-          <Link className="button button-primary" href="/staff/orders/new">Enter an order</Link>
-          <Link className="button button-secondary" href="/staff/fulfillment">Open fulfillment</Link>
+          <Link className="button button-primary" href="/staff/orders/new">New order</Link>
         </div>
       </header>
 
       <OrderNotice error={parameters.error} notice={parameters.notice} />
 
       <form className="staff-search" method="get" role="search">
-        <label className="field"><span>Search order queue</span><input defaultValue={search} maxLength={100} name="q" placeholder="Order reference or dealer" type="search" /></label>
+        <label className="field"><span>Find an order</span><input defaultValue={search} maxLength={100} name="q" placeholder="Customer or order reference" type="search" /></label>
         <button className="button button-primary" type="submit">Search</button>
         {search && <Link className="button button-secondary" href="/staff/orders">Clear</Link>}
       </form>
@@ -58,10 +66,10 @@ export default async function StaffOrdersPage({ searchParams }: StaffOrdersPageP
             </header>
             <dl className="order-facts">
               <div><dt>Submitted</dt><dd>{new Date(order.submitted_at).toLocaleString(locale)}</dd></div>
-              <div><dt>Control</dt><dd>{order.lines.some((line) => line.requires_serial_tracking) ? "Unique item present" : order.lines.some((line) => line.requires_staff_review) ? "Restricted review" : "Routine review"}</dd></div>
-              <div><dt>Pricing</dt><dd>{order.lines.some((line) => line.pricing_status === "pending") ? "Pending" : "Configured"}</dd></div>
+              <div><dt>Items</dt><dd>{order.lines.map((line) => `${line.quantity_requested} × ${line.item_name}`).join(", ")}</dd></div>
+              <div><dt>Next</dt><dd>{nextStep(order.status)}</dd></div>
             </dl>
-            <Link className="button button-secondary" href={`/staff/orders/${order.id}`}>Review order</Link>
+            <Link className="button button-secondary" href={`/staff/orders/${order.id}`}>Open order</Link>
           </article>
         ))}
       </div>

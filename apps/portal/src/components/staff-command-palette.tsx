@@ -15,11 +15,12 @@ type Command = {
 };
 
 const commands: Command[] = [
-  { href: "/staff/orders/new", icon: "spark", label: "Create an order", description: "Enter a business or direct customer request", keywords: "new submit requisition customer" },
+  { href: "/staff/orders/new", icon: "spark", label: "Record an order", description: "Choose the buyer and goods; the system handles the rules", keywords: "new submit requisition customer" },
+  { href: "/staff/buy", icon: "coins", label: "Buy materials", description: "Receive player-supplied materials at the guaranteed rate", keywords: "procurement floor bulk ore leather supplier" },
   { href: "/staff/orders", icon: "clipboard", label: "Find an order", description: "Review demand and continue fulfillment", keywords: "approve reserve fulfill handoff" },
   { href: "/staff/configuration#quick-add-item", icon: "box", label: "Add a catalogue item", description: "Create and publish a new good", keywords: "new product material catalogue" },
   { href: "/staff/inventory", icon: "package", label: "Receive or inspect stock", description: "Post receipts and see physical balances", keywords: "inventory warehouse quantity" },
-  { href: "/staff/economy", icon: "coins", label: "Receive a supplier delivery", description: "Buy player-sourced reserve materials", keywords: "procurement floor bulk ore leather" },
+  { href: "/staff/economy", icon: "coins", label: "Open reserve economy", description: "Review material targets, offers, and purchasing history", keywords: "procurement policy floor reserve" },
   { href: "/staff/pricing", icon: "coins", label: "Publish a price rule", description: "Bind a schedule to a business, class, region, or channel", keywords: "dealer pricing wholesale" },
   { href: "/staff/consignments", icon: "truck", label: "Open consignments", description: "Manage custody, reports, commission, and settlement", keywords: "consignment finance commission" },
   { href: "/staff/assets", icon: "key", label: "Open unique assets", description: "Manage serialized goods and ready handoffs", keywords: "unique custody reservation" },
@@ -39,7 +40,7 @@ export function CommandPaletteButton({ compact = false }: { compact?: boolean })
       type="button"
     >
       <UiIcon name="search" size={16} />
-      <span>Find or do anything</span>
+      <span>Search or jump anywhere</span>
       <kbd>⌘ K</kbd>
     </button>
   );
@@ -85,7 +86,7 @@ export function StaffCommandPalette({ isOwner }: { isOwner: boolean }) {
   if (!open) return null;
   return (
     <div className="command-palette-backdrop" onMouseDown={() => setOpen(false)}>
-      <section aria-label="Find or do anything" aria-modal="true" className="command-palette" onMouseDown={(event) => event.stopPropagation()} role="dialog">
+      <section aria-label="Search or jump anywhere" aria-modal="true" className="command-palette" onMouseDown={(event) => event.stopPropagation()} role="dialog">
         <label className="command-palette-search">
           <UiIcon name="search" size={20} />
           <span className="sr-only">Search actions</span>

@@ -9,25 +9,17 @@ import { type IconName, UiIcon } from "@/components/ui-icon";
 
 type NavigationItem = { href: string; icon: IconName; label: string; exact?: boolean; ownerOnly?: boolean };
 const groups: Array<{ label: string; items: NavigationItem[] }> = [
-  { label: "Overview", items: [
-    { href: "/staff/dashboard", icon: "dashboard", label: "Dashboard", exact: true },
-    { href: "/staff/launch", icon: "spark", label: "Quick actions", exact: true },
-  ] },
-  { label: "Work", items: [
+  { label: "Everyday work", items: [
+    { href: "/staff/dashboard", icon: "dashboard", label: "Today", exact: true },
+    { href: "/staff/orders/new", icon: "spark", label: "New order", exact: true },
+    { href: "/staff/buy", icon: "coins", label: "Buy materials", exact: true },
     { href: "/staff/orders", icon: "clipboard", label: "Orders" },
-    { href: "/staff/inventory", icon: "box", label: "Inventory" },
-    { href: "/staff/economy", icon: "coins", label: "Economy" },
+    { href: "/staff/inventory", icon: "box", label: "Stock" },
     { href: "/staff/applications", icon: "clipboard", label: "Applications" },
   ] },
-  { label: "Registry", items: [
+  { label: "Records", items: [
+    { href: "/staff/dealers", icon: "people", label: "Customers" },
     { href: "/staff", icon: "catalogue", label: "Catalogue", exact: true },
-    { href: "/staff/licensing", icon: "license", label: "Licenses" },
-    { href: "/staff/dealers", icon: "building", label: "Businesses" },
-  ] },
-  { label: "Administration", items: [
-    { href: "/staff/configuration", icon: "gear", label: "Configuration" },
-    { href: "/staff/access", icon: "people", label: "Staff access", ownerOnly: true },
-    { href: "/staff/operations", icon: "heart", label: "System health", ownerOnly: true },
   ] },
 ];
 

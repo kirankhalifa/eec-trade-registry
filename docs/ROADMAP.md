@@ -89,6 +89,8 @@ Anyone can browse a single, coherent public catalogue without logging in.
 
 Implementation status: The first policy-neutral increment provides Supabase Auth cookie sessions initiated by Discord OAuth, a fixed server-side PKCE callback, effective-dated catalogue role assignments, an authorized internal work queue, and audited create/edit/archive commands with optimistic concurrency. ADR 0019 adds a rapid configuration workspace, atomic item/supply onboarding, effective-dated public presentation replacement, explicit-schedule price set/clear, no-code reference creation, and retry receipts. ADR 0021 adds a pending Discord identity queue, Owner/Agent presentation, audited owner decisions, and dashboard visibility while preserving the rule that provider authentication grants no database authority.
 
+ADR 0023 adds the simplified operations shell: eight primary destinations, four routine starting actions, non-zero attention sentences, one explained advanced Staff tools panel, derived buyer-channel selection, fast player-material purchasing, and a single ordinary Operator Guide. Existing secure commands and advanced routes remain available without competing for primary navigation.
+
 ### User outcome
 
 Authorized staff can maintain the master catalogue, prices, publication, and control metadata; public output changes from the same source record.

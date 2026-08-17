@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import {
-  createReservationAction,
   expireReservationAction,
   extendReservationAction,
   postInventoryReceiptAction,
@@ -42,17 +41,6 @@ export default async function StaffInventoryPage({ searchParams }: StaffInventor
 
   const workspace = result.data;
   const locale = getDefaultLocale();
-  const totals = workspace.positions.reduce(
-    (sum, position) => ({
-      available: sum.available + position.available,
-      onHand: sum.onHand + position.on_hand,
-      reserved: sum.reserved + position.reserved,
-    }),
-    { available: 0, onHand: 0, reserved: 0 },
-  );
-  const availablePositions = workspace.positions.filter(
-    (position) => position.stock_state === "available" && position.available > 0,
-  );
   const fungibleItems = workspace.items.filter((item) => item.inventory_mode === "fungible");
   const stockLocations = workspace.warehouses.flatMap((warehouse) =>
     warehouse.locations.map((location) => ({
@@ -65,58 +53,39 @@ export default async function StaffInventoryPage({ searchParams }: StaffInventor
     <main className="staff-main">
       <header className="staff-page-header">
         <div>
-          <p className="eyebrow">Authenticated staff · warehouse ledger</p>
-          <h1>Inventory and reservations</h1>
-          <p>On-hand stock is derived from immutable balanced entries. Reservations are separate 48-hour claims and never overwrite a balance.</p>
+          <p className="eyebrow">Warehouse stock</p>
+          <h1>Stock</h1>
+          <p>Receive ordinary goods and see what is physically available. Orders hold their own stock automatically from the order page.</p>
         </div>
         <div className="staff-button-row">
-          <Link className="button button-primary" href="/staff/orders">Order queue</Link>
-          <Link className="button button-secondary" href="/staff/fulfillment">Fulfillment</Link>
-          <Link className="button button-secondary" href="/staff/transfers">Transfers</Link>
+          <Link className="button button-primary" href="/staff/buy">Buy player materials</Link>
         </div>
       </header>
 
       <InventoryNotice error={parameters.error} notice={parameters.notice} />
 
-      <section className="inventory-summary" aria-label="Inventory totals">
-        <article><span>On hand</span><strong>{quantity(totals.onHand)}</strong></article>
-        <article><span>Reserved</span><strong>{quantity(totals.reserved)}</strong></article>
-        <article><span>Available</span><strong>{quantity(totals.available)}</strong></article>
-        <article><span>Active/elapsed claims</span><strong>{workspace.reservations.filter((entry) => entry.status === "active").length}</strong></article>
-      </section>
-
-      <div className="inventory-command-grid">
+      <div className="inventory-command-grid stock-primary-grid">
         <section className="staff-form inventory-command-card">
-          <div><p className="eyebrow">Immutable receipt</p><h2>Receive fungible stock</h2><p>Use only for goods whose supply policy permits generic receipts. Player-sourced keystone materials must use the economy desk.</p></div>
+          <div><p className="eyebrow">Quick stock intake</p><h2>Receive ordinary stock</h2><p>Choose the item and quantity. Player-sourced materials use Buy materials so the supplier and guaranteed payment are recorded.</p></div>
           {fungibleItems.length > 0 && stockLocations.length > 0 ? <form action={postInventoryReceiptAction} className="inventory-command-form">
             {stockLocations.length === 1 ? <><input name="stock_location_id" type="hidden" value={stockLocations[0].id} /><p className="derived-choice"><span>Receive into</span><strong>{stockLocations[0].warehouseName} · {stockLocations[0].display_name}</strong></p></> : <label className="field"><span>Receive into</span><select defaultValue="" name="stock_location_id" required><option disabled value="">Choose a location</option>{stockLocations.map((location) => <option key={location.id} value={location.id}>{location.warehouseName} · {location.display_name}</option>)}</select></label>}
             <label className="field"><span>Item received</span><select defaultValue="" name="item_id" required><option disabled value="">Choose an item</option>{fungibleItems.map((item) => <option key={item.id} value={item.id}>{item.item_code} · {item.display_name} ({item.unit_code})</option>)}</select></label>
             <label className="field"><span>Quantity</span><input min="0.001" name="quantity" required step="0.001" type="number" /></label>
-            <label className="field"><span>Source or manifest reference</span><input maxLength={200} name="source_reference" required /></label>
-            <label className="field"><span>Audit reason</span><textarea maxLength={500} name="reason" required rows={3} /></label>
-            <button className="button button-primary" type="submit">Post receipt</button>
+            <input name="source_reference" type="hidden" value="Routine staff stock intake" />
+            <input name="reason" type="hidden" value="Ordinary stock received and counted by staff." />
+            <button className="button button-primary" type="submit">Add to stock</button>
           </form> : <div className="empty-state"><p>No items currently permit a generic warehouse receipt.</p><Link href="/staff/economy">Receive player-sourced materials through the economy desk</Link></div>}
-        </section>
-
-        <section className="staff-form inventory-command-card">
-          <div><p className="eyebrow">Atomic stock claim</p><h2>Reserve approved demand</h2><p>The database rechecks account availability and approved remaining quantity.</p></div>
-          {workspace.order_lines.length > 0 && availablePositions.length > 0 ? <form action={createReservationAction} className="inventory-command-form">
-            <label className="field"><span>Approved order line</span><select defaultValue="" name="order_line_id" required><option disabled value="">Choose an order line</option>{workspace.order_lines.map((line) => <option key={line.id} value={line.id}>{line.order_reference} · line {line.line_number} · {line.item_code} · {quantity(line.quantity_approved - line.quantity_fulfilled - line.quantity_reserved)} remaining</option>)}</select></label>
-            <label className="field"><span>Reserve from</span><select defaultValue="" name="inventory_account_id" required><option disabled value="">Choose matching stock</option>{availablePositions.map((position) => <option key={position.account_id} value={position.account_id}>{position.item_code} · {position.warehouse_name}/{position.location_name} · {quantity(position.available)} available</option>)}</select></label>
-            <label className="field"><span>Quantity</span><input min="0.001" name="quantity" required step="0.001" type="number" /></label>
-            <label className="field"><span>Audit reason</span><textarea maxLength={500} name="reason" required rows={3} /></label>
-            <button className="button button-primary" type="submit">Create 48-hour reservation</button>
-          </form> : <div className="empty-state"><p>{workspace.order_lines.length === 0 ? "No approved order lines are waiting for stock." : "No matching stock is currently available to reserve."}</p><Link href="/staff/orders">Open the order queue</Link></div>}
         </section>
       </div>
 
       <section className="inventory-section">
-        <div className="inventory-section-heading"><div><p className="eyebrow">Derived projection</p><h2>Stock positions</h2></div><p>No editable current-stock field exists.</p></div>
+        <div className="inventory-section-heading"><div><p className="eyebrow">Current stock</p><h2>What is available?</h2></div><p>Held stock is already removed from “Available.”</p></div>
         <div className="inventory-table-wrap"><table className="inventory-table"><thead><tr><th>Warehouse / location</th><th>Item</th><th>State</th><th>On hand</th><th>Reserved</th><th>Available</th></tr></thead><tbody>{workspace.positions.map((position) => <tr key={position.account_id}><td>{position.warehouse_name}<small>{position.location_name}</small></td><td>{position.item_code}<small>{position.item_name}</small></td><td>{position.stock_state.replaceAll("_", " ")}</td><td>{quantity(position.on_hand)} {position.unit_code}</td><td>{quantity(position.reserved)}</td><td><strong>{quantity(position.available)}</strong></td></tr>)}</tbody></table></div>
         {workspace.positions.length === 0 && <p className="empty-state">No stock has been posted. Seed configuration does not invent an opening balance.</p>}
       </section>
 
-      <section className="inventory-section">
+      <details className="staff-tools-panel inline-tools-panel stock-tools-panel"><summary><span><span><strong>Stock history and advanced controls</strong><small>Expired holds, reversals, and immutable ledger evidence</small></span></span><span>Open</span></summary><div className="staff-tools-content">
+      <section className="inventory-section embedded-inventory-section">
         <div className="inventory-section-heading"><div><p className="eyebrow">Time-bounded claims</p><h2>Reservations</h2></div><p>Elapsed claims stop reducing availability and must be finalized explicitly.</p></div>
         <div className="inventory-reservation-list">
           {workspace.reservations.map((reservation) => {
@@ -136,10 +105,11 @@ export default async function StaffInventoryPage({ searchParams }: StaffInventor
         {workspace.reservations.length === 0 && <p className="empty-state">No reservation history yet.</p>}
       </section>
 
-      <section className="inventory-section">
+      <section className="inventory-section embedded-inventory-section">
         <div className="inventory-section-heading"><div><p className="eyebrow">Posted evidence</p><h2>Recent ledger transactions</h2></div><p>Corrections add a linked reversal; originals cannot be edited.</p></div>
         <div className="inventory-transaction-list">{workspace.transactions.map((transaction) => <article className="inventory-transaction-card" key={transaction.id}><div><span className="order-status">{transaction.transaction_type}</span><h3>{transaction.source_reference}</h3><p>{transaction.item_code} · {quantity(transaction.quantity_delta)} · {transaction.warehouse_name}</p><small>{new Date(transaction.posted_at).toLocaleString(locale)}</small></div>{transaction.transaction_type === "receipt" && !transaction.is_reversed && <form action={reverseInventoryTransactionAction}><input name="inventory_transaction_id" type="hidden" value={transaction.id} /><label className="field"><span>Correction reason</span><input maxLength={500} name="reason" required /></label><button className="button button-secondary" type="submit">Post reversal</button></form>}</article>)}</div>
       </section>
+      </div></details>
     </main>
   );
 }
