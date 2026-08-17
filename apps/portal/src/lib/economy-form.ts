@@ -45,7 +45,7 @@ export function readSupplierForm(formData: FormData) {
     legalName: z.string().trim().min(1).max(300), notes: z.string().trim().max(2000),
     partyTypeCode: z.string().trim().min(1).max(50), reason,
   }).safeParse({
-    displayName: formData.get("display_name"), jurisdictionId: formData.get("jurisdiction_id"),
+    displayName: formData.get("display_name") || formData.get("legal_name"), jurisdictionId: formData.get("jurisdiction_id"),
     legalName: formData.get("legal_name"), notes: formData.get("notes") ?? "",
     partyTypeCode: formData.get("party_type_code"), reason: formData.get("reason"),
   });

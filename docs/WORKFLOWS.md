@@ -79,6 +79,14 @@ Let specifically assigned catalogue staff maintain canonical item source records
 - Existing reference-record rename/archive and role administration; new category, unit, availability, license-class, endorsement, and control-profile creation is implemented
 - Recovery, MFA, and step-up policy beyond the approved Discord OAuth provider
 
+## 2.1.1 Simplified staff shell
+
+1. The primary navigation exposes only Today, New order, Buy materials, Orders, Stock, Applications, Customers, and Catalogue.
+2. Today offers the four routine starting actions and returns only non-zero exceptions requiring attention.
+3. Advanced pricing, licensing, reserve policy, queue-wide fulfillment, transfers, consignment, unique goods, documents, compliance, integrations, access, and health live in one explained collapsed Staff tools panel.
+4. Moving a feature out of primary navigation changes no database permission, RLS policy, state transition, audit requirement, or integration behavior.
+5. `docs/OPERATOR_GUIDE.md` is the ordinary Agent guide. The governing technical documents remain the authority for invariants and policy gates.
+
 ## 2.2 Rapid item onboarding and ordinary receipt
 
 ### Quick item flow

@@ -16,11 +16,11 @@ export default async function NewStaffOrderPage() {
 
   return (
     <main className="staff-main staff-order-intake-main">
-      <header className="staff-page-header">
+      <header className="staff-page-header simple-task-header">
         <div>
-          <p className="eyebrow">Guided order intake</p>
+          <p className="eyebrow">Staff-assisted checkout</p>
           <h1>New order</h1>
-          <p>Choose the customer, add the goods, review the authoritative price and quota result, then submit.</p>
+          <p>Choose who is buying, what they want, and how they will receive it. Pricing, licensing, limits, and stock rules are automatic.</p>
         </div>
         <Link className="button button-secondary" href="/staff/orders">Back to orders</Link>
       </header>

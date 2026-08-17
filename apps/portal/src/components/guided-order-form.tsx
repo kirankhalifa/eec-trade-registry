@@ -10,209 +10,101 @@ import { REGISTRY_CONFIG } from "@/lib/registry-config";
 const initialState: GuidedOrderState = {};
 
 function amount(value: number | null, currency: string | null) {
-  return value === null
-    ? "Price not configured"
-    : `${new Intl.NumberFormat().format(value)} ${currency ?? REGISTRY_CONFIG.currency.code}`;
+  return value === null ? "To be confirmed" : `${new Intl.NumberFormat().format(value)} ${currency ?? REGISTRY_CONFIG.currency.code}`;
 }
+
 function OrderPreview({ preview }: { preview: TradeOrderPreview }) {
   return (
-    <section className="order-intake-preview" aria-live="polite">
-      <header>
-        <div>
-          <p className="eyebrow">Review before submission</p>
-          <h2>{preview.channel_label}</h2>
-        </div>
-        <strong className={preview.valid ? "preview-ready" : "preview-blocked"}>
-          {preview.valid ? "Ready" : "Needs attention"}
-        </strong>
-      </header>
-      <div className="order-preview-lines">
-        {preview.lines.map((line) => (
-          <article key={line.item_id}>
-            <div>
-              <code>{line.item_code}</code>
-              <h3>{line.item_name}</h3>
-              <p>{line.quantity} {line.unit ?? "units"}</p>
-            </div>
-            <dl>
-              <div><dt>Unit price</dt><dd>{amount(line.unit_price_minor, line.currency_code)}</dd></div>
-              <div><dt>Price source</dt><dd>{line.price_source}</dd></div>
-              {line.multiplier_basis_points !== null && line.multiplier_basis_points !== 10000 && (
-                <div><dt>Multiplier</dt><dd>{line.multiplier_basis_points / 10000}×</dd></div>
-              )}
-              {line.weekly_limit !== null && (
-                <div><dt>Personal limit</dt><dd>{line.weekly_remaining} of {line.weekly_limit} remaining before this order</dd></div>
-              )}
-            </dl>
-          </article>
-        ))}
-      </div>
-      <div className="order-preview-total">
-        <span>Expected total</span>
-        <strong>{amount(preview.total_amount_minor, preview.currency_code)}</strong>
-      </div>
+    <aside className="simple-task-summary order-intake-preview" aria-live="polite">
+      <div className="simple-summary-status"><span className={preview.valid ? "preview-ready" : "preview-blocked"}>{preview.valid ? "Ready to record" : "Needs attention"}</span></div>
+      <p className="eyebrow">Order summary</p>
+      <h2>{preview.channel === "direct_individual" ? "Individual purchase" : "Licensed business order"}</h2>
+      <div className="simple-preview-lines">{preview.lines.map((line) => <div key={line.item_id}><span><strong>{line.item_name}</strong><small>{line.quantity} {line.unit ?? "units"}</small></span><strong>{amount(line.unit_price_minor === null ? null : line.unit_price_minor * line.quantity, line.currency_code)}</strong>{line.weekly_limit !== null && <small>{line.weekly_remaining} of {line.weekly_limit} available this week before this order</small>}</div>)}</div>
+      <div className="simple-task-total"><span>Total</span><strong>{amount(preview.total_amount_minor, preview.currency_code)}</strong></div>
       {preview.warnings.map((warning) => <p className="staff-flash staff-flash-error" key={warning}>{warning}</p>)}
-      <p className="order-preview-policy">{preview.reservation_message}</p>
-    </section>
+      <details className="advanced-fields"><summary>How the price was chosen</summary><div>{preview.lines.map((line) => <p className="simple-price-source" key={line.item_id}><strong>{line.item_name}</strong><span>{line.price_source}{line.multiplier_basis_points !== null && line.multiplier_basis_points !== 10000 ? ` · ${line.multiplier_basis_points / 10000}×` : ""}</span></p>)}</div></details>
+      <p className="simple-summary-note">The order records demand now. Stock only moves when goods are actually handed over.</p>
+    </aside>
   );
 }
 
 export function GuidedOrderForm({ workspace }: { workspace: LaunchWorkspace }) {
-  const [channel, setChannel] = useState<"staff_assisted_business" | "direct_individual">("staff_assisted_business");
-  const [directMode, setDirectMode] = useState<"existing" | "new">(
-    workspace.direct_customers.length ? "existing" : "new",
-  );
-  const [lineCount, setLineCount] = useState(1);
+  const jurisdiction = workspace.jurisdictions.find((item) => item.code === REGISTRY_CONFIG.jurisdiction.code) ?? workspace.jurisdictions[0];
+  const businessOptions = workspace.businesses.flatMap((business) => business.licenses.map((license) => ({
+    businessKey: `${business.party_id}|${business.dealer_authorization_id}|${license.id}|${business.jurisdiction_id}`,
+    channel: "staff_assisted_business" as const,
+    directId: "",
+    key: `business:${license.id}`,
+    label: business.party_name,
+    secondary: `${license.class} license`,
+  })));
+  const directOptions = workspace.direct_customers.map((customer) => ({
+    businessKey: "",
+    channel: "direct_individual" as const,
+    directId: customer.party_id,
+    key: `direct:${customer.party_id}`,
+    label: customer.name,
+    secondary: "Individual customer",
+  }));
+  const buyerOptions = [...businessOptions, ...directOptions];
+  const [buyerKey, setBuyerKey] = useState(buyerOptions[0]?.key ?? "new");
+  const [lineNumbers, setLineNumbers] = useState([1]);
+  const [fulfillment, setFulfillment] = useState<"collection" | "delivery" | "consignment">("collection");
   const [state, action, pending] = useActionState(guidedTradeOrderAction, initialState);
-  const jurisdiction = workspace.jurisdictions.find(
-    (item) => item.code === REGISTRY_CONFIG.jurisdiction.code,
-  );
-  const visibleItems = useMemo(
-    () => channel === "direct_individual"
-      ? workspace.items.filter((item) => item.direct_allowed)
-      : workspace.items,
-    [channel, workspace.items],
-  );
-  const businessOptions = workspace.businesses.flatMap((business) =>
-    business.licenses.map((license) => ({
-      id: license.id,
-      label: `${business.party_name} · ${license.class} · ${license.reference}`,
-      value: `${business.party_id}|${business.dealer_authorization_id}|${license.id}|${business.jurisdiction_id}`,
-    })),
-  );
+  const selectedBuyer = buyerOptions.find((buyer) => buyer.key === buyerKey);
+  const isNewCustomer = buyerKey === "new";
+  const isDirect = isNewCustomer || selectedBuyer?.channel === "direct_individual";
+  const visibleItems = useMemo(() => isDirect ? workspace.items.filter((item) => item.direct_allowed) : workspace.items, [isDirect, workspace.items]);
+  const nextLine = [1, 2, 3, 4, 5].find((number) => !lineNumbers.includes(number)) ?? 5;
 
   return (
-    <form action={action} className="guided-order-intake">
-      <input name="channel" type="hidden" value={channel} />
-      <input name="reason" type="hidden" value="Guided staff order intake." />
-      <section className="order-intake-step">
-        <div className="order-step-number">1</div>
-        <div className="order-step-content">
-          <p className="eyebrow">Who is buying?</p>
-          <h2>Choose the sales path.</h2>
-          <div className="choice-buttons">
-            <button aria-pressed={channel === "staff_assisted_business"} onClick={() => setChannel("staff_assisted_business")} type="button">
-              <strong>Licensed business</strong><small>Wholesale or licensed terms</small>
-            </button>
-            <button aria-pressed={channel === "direct_individual"} onClick={() => setChannel("direct_individual")} type="button">
-              <strong>Individual customer</strong><small>Automatic 3× premium and personal limit</small>
-            </button>
-          </div>
+    <form action={action} className="simple-task-layout order-simple-layout">
+      <input name="channel" type="hidden" value={isDirect ? "direct_individual" : "staff_assisted_business"} />
+      <input name="business_key" type="hidden" value={selectedBuyer?.businessKey ?? ""} />
+      <input name="direct_customer_id" type="hidden" value={selectedBuyer?.directId ?? ""} />
+      <input name="jurisdiction_id" type="hidden" value={jurisdiction?.id ?? ""} />
+      <input name="fulfillment_mode" type="hidden" value={fulfillment} />
+      <input name="reason" type="hidden" value="Staff recorded the customer’s order." />
 
-          {channel === "staff_assisted_business" ? (
-            businessOptions.length ? (
-              <label className="field order-primary-field">
-                <span>Business and active license</span>
-                <select defaultValue="" name="business_key" required>
-                  <option disabled value="">Choose a licensed business</option>
-                  {businessOptions.map((option) => <option key={option.id} value={option.value}>{option.label}</option>)}
-                </select>
-              </label>
-            ) : (
-              <div className="empty-state compact-empty-state">
-                <h3>No licensed business can order yet.</h3>
-                <p>Issue an active license linked to an authorized business before entering a wholesale order.</p>
-              </div>
-            )
-          ) : (
-            <div className="direct-customer-branch">
-              {workspace.direct_customers.length > 0 && (
-                <div className="inline-choice-buttons">
-                  <button aria-pressed={directMode === "existing"} onClick={() => setDirectMode("existing")} type="button">Returning customer</button>
-                  <button aria-pressed={directMode === "new"} onClick={() => setDirectMode("new")} type="button">New customer</button>
-                </div>
-              )}
-              {directMode === "existing" && workspace.direct_customers.length ? (
-                <label className="field order-primary-field">
-                  <span>Returning customer</span>
-                  <select defaultValue="" name="direct_customer_id" required>
-                    <option disabled value="">Choose a customer</option>
-                    {workspace.direct_customers.map((customer) => <option key={customer.party_id} value={customer.party_id}>{customer.name} · {customer.reference}</option>)}
-                  </select>
-                </label>
-              ) : (
-                <div className="staff-form-grid">
-                  <input name="direct_customer_id" type="hidden" value="" />
-                  <label className="field"><span>Customer name</span><input maxLength={200} name="new_customer_name" required /></label>
-                  <label className="field"><span>Discord or contact label</span><input maxLength={300} name="contact_label" /></label>
-                </div>
-              )}
-              {jurisdiction ? (
-                <div className="derived-choice">
-                  <span>Region</span><strong>{jurisdiction.label}</strong><small>Assigned automatically</small>
-                  <input name="jurisdiction_id" type="hidden" value={jurisdiction.id} />
-                </div>
-              ) : (
-                <p className="staff-flash staff-flash-error">The configured region is unavailable.</p>
-              )}
-            </div>
-          )}
-        </div>
+      <section className="simple-task-card simple-order-form">
+        <label className="field simple-primary-field">
+          <span>Who is buying?</span>
+          <select onChange={(event) => setBuyerKey(event.target.value)} value={buyerKey}>
+            {businessOptions.length > 0 && <optgroup label="Licensed businesses">{businessOptions.map((buyer) => <option key={buyer.key} value={buyer.key}>{buyer.label} · {buyer.secondary}</option>)}</optgroup>}
+            {directOptions.length > 0 && <optgroup label="Individual customers">{directOptions.map((buyer) => <option key={buyer.key} value={buyer.key}>{buyer.label}</option>)}</optgroup>}
+            <option value="new">+ New individual customer</option>
+          </select>
+          {selectedBuyer && <small>{selectedBuyer.channel === "staff_assisted_business" ? "Licensed pricing is selected automatically." : "Individual premium and weekly limit are automatic."}</small>}
+        </label>
+
+        {isNewCustomer && <div className="inline-simple-fields"><label className="field"><span>Customer name</span><input autoFocus maxLength={200} name="new_customer_name" required /></label><label className="field"><span>Discord name (optional)</span><input maxLength={300} name="contact_label" /></label></div>}
+        {!isNewCustomer && !isDirect && <label className="field"><span>Who is it for? <small>Optional</small></span><input maxLength={300} name="contact_label" placeholder="Leave blank if the business is the recipient" /></label>}
+        {!isNewCustomer && isDirect && <input name="contact_label" type="hidden" value="" />}
+        {!isNewCustomer && <input name="new_customer_name" type="hidden" value="" />}
+
+        <div className="simple-form-divider" />
+        <div className="simple-field-heading"><span>What do they want?</span><small>Add only the goods in this order.</small></div>
+        <div className="guided-order-lines">{lineNumbers.map((number, index) => <div className="guided-order-line simple-order-line" key={number}>
+          <label className="field"><span>{index === 0 ? "Item" : `Item ${index + 1}`}</span><select defaultValue="" name={`item_id_${number}`} required><option disabled value="">Choose goods</option>{visibleItems.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+          <label className="field quantity-field"><span>Quantity</span><input defaultValue="1" min="0.001" name={`quantity_${number}`} required step="0.001" type="number" /></label>
+          {lineNumbers.length > 1 && <button aria-label={`Remove item ${index + 1}`} className="line-remove-button" onClick={() => setLineNumbers((numbers) => numbers.filter((candidate) => candidate !== number))} type="button">×</button>}
+        </div>)}</div>
+        {lineNumbers.length < 5 && <button className="text-action-button" onClick={() => setLineNumbers((numbers) => [...numbers, nextLine])} type="button">+ Add another item</button>}
+
+        <div className="simple-form-divider" />
+        <fieldset className="simple-choice-field"><legend>How will they get it?</legend><div>
+          <label><input checked={fulfillment === "collection"} name="handoff_choice" onChange={() => setFulfillment("collection")} type="radio" /><span><strong>Collection</strong><small>Hold it until they collect</small></span></label>
+          <label><input checked={fulfillment === "delivery"} name="handoff_choice" onChange={() => setFulfillment("delivery")} type="radio" /><span><strong>Delivery</strong><small>An Agent will take it</small></span></label>
+        </div></fieldset>
+
+        <details className="advanced-fields"><summary>Special order options</summary><div><label className="special-choice"><input checked={fulfillment === "consignment"} name="special_handoff" onChange={(event) => setFulfillment(event.target.checked ? "consignment" : "collection")} type="checkbox" /><span>This is a consignment order</span></label><label className="field"><span>Customer note</span><textarea maxLength={2000} name="notes" rows={3} /></label></div></details>
+
+        {state.error && <p className="staff-flash staff-flash-error" role="alert">{state.error}</p>}
+        <button className="button button-primary simple-task-submit" disabled={pending || !jurisdiction || visibleItems.length === 0} name="_intent" value="preview">{pending ? "Checking…" : state.preview ? "Check updated total" : "Check total"}</button>
+        {!jurisdiction && <p className="field-help">The configured region is unavailable.</p>}
       </section>
 
-      <section className="order-intake-step">
-        <div className="order-step-number">2</div>
-        <div className="order-step-content">
-          <p className="eyebrow">What do they need?</p>
-          <h2>Add the goods.</h2>
-          <div className="guided-order-lines">
-            {Array.from({ length: lineCount }, (_, index) => index + 1).map((number) => (
-              <div className="guided-order-line" key={number}>
-                <label className="field">
-                  <span>{number === 1 ? "Item" : `Item ${number}`}</span>
-                  <select defaultValue="" name={`item_id_${number}`} required>
-                    <option disabled value="">Choose goods</option>
-                    {visibleItems.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.code} · {item.name}
-                        {channel === "direct_individual" && item.direct_weekly_limit !== null
-                          ? ` · ${item.direct_weekly_limit}/week`
-                          : ""}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="field quantity-field"><span>Quantity</span><input defaultValue="1" min="0.001" name={`quantity_${number}`} required step="0.001" type="number" /></label>
-              </div>
-            ))}
-          </div>
-          {lineCount < 5 && <button className="button button-secondary" onClick={() => setLineCount((count) => count + 1)} type="button">+ Add another item</button>}
-        </div>
-      </section>
-
-      <section className="order-intake-step">
-        <div className="order-step-number">3</div>
-        <div className="order-step-content">
-          <p className="eyebrow">How will it be handed over?</p>
-          <h2>Choose fulfillment.</h2>
-          <label className="field order-primary-field">
-            <span>Fulfillment method</span>
-            <select defaultValue="collection" name="fulfillment_mode">
-              <option value="collection">Customer collection</option>
-              <option value="delivery">Company delivery</option>
-              <option value="consignment">Consignment</option>
-            </select>
-          </label>
-          <details className="advanced-fields">
-            <summary>Optional customer note</summary>
-            <div><label className="field"><span>Order note</span><textarea maxLength={2000} name="notes" rows={3} /></label></div>
-          </details>
-        </div>
-      </section>
-
-      {state.error && <p className="staff-flash staff-flash-error" role="alert">{state.error}</p>}
-      <button className="button button-primary order-preview-button" disabled={pending || (channel === "staff_assisted_business" && !businessOptions.length) || (channel === "direct_individual" && !jurisdiction)} name="_intent" value="preview">
-        {pending ? "Checking…" : "Review order"}
-      </button>
-
-      {state.preview && (
-        <>
-          <OrderPreview preview={state.preview} />
-          <button className="button button-primary order-submit-button" disabled={pending || !state.preview.valid} name="_intent" value="submit">
-            {pending ? "Submitting…" : "Submit order"}
-          </button>
-        </>
-      )}
+      <div className="simple-task-sidebar">{state.preview ? <><OrderPreview preview={state.preview} /><button className="button button-primary order-final-submit" disabled={pending || !state.preview.valid} name="_intent" value="submit">{pending ? "Recording…" : "Record order"}</button></> : <aside className="simple-task-summary simple-summary-placeholder"><p className="eyebrow">Order summary</p><h2>Choose the buyer and goods</h2><p>Check the total to see the authoritative price, license path, and any personal limit before recording the order.</p><ul><li>Orders may be recorded without stock.</li><li>Stock is held later when it is available.</li><li>Nothing leaves inventory until handoff.</li></ul></aside>}</div>
     </form>
   );
 }
